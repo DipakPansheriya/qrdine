@@ -35,8 +35,9 @@ export interface Staff {
   email: string;
   phone?: string;
   role: Role;
-  status: 'active' | 'inactive';
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: any;
+  updatedAt?: any;
 }
 
 export interface Table {
@@ -182,9 +183,75 @@ export interface Subscription {
 export interface Settings {
   settingsId: string;
   restaurantId: string;
-  theme: 'light' | 'dark' | 'system';
-  primaryColor?: string;
-  taxIncludedInPrice: boolean;
-  allowGuestCheckout: boolean;
-  requireTableNumber: boolean;
+  // General Info
+  restaurantName: string;
+  logo?: string;
+  coverImage?: string;
+  description?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  gstNumber?: string;
+  // Business Hours
+  businessHours: {
+    monday: { open: string; close: string; enabled: boolean };
+    tuesday: { open: string; close: string; enabled: boolean };
+    wednesday: { open: string; close: string; enabled: boolean };
+    thursday: { open: string; close: string; enabled: boolean };
+    friday: { open: string; close: string; enabled: boolean };
+    saturday: { open: string; close: string; enabled: boolean };
+    sunday: { open: string; close: string; enabled: boolean };
+  };
+  // Tax Settings
+  gstPercentage: number;
+  serviceChargePercentage: number;
+  currency: string;
+  // Branding
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  buttonStyle: 'rounded' | 'square' | 'pill';
+  cardRadius: 'small' | 'medium' | 'large';
+  themeMode: 'Default' | 'Orange' | 'Green' | 'Red' | 'Custom';
+  createdAt: any;
+  updatedAt: any;
+}
+
+export interface CustomerExperience {
+  experienceId: string;
+  restaurantId: string;
+  // Controls
+  showRestaurantRating: boolean;
+  showPopularItems: boolean;
+  showFeaturedItems: boolean;
+  showSearchBar: boolean;
+  showCategoryTabs: boolean;
+  showPreparationTime: boolean;
+  showDietaryTags: boolean;
+  showFoodImages: boolean;
+  showRecommendations: boolean;
+  showCartAnimation: boolean;
+  showWelcomeBanner: boolean;
+  // Messages
+  welcomeMessage: string;
+  successMessage: string;
+  emptyCartMessage: string;
+  // Rules
+  allowMultipleOrders: boolean;
+  allowOrderNotes: boolean;
+  allowModifierSelection: boolean;
+  allowQuantityEditing: boolean;
+  requireBillRequest: boolean;
+  autoCloseSession: boolean;
+  updatedAt: any;
+}
+
+export interface AuditLog {
+  logId: string;
+  restaurantId: string;
+  userId: string;
+  userName: string;
+  action: 'Settings Updated' | 'Branding Changed' | 'Customer Experience Updated' | 'Staff Created' | 'Staff Updated' | 'Staff Disabled';
+  details: any;
+  createdAt: any;
 }

@@ -55,7 +55,9 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'menu', pathMatch: 'full' },
       { path: 'menu', loadComponent: () => import('./features/owner/menu/menu-layout/menu-layout.component').then(m => m.MenuLayoutComponent) },
-      { path: 'tables', loadComponent: () => import('./features/owner/tables/table-layout/table-layout.component').then(m => m.TableLayoutComponent) }
+      { path: 'tables', loadComponent: () => import('./features/owner/tables/table-layout/table-layout.component').then(m => m.TableLayoutComponent) },
+      { path: 'staff', loadComponent: () => import('./features/owner/staff/staff-list/staff-list.component').then(m => m.StaffListComponent) },
+      { path: 'settings', loadComponent: () => import('./features/owner/settings/settings-dashboard/settings-dashboard.component').then(m => m.SettingsDashboardComponent) }
     ]
   },
   {

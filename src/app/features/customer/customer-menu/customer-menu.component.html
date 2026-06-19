@@ -1,7 +1,7 @@
 <div class="premium-menu-container">
   
   <!-- Pill Search Bar -->
-  <div class="search-section" [class.searching]="searchQuery().length > 0">
+  <div class="search-section" [class.searching]="searchQuery().length > 0" *ngIf="facade.experience()?.showSearchBar !== false">
     <div class="search-pill">
       <mat-icon>search</mat-icon>
       <input type="text" placeholder="Search your favorite dishes..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
@@ -40,7 +40,7 @@
     </div>
 
     <!-- Featured Popular Section (Only show when not searching and on first category) -->
-    <div class="popular-section" *ngIf="!searchQuery() && selectedCategoryIndex() === 0 && popularItems.length > 0">
+    <div class="popular-section" *ngIf="!searchQuery() && selectedCategoryIndex() === 0 && popularItems.length > 0 && facade.experience()?.showPopularItems !== false">
       <h3 class="section-title">🔥 Popular Dishes</h3>
       <div class="popular-track">
         <div class="popular-card" *ngFor="let item of popularItems" (click)="addToCart(item)">
@@ -59,7 +59,7 @@
     <div class="items-grid" *ngIf="filteredItems().length > 0">
       
       <h3 class="section-title" *ngIf="searchQuery()">Search Results</h3>
-      <h3 class="section-title" *ngIf="!searchQuery()">{{ getCategoryName(facade.categories()[selectedCategoryIndex()]?.categoryId) }}</h3>
+      <h3 class="section-title" *ngIf="!searchQuery()">{{ getCategoryName(facade.categories()[selectedCategoryIndex()].categoryId) }}</h3>
 
       <div class="premium-card" *ngFor="let item of filteredItems()">
         <div class="card-img" [ngStyle]="{'background-image': 'url(' + (item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80') + ')'}">

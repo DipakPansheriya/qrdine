@@ -1,0 +1,493 @@
+<div class="settings-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <mat-icon>tune</mat-icon>
+      </div>
+      <div>
+        <h1 class="page-title">Settings & Experience</h1>
+        <p class="page-subtitle">Manage your restaurant profile, hours, branding, and customer experience</p>
+      </div>
+    </div>
+    <div class="save-status" *ngIf="facade.loading()">
+      <mat-icon class="spin-icon">sync</mat-icon>
+      <span>Saving...</span>
+    </div>
+  </div>
+
+  <!-- Vertical Tabs Layout -->
+  <div class="settings-layout">
+
+    <!-- Left Sidebar Navigation -->
+    <nav class="settings-nav">
+      <button class="nav-btn" [class.active]="activeTab === 'general'" (click)="setTab('general')">
+        <div class="nav-btn-icon"><mat-icon>store</mat-icon></div>
+        <div class="nav-btn-text">
+          <span class="nav-btn-label">General</span>
+          <span class="nav-btn-desc">Name, contact & address</span>
+        </div>
+        <mat-icon class="nav-btn-arrow">chevron_right</mat-icon>
+      </button>
+      <button class="nav-btn" [class.active]="activeTab === 'hours'" (click)="setTab('hours')">
+        <div class="nav-btn-icon"><mat-icon>schedule</mat-icon></div>
+        <div class="nav-btn-text">
+          <span class="nav-btn-label">Business Hours</span>
+          <span class="nav-btn-desc">Opening & closing times</span>
+        </div>
+        <mat-icon class="nav-btn-arrow">chevron_right</mat-icon>
+      </button>
+      <button class="nav-btn" [class.active]="activeTab === 'taxes'" (click)="setTab('taxes')">
+        <div class="nav-btn-icon"><mat-icon>receipt_long</mat-icon></div>
+        <div class="nav-btn-text">
+          <span class="nav-btn-label">Taxes & Fees</span>
+          <span class="nav-btn-desc">GST, service charge & currency</span>
+        </div>
+        <mat-icon class="nav-btn-arrow">chevron_right</mat-icon>
+      </button>
+      <button class="nav-btn" [class.active]="activeTab === 'branding'" (click)="setTab('branding')">
+        <div class="nav-btn-icon"><mat-icon>palette</mat-icon></div>
+        <div class="nav-btn-text">
+          <span class="nav-btn-label">Branding</span>
+          <span class="nav-btn-desc">Colors, fonts & appearance</span>
+        </div>
+        <mat-icon class="nav-btn-arrow">chevron_right</mat-icon>
+      </button>
+      <button class="nav-btn" [class.active]="activeTab === 'cx'" (click)="setTab('cx')">
+        <div class="nav-btn-icon"><mat-icon>phone_iphone</mat-icon></div>
+        <div class="nav-btn-text">
+          <span class="nav-btn-label">Customer Experience</span>
+          <span class="nav-btn-desc">Menu page toggles & messages</span>
+        </div>
+        <mat-icon class="nav-btn-arrow">chevron_right</mat-icon>
+      </button>
+    </nav>
+
+    <!-- Right Content Panel -->
+    <div class="settings-panel">
+
+      <!-- ── GENERAL ── -->
+      <div class="panel-section" *ngIf="activeTab === 'general'">
+        <form [formGroup]="generalForm">
+          <div class="section-head">
+            <h2>General Information</h2>
+            <p>Basic details about your restaurant that appear on your menu page</p>
+          </div>
+
+          <div class="card-group">
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>restaurant</mat-icon>
+                <span>Restaurant Name</span>
+              </div>
+              <input class="field-input" formControlName="restaurantName" placeholder="e.g. Dosa Charcoal">
+            </div>
+
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>description</mat-icon>
+                <span>Description</span>
+              </div>
+              <textarea class="field-input field-textarea" formControlName="description" rows="3" placeholder="Tell customers what makes you special..."></textarea>
+            </div>
+
+            <div class="settings-card two-col">
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>phone</mat-icon>
+                  <span>Phone</span>
+                </div>
+                <input class="field-input" formControlName="phone" placeholder="+91 98765 43210">
+              </div>
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>email</mat-icon>
+                  <span>Email</span>
+                </div>
+                <input class="field-input" formControlName="email" placeholder="info@restaurant.com">
+              </div>
+            </div>
+
+            <div class="settings-card two-col">
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>tag</mat-icon>
+                  <span>GST Number</span>
+                </div>
+                <input class="field-input" formControlName="gstNumber" placeholder="27XXXXX0000X1ZX">
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>location_on</mat-icon>
+                <span>Address</span>
+              </div>
+              <textarea class="field-input field-textarea" formControlName="address" rows="2" placeholder="123 Main Street, City, State 000000"></textarea>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-save" (click)="saveSettings()" [disabled]="facade.loading()">
+              <mat-icon>save</mat-icon>
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── HOURS ── -->
+      <div class="panel-section" *ngIf="activeTab === 'hours'">
+        <form [formGroup]="hoursForm">
+          <div class="section-head">
+            <h2>Business Hours</h2>
+            <p>Set your operating hours for each day of the week</p>
+          </div>
+
+          <div class="card-group">
+            <div class="hours-card" *ngFor="let day of days" [formGroupName]="day">
+              <div class="hours-left">
+                <div class="day-badge" [class.enabled]="hoursForm.get(day + '.enabled')?.value">
+                  {{ day.substring(0, 3).toUpperCase() }}
+                </div>
+                <mat-slide-toggle formControlName="enabled" color="primary"></mat-slide-toggle>
+                <span class="day-name">{{ day | titlecase }}</span>
+              </div>
+              <div class="hours-right" *ngIf="hoursForm.get(day + '.enabled')?.value">
+                <div class="time-field">
+                  <label>Open</label>
+                  <input type="time" class="time-input" formControlName="open">
+                </div>
+                <div class="time-sep">→</div>
+                <div class="time-field">
+                  <label>Close</label>
+                  <input type="time" class="time-input" formControlName="close">
+                </div>
+              </div>
+              <div class="closed-chip" *ngIf="!hoursForm.get(day + '.enabled')?.value">
+                <mat-icon>do_not_disturb</mat-icon> Closed
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-save" (click)="saveSettings()" [disabled]="facade.loading()">
+              <mat-icon>save</mat-icon>
+              Save Hours
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── TAXES ── -->
+      <div class="panel-section" *ngIf="activeTab === 'taxes'">
+        <form [formGroup]="taxForm">
+          <div class="section-head">
+            <h2>Taxes & Fees</h2>
+            <p>Configure tax rates and currency settings applied to customer orders</p>
+          </div>
+
+          <div class="card-group">
+            <div class="settings-card two-col">
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>percent</mat-icon>
+                  <span>GST Percentage</span>
+                </div>
+                <div class="input-with-suffix">
+                  <input class="field-input" type="number" formControlName="gstPercentage" placeholder="0">
+                  <span class="input-suffix">%</span>
+                </div>
+              </div>
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>room_service</mat-icon>
+                  <span>Service Charge</span>
+                </div>
+                <div class="input-with-suffix">
+                  <input class="field-input" type="number" formControlName="serviceChargePercentage" placeholder="0">
+                  <span class="input-suffix">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>currency_exchange</mat-icon>
+                <span>Default Currency</span>
+              </div>
+              <div class="currency-options">
+                <label class="currency-option" *ngFor="let c of currencies" [class.selected]="taxForm.get('currency')?.value === c.code">
+                  <input type="radio" formControlName="currency" [value]="c.code">
+                  <span class="currency-symbol">{{ c.symbol }}</span>
+                  <span class="currency-name">{{ c.name }}</span>
+                  <span class="currency-code">{{ c.code }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-save" (click)="saveSettings()" [disabled]="facade.loading()">
+              <mat-icon>save</mat-icon>
+              Save Tax Settings
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── BRANDING ── -->
+      <div class="panel-section" *ngIf="activeTab === 'branding'">
+        <form [formGroup]="brandingForm">
+          <div class="section-head">
+            <h2>Branding & Appearance</h2>
+            <p>Customize how your menu looks to customers — colors, buttons, and card styles</p>
+          </div>
+
+          <div class="card-group">
+            <!-- Color Picker row -->
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>color_lens</mat-icon>
+                <span>Brand Colors</span>
+              </div>
+              <div class="color-row">
+                <div class="color-item">
+                  <label>Primary</label>
+                  <div class="color-swatch-wrap">
+                    <input type="color" class="color-swatch" formControlName="primaryColor">
+                    <input class="field-input color-hex" formControlName="primaryColor" placeholder="#E53935">
+                  </div>
+                </div>
+                <div class="color-item">
+                  <label>Secondary</label>
+                  <div class="color-swatch-wrap">
+                    <input type="color" class="color-swatch" formControlName="secondaryColor">
+                    <input class="field-input color-hex" formControlName="secondaryColor" placeholder="#424242">
+                  </div>
+                </div>
+                <div class="color-item">
+                  <label>Accent</label>
+                  <div class="color-swatch-wrap">
+                    <input type="color" class="color-swatch" formControlName="accentColor">
+                    <input class="field-input color-hex" formControlName="accentColor" placeholder="#FFC107">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Button Style -->
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>radio_button_checked</mat-icon>
+                <span>Button Style</span>
+              </div>
+              <div class="style-options">
+                <label class="style-option" *ngFor="let s of buttonStyles" [class.selected]="brandingForm.get('buttonStyle')?.value === s.value">
+                  <input type="radio" formControlName="buttonStyle" [value]="s.value">
+                  <div class="style-preview-btn" [ngStyle]="{'border-radius': s.radius}">Add</div>
+                  <span>{{ s.label }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Card Radius -->
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>rounded_corner</mat-icon>
+                <span>Card Corners</span>
+              </div>
+              <div class="style-options">
+                <label class="style-option" *ngFor="let r of cardRadii" [class.selected]="brandingForm.get('cardRadius')?.value === r.value">
+                  <input type="radio" formControlName="cardRadius" [value]="r.value">
+                  <div class="style-preview-card" [ngStyle]="{'border-radius': r.radius}"></div>
+                  <span>{{ r.label }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Color Preview Strip -->
+          <div class="branding-preview">
+            <span class="preview-label">Live Preview</span>
+            <div class="preview-strip" [ngStyle]="{'background': brandingForm.get('primaryColor')?.value || '#E53935'}">
+              <span>{{ generalForm.get('restaurantName')?.value || 'Restaurant Name' }}</span>
+              <button class="preview-btn"
+                [ngStyle]="{
+                  'background': brandingForm.get('accentColor')?.value || '#FFC107',
+                  'border-radius': brandingForm.get('buttonStyle')?.value === 'pill' ? '50px' : (brandingForm.get('buttonStyle')?.value === 'square' ? '4px' : '10px')
+                }">Order Now</button>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-save" (click)="saveSettings()" [disabled]="facade.loading()">
+              <mat-icon>save</mat-icon>
+              Save Branding
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── CUSTOMER EXPERIENCE ── -->
+      <div class="panel-section" *ngIf="activeTab === 'cx'">
+        <form [formGroup]="cxForm">
+          <div class="section-head">
+            <h2>Customer Experience</h2>
+            <p>Control what your customers see and can do on the menu page</p>
+          </div>
+
+          <div class="cx-layout">
+            <div class="cx-controls">
+
+              <!-- UI Toggles -->
+              <div class="toggle-section">
+                <div class="toggle-section-head">
+                  <mat-icon>visibility</mat-icon>
+                  <div>
+                    <strong>Display Options</strong>
+                    <p>Choose what appears on the customer menu</p>
+                  </div>
+                </div>
+                <div class="toggle-list">
+                  <label class="toggle-row" *ngFor="let toggle of uiToggles">
+                    <div class="toggle-info">
+                      <span class="toggle-icon">{{ toggle.icon }}</span>
+                      <div>
+                        <span class="toggle-name">{{ toggle.label }}</span>
+                        <span class="toggle-desc">{{ toggle.desc }}</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle [formControlName]="toggle.key" color="primary"></mat-slide-toggle>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Ordering Rules -->
+              <div class="toggle-section">
+                <div class="toggle-section-head">
+                  <mat-icon>rule</mat-icon>
+                  <div>
+                    <strong>Ordering Rules</strong>
+                    <p>Permissions for customer ordering behavior</p>
+                  </div>
+                </div>
+                <div class="toggle-list">
+                  <label class="toggle-row" *ngFor="let toggle of orderToggles">
+                    <div class="toggle-info">
+                      <span class="toggle-icon">{{ toggle.icon }}</span>
+                      <div>
+                        <span class="toggle-name">{{ toggle.label }}</span>
+                        <span class="toggle-desc">{{ toggle.desc }}</span>
+                      </div>
+                    </div>
+                    <mat-slide-toggle [formControlName]="toggle.key" color="primary"></mat-slide-toggle>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Messages -->
+              <div class="toggle-section">
+                <div class="toggle-section-head">
+                  <mat-icon>chat_bubble_outline</mat-icon>
+                  <div>
+                    <strong>Custom Messages</strong>
+                    <p>Text shown to customers at key moments</p>
+                  </div>
+                </div>
+                <div class="message-fields">
+                  <div class="message-field">
+                    <label>👋 Welcome Message</label>
+                    <input class="field-input" formControlName="welcomeMessage" placeholder="Welcome! Browse our menu...">
+                  </div>
+                  <div class="message-field">
+                    <label>🎉 Order Success Message</label>
+                    <input class="field-input" formControlName="successMessage" placeholder="Your order is placed!">
+                  </div>
+                  <div class="message-field">
+                    <label>🛒 Empty Cart Message</label>
+                    <input class="field-input" formControlName="emptyCartMessage" placeholder="Your cart is empty...">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone Preview -->
+            <div class="cx-preview-wrap">
+              <div class="phone-frame">
+                <div class="phone-notch"></div>
+                <div class="phone-screen" [ngStyle]="{'--p': previewSettings().primaryColor || '#E53935'}">
+
+                  <!-- Hero -->
+                  <div class="ps-hero" *ngIf="previewCx().showWelcomeBanner">
+                    <div class="ps-hero-bg"></div>
+                    <div class="ps-hero-info">
+                      <div class="ps-logo"></div>
+                      <div>
+                        <strong>{{ generalForm.get('restaurantName')?.value || 'My Restaurant' }}</strong>
+                        <span *ngIf="previewCx().showRestaurantRating">⭐ 4.8</span>
+                      </div>
+                    </div>
+                    <p class="ps-welcome">{{ previewCx().welcomeMessage || 'Welcome!' }}</p>
+                  </div>
+
+                  <!-- Search -->
+                  <div class="ps-search" *ngIf="previewCx().showSearchBar">
+                    🔍 <span>Search dishes...</span>
+                  </div>
+
+                  <!-- Category Tabs -->
+                  <div class="ps-cats" *ngIf="previewCx().showCategoryTabs">
+                    <span class="ps-cat active" [ngStyle]="{'background': previewSettings().primaryColor || '#E53935'}">All</span>
+                    <span class="ps-cat">Starters</span>
+                    <span class="ps-cat">Mains</span>
+                  </div>
+
+                  <!-- Popular -->
+                  <div class="ps-popular" *ngIf="previewCx().showPopularItems">
+                    <strong>🔥 Popular</strong>
+                    <div class="ps-pop-card">
+                      <div class="ps-pop-img" *ngIf="previewCx().showFoodImages"></div>
+                      <span>Biryani</span>
+                    </div>
+                  </div>
+
+                  <!-- Menu Item -->
+                  <div class="ps-item"
+                    [ngStyle]="{
+                      'border-radius': previewSettings().cardRadius === 'large' ? '18px' : previewSettings().cardRadius === 'small' ? '6px' : '12px'
+                    }">
+                    <div class="ps-item-img" *ngIf="previewCx().showFoodImages">
+                      <span class="ps-veg" *ngIf="previewCx().showDietaryTags">🟢</span>
+                    </div>
+                    <div class="ps-item-body">
+                      <strong>Paneer Tikka</strong>
+                      <span class="ps-price">₹250</span>
+                      <button class="ps-add"
+                        [ngStyle]="{
+                          'background': previewSettings().primaryColor || '#E53935',
+                          'border-radius': previewSettings().buttonStyle === 'pill' ? '20px' : previewSettings().buttonStyle === 'square' ? '3px' : '7px'
+                        }">ADD</button>
+                    </div>
+                  </div>
+
+                </div>
+                <div class="phone-home-bar"></div>
+              </div>
+              <p class="preview-note">Live Preview · Updates as you type</p>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-save" (click)="saveCx()" [disabled]="facade.loading()">
+              <mat-icon>save</mat-icon>
+              Save Customer Experience
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

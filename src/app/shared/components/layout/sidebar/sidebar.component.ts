@@ -1,6 +1,5 @@
 import { Component, Input, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { AuthFacade } from '../../../../core/facades/auth.facade';
@@ -15,117 +14,335 @@ export interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, MatListModule, MatIconModule, RouterModule],
+  imports: [CommonModule, MatIconModule, RouterModule],
   template: `
-    <div class="sidebar-container">
-      <div class="sidebar-brand">
-        <div class="brand-logo">
+    <aside class="sidebar" [class.collapsed]="isCollapsed">
+      <!-- Brand -->
+      <div class="brand">
+        <div class="brand-icon">
           <mat-icon>restaurant</mat-icon>
         </div>
-        <span class="brand-name">QRDine</span>
+        <span class="brand-name" *ngIf="!isCollapsed">QRDine</span>
       </div>
-      <div class="sidebar-menu-title">Main Menu</div>
-      <mat-nav-list class="sidebar-list">
-        <ng-container *ngFor="let item of allowedNavItems()">
-          <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link" class="nav-item">
-            <mat-icon matListItemIcon class="nav-icon">{{ item.icon }}</mat-icon>
-            <div matListItemTitle class="nav-text">{{ item.label }}</div>
-          </a>
-        </ng-container>
-      </mat-nav-list>
-    </div>
+
+      <!-- User Info -->
+      <div class="user-info" *ngIf="!isCollapsed && user() as u">
+        <div class="user-avatar">{{ getInitials(u.displayName || u.email) }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ u.displayName || 'User' }}</span>
+          <span class="user-role">{{ u.role }}</span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="nav-section">
+        <p class="nav-label" *ngIf="!isCollapsed">MAIN MENU</p>
+        <a
+          *ngFor="let item of allowedNavItems()"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-item"
+          [class.collapsed-item]="isCollapsed"
+          [title]="isCollapsed ? item.label : ''">
+          <div class="nav-icon-wrap">
+            <mat-icon>{{ item.icon }}</mat-icon>
+          </div>
+          <span class="nav-label-text" *ngIf="!isCollapsed">{{ item.label }}</span>
+          <div class="active-indicator"></div>
+        </a>
+      </nav>
+
+      <!-- Bottom: Logout -->
+      <div class="sidebar-footer">
+        <a class="nav-item logout-item" [class.collapsed-item]="isCollapsed" (click)="logout()" style="cursor:pointer">
+          <div class="nav-icon-wrap">
+            <mat-icon>logout</mat-icon>
+          </div>
+          <span class="nav-label-text" *ngIf="!isCollapsed">Logout</span>
+        </a>
+      </div>
+    </aside>
   `,
   styles: [`
-    .sidebar-container {
+    :host {
+      display: block;
       height: 100%;
-      background: #ffffff;
-      border-right: 1px solid var(--surface-border);
+    }
+
+    .sidebar {
+      width: 240px;
+      height: 100%;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
       display: flex;
       flex-direction: column;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
     }
-    .sidebar-brand {
+
+    .sidebar.collapsed {
+      width: 68px;
+    }
+
+    /* Brand */
+    .brand {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--surface-border);
+      padding: 1.25rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      position: relative;
     }
-    .brand-logo {
+
+    .brand-icon {
       width: 40px;
       height: 40px;
-      background: var(--brand-primary);
-      color: #fff;
-      border-radius: 8px;
+      min-width: 40px;
+      background: linear-gradient(135deg, #4361ee, #7c3aed);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 10px rgba(67, 97, 238, 0.2);
+      color: white;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
     }
+
+    .brand-icon mat-icon {
+      font-size: 1.3rem;
+      width: 1.3rem;
+      height: 1.3rem;
+    }
+
     .brand-name {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 800;
-      color: var(--text-primary);
+      color: #fff;
+      letter-spacing: -0.5px;
+      flex: 1;
     }
-    .sidebar-menu-title {
-      padding: 1.5rem 1.5rem 0.5rem;
-      font-size: 0.75rem;
-      text-transform: uppercase;
+
+    .collapse-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .collapse-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+
+    .expand-btn {
+      margin: 0 auto;
+    }
+
+    /* User Info */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      margin: 0.75rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4361ee, #a855f7);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 1px;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
     }
-    .sidebar-list {
-      padding: 0.5rem 1rem;
+
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
+
+    .user-name {
+      color: #f1f5f9;
+      font-weight: 600;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.72rem;
+      margin-top: 1px;
+    }
+
+    /* Navigation */
+    .nav-section {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      overflow-y: auto;
+    }
+
+    .nav-label {
+      color: rgba(255,255,255,0.3);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 0.75rem 0.5rem 0.4rem;
+      margin: 0;
+    }
+
     .nav-item {
-      border-radius: 8px !important;
-      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 10px;
+      text-decoration: none;
+      color: rgba(255,255,255,0.55);
+      transition: all 0.2s ease;
+      margin-bottom: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .nav-item.active {
+      background: rgba(67, 97, 238, 0.2);
+      color: #818cf8;
+    }
+
+    .nav-item.active .nav-icon-wrap {
+      background: linear-gradient(135deg, #4361ee, #7c3aed);
+      color: white;
+      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+    }
+
+    .active-indicator {
+      display: none;
+    }
+
+    .nav-item.active .active-indicator {
+      display: block;
+      position: absolute;
+      right: -0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: #818cf8;
+      border-radius: 3px 0 0 3px;
+    }
+
+    .nav-icon-wrap {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s ease;
     }
-    .nav-icon {
-      color: var(--text-secondary);
+
+    .nav-icon-wrap mat-icon {
+      font-size: 1.15rem;
+      width: 1.15rem;
+      height: 1.15rem;
     }
-    .nav-text {
-      color: var(--text-secondary);
+
+    .nav-label-text {
+      font-size: 0.875rem;
       font-weight: 500;
+      white-space: nowrap;
     }
-    .nav-item:hover {
-      background: var(--surface-hover);
+
+    .collapsed-item {
+      justify-content: center;
+      padding: 0.65rem;
     }
-    .active-link {
-      background: rgba(67, 97, 238, 0.08) !important;
-      border-left: 4px solid var(--brand-primary);
+
+    /* Footer */
+    .sidebar-footer {
+      padding: 0.75rem;
+      border-top: 1px solid rgba(255,255,255,0.07);
     }
-    .active-link .nav-icon {
-      color: var(--brand-primary);
+
+    .logout-item {
+      color: rgba(255, 100, 100, 0.6);
     }
-    .active-link .nav-text {
-      color: var(--brand-primary);
-      font-weight: 600;
+
+    .logout-item:hover {
+      background: rgba(255, 100, 100, 0.08);
+      color: #f87171;
+    }
+
+    .logout-item .nav-icon-wrap {
+      background: rgba(255, 100, 100, 0.08);
+    }
+
+    /* Scrollbar styling */
+    .nav-section::-webkit-scrollbar {
+      width: 4px;
+    }
+    .nav-section::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .nav-section::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
     }
   `]
 })
 export class SidebarComponent {
   private authFacade = inject(AuthFacade);
   user = this.authFacade.currentUser;
+  @Input() isCollapsed = false;
 
-  // Master list of all possible navigation items
   private navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard', roles: ['Super Admin'] },
+    { label: 'Dashboard', icon: 'grid_view', route: '/admin/dashboard', roles: ['Super Admin'] },
     { label: 'Restaurants', icon: 'store', route: '/admin/restaurants', roles: ['Super Admin'] },
-    { label: 'Dashboard', icon: 'dashboard', route: '/owner/dashboard', roles: ['Owner', 'Manager'] },
-    { label: 'Menu Management', icon: 'restaurant_menu', route: '/owner/menu', roles: ['Owner', 'Manager'] },
+    { label: 'Dashboard', icon: 'grid_view', route: '/owner/dashboard', roles: ['Owner', 'Manager'] },
+    { label: 'Menu Management', icon: 'menu_book', route: '/owner/menu', roles: ['Owner', 'Manager'] },
     { label: 'Table Management', icon: 'table_bar', route: '/owner/tables', roles: ['Owner', 'Manager'] },
-    { label: 'Staff Management', icon: 'people', route: '/owner/staff', roles: ['Owner'] },
+    { label: 'Staff Management', icon: 'group', route: '/owner/staff', roles: ['Owner', 'Manager'] },
+    { label: 'Settings', icon: 'tune', route: '/owner/settings', roles: ['Owner', 'Manager'] },
     { label: 'Active Tables', icon: 'table_restaurant', route: '/staff/tables', roles: ['Waiter', 'Manager'] },
     { label: 'Kitchen Orders', icon: 'receipt', route: '/staff/kitchen', roles: ['Kitchen', 'Manager'] },
     { label: 'Checkout/Billing', icon: 'point_of_sale', route: '/staff/billing', roles: ['Cashier', 'Manager'] }
   ];
 
-  // Dynamically filter items based on current user's role
   allowedNavItems = computed(() => {
     const currentUser = this.user();
     if (!currentUser) return [];
     return this.navItems.filter(item => item.roles.includes(currentUser.role));
   });
+
+
+  getInitials(name: string): string {
+    return name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U';
+  }
+
+  logout() {
+    this.authFacade.logout();
+  }
 }

@@ -98,10 +98,27 @@ export class AuthFacade {
         const newSettings: Settings = {
           settingsId: 'set_' + uid,
           restaurantId,
-          theme: 'system',
-          taxIncludedInPrice: false,
-          allowGuestCheckout: true,
-          requireTableNumber: true
+          restaurantName: restaurantName,
+          businessHours: {
+            monday: { open: '09:00', close: '22:00', enabled: true },
+            tuesday: { open: '09:00', close: '22:00', enabled: true },
+            wednesday: { open: '09:00', close: '22:00', enabled: true },
+            thursday: { open: '09:00', close: '22:00', enabled: true },
+            friday: { open: '09:00', close: '22:00', enabled: true },
+            saturday: { open: '09:00', close: '22:00', enabled: true },
+            sunday: { open: '09:00', close: '22:00', enabled: true }
+          },
+          gstPercentage: 0,
+          serviceChargePercentage: 0,
+          currency: 'INR',
+          primaryColor: '#E53935',
+          secondaryColor: '#424242',
+          accentColor: '#FFC107',
+          buttonStyle: 'rounded',
+          cardRadius: 'medium',
+          themeMode: 'Default',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         };
 
         return from(Promise.all([

@@ -5,7 +5,9 @@ import { CustomerSessionRepository } from '../repositories/customer-session.repo
 import { OrderRepository } from '../repositories/order.repository';
 import { MenuCategoryRepository } from '../repositories/menu-category.repository';
 import { MenuItemRepository } from '../repositories/menu-item.repository';
-import { Restaurant, Table, CustomerSession, MenuCategory, MenuItem, CartItem, Order } from '../models';
+import { SettingsRepository } from '../repositories/settings.repository';
+import { CustomerExperienceRepository } from '../repositories/customer-experience.repository';
+import { Restaurant, Table, CustomerSession, MenuCategory, MenuItem, CartItem, Order, Settings, CustomerExperience } from '../models';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
 
@@ -22,6 +24,9 @@ export class CustomerFacade {
   cartItems = signal<CartItem[]>([]);
   
   orders = signal<Order[]>([]);
+  
+  settings = signal<Settings | null>(null);
+  experience = signal<CustomerExperience | null>(null);
   
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
@@ -45,7 +50,9 @@ export class CustomerFacade {
     private sessionRepo: CustomerSessionRepository,
     private categoryRepo: MenuCategoryRepository,
     private itemRepo: MenuItemRepository,
-    private orderRepo: OrderRepository
+    private orderRepo: OrderRepository,
+    private settingsRepo: SettingsRepository,
+    private cxRepo: CustomerExperienceRepository
   ) {
     this.restoreCart();
   }
@@ -81,8 +88,11 @@ export class CustomerFacade {
         currentSessionId = await this.createNewSession(restaurantId, tableId);
       }
 
-      // 4. Load Menu
-      await this.loadMenu(restaurantId);
+      // 4. Load Menu and Settings
+      await Promise.all([
+        this.loadMenu(restaurantId),
+        this.loadSettingsAndExperience(restaurantId)
+      ]);
 
       // 5. Listen to Session Orders
       this.listenToOrders(currentSessionId);
@@ -148,6 +158,16 @@ export class CustomerFacade {
 
     this.categories.set(cats);
     this.items.set(availableItems);
+  }
+
+  private async loadSettingsAndExperience(restaurantId: string) {
+    const [settings, cx] = await Promise.all([
+      firstValueFrom(this.settingsRepo.getByRestaurant(restaurantId)),
+      firstValueFrom(this.cxRepo.getByRestaurant(restaurantId))
+    ]);
+    
+    this.settings.set(settings);
+    this.experience.set(cx);
   }
 
   // Cart Management

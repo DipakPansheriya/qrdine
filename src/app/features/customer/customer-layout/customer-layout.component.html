@@ -1,4 +1,11 @@
-<div class="customer-layout">
+<div class="customer-layout"
+     [ngStyle]="{
+       '--primary-color': facade.settings()?.primaryColor || '#E53935',
+       '--secondary-color': facade.settings()?.secondaryColor || '#424242',
+       '--accent-color': facade.settings()?.accentColor || '#FFC107',
+       '--btn-radius': facade.settings()?.buttonStyle === 'pill' ? '50px' : (facade.settings()?.buttonStyle === 'square' ? '4px' : '12px'),
+       '--card-radius': facade.settings()?.cardRadius === 'large' ? '24px' : (facade.settings()?.cardRadius === 'small' ? '8px' : '16px')
+     }">
   
   <!-- Premium Skeleton Loading State -->
   <div class="skeleton-state" *ngIf="facade.loading() && !facade.restaurant()">
@@ -31,26 +38,26 @@
     
     <!-- Premium Hero Header -->
     <header class="premium-hero">
-      <div class="cover-image" [ngStyle]="{'background-image': 'url(' + (facade.restaurant()?.coverImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80') + ')'}">
+      <div class="cover-image" [ngStyle]="{'background-image': 'url(' + (facade.settings()?.coverImage || facade.restaurant()?.coverImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80') + ')'}">
         <div class="overlay"></div>
       </div>
       
       <div class="hero-content">
         <div class="logo-wrapper">
-          <img *ngIf="facade.restaurant()?.logo" [src]="facade.restaurant()?.logo" alt="Logo" class="restaurant-logo">
-          <div class="logo-placeholder" *ngIf="!facade.restaurant()?.logo">
+          <img *ngIf="facade.settings()?.logo || facade.restaurant()?.logo" [src]="facade.settings()?.logo || facade.restaurant()?.logo" alt="Logo" class="restaurant-logo">
+          <div class="logo-placeholder" *ngIf="!(facade.settings()?.logo || facade.restaurant()?.logo)">
             <mat-icon>restaurant</mat-icon>
           </div>
         </div>
 
         <div class="restaurant-details">
-          <h1>{{ facade.restaurant()?.name }}</h1>
+          <h1>{{ facade.settings()?.restaurantName || facade.restaurant()?.name }}</h1>
           <div class="meta-tags">
             <span class="tag rating">⭐ 4.8</span>
             <span class="tag open">🕒 Open Now</span>
             <span class="tag table-tag">🍽️ Table {{ facade.table()?.tableNumber }}</span>
           </div>
-          <p class="welcome-msg">🔥 Fresh Food. Fast Service. We're happy to serve you today 👋</p>
+          <p class="welcome-msg" *ngIf="facade.experience()?.welcomeMessage">{{ facade.experience()?.welcomeMessage }}</p>
         </div>
       </div>
     </header>

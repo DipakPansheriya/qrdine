@@ -1,0 +1,68 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Staff Member' : 'Add New Staff' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="staffForm" class="dialog-form">
+    
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Full Name</mat-label>
+        <input matInput formControlName="name" placeholder="John Doe">
+        <mat-error *ngIf="staffForm.get('name')?.hasError('required')">Name is required</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row two-col">
+      <mat-form-field appearance="outline">
+        <mat-label>Email Address</mat-label>
+        <input matInput formControlName="email" type="email" placeholder="john@example.com">
+        <mat-error *ngIf="staffForm.get('email')?.hasError('required')">Email is required</mat-error>
+        <mat-error *ngIf="staffForm.get('email')?.hasError('email')">Invalid email format</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Phone Number</mat-label>
+        <input matInput formControlName="phone" placeholder="+1 234 567 8900">
+      </mat-form-field>
+    </div>
+
+    <div class="form-row two-col">
+      <mat-form-field appearance="outline">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role">
+          <mat-option *ngFor="let role of roles" [value]="role">
+            {{role}}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="staffForm.get('role')?.hasError('required')">Role is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option *ngFor="let status of statuses" [value]="status">
+            {{status}}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="staffForm.get('status')?.hasError('required')">Status is required</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row" *ngIf="!isEditMode">
+      <mat-form-field appearance="outline">
+        <mat-label>Temporary Password</mat-label>
+        <input matInput formControlName="password" type="password">
+        <mat-hint>Must be at least 6 characters. User can change later.</mat-hint>
+        <mat-error *ngIf="staffForm.get('password')?.hasError('required')">Password is required</mat-error>
+        <mat-error *ngIf="staffForm.get('password')?.hasError('minlength')">Must be at least 6 characters</mat-error>
+      </mat-form-field>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-flat-button color="primary" [disabled]="staffForm.invalid" (click)="onSubmit()">
+    {{ isEditMode ? 'Update Staff' : 'Create Staff' }}
+  </button>
+</mat-dialog-actions>

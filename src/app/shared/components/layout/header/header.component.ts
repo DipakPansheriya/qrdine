@@ -1,130 +1,296 @@
 import { Component, inject, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatBadgeModule } from '@angular/material/badge';
 import { AuthFacade } from '../../../../core/facades/auth.facade';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule, MatDividerModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatMenuModule, MatDividerModule, MatBadgeModule],
   template: `
-    <mat-toolbar color="primary" class="dashboard-header">
-      <button mat-icon-button (click)="onToggleSidebar()">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <div class="search-bar">
-        <mat-icon class="search-icon">search</mat-icon>
-        <input type="text" placeholder="Search here...">
-      </div>
-      
-      <span class="spacer"></span>
-      
-      <button mat-icon-button class="notification-btn">
-        <mat-icon>notifications_none</mat-icon>
-      </button>
-      
-      <button mat-button [matMenuTriggerFor]="userMenu" class="user-chip">
-        <span class="greeting" *ngIf="user() as u">Hello, {{ u.displayName || 'User' }}</span>
-        <div class="avatar-circle">
-          <mat-icon>person</mat-icon>
+    <header class="app-header">
+      <!-- Left: Menu Toggle -->
+      <div class="header-left">
+        <button class="icon-btn toggle-btn" (click)="onToggleSidebar()">
+          <mat-icon>menu</mat-icon>
+        </button>
+
+        <!-- Search bar -->
+        <div class="search-wrap">
+          <mat-icon class="s-icon">search</mat-icon>
+          <input class="search-input" type="text" placeholder="Search anything...">
+          <span class="kbd-hint">⌘K</span>
         </div>
-      </button>
-      
-      <mat-menu #userMenu="matMenu">
-        <button mat-menu-item>
-          <mat-icon>person</mat-icon>
-          <span>Profile Settings</span>
+      </div>
+
+      <!-- Right: Actions -->
+      <div class="header-right">
+        <!-- Notification -->
+        <button class="icon-btn notif-btn" matBadge="3" matBadgeColor="warn" matBadgeSize="small">
+          <mat-icon>notifications_outlined</mat-icon>
         </button>
-        <mat-divider></mat-divider>
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>exit_to_app</mat-icon>
-          <span>Logout</span>
+
+        <!-- Divider -->
+        <div class="v-divider"></div>
+
+        <!-- User menu -->
+        <button class="user-btn" [matMenuTriggerFor]="userMenu">
+          <div class="user-avatar" *ngIf="user() as u">
+            {{ getInitials(u.displayName || u.email) }}
+          </div>
+          <div class="user-text" *ngIf="user() as u">
+            <span class="user-name">{{ u.displayName || 'User' }}</span>
+            <span class="user-role">{{ u.role }}</span>
+          </div>
+          <mat-icon class="chevron">expand_more</mat-icon>
         </button>
-      </mat-menu>
-    </mat-toolbar>
+
+        <mat-menu #userMenu="matMenu" class="user-dropdown">
+          <div class="menu-header" *ngIf="user() as u">
+            <div class="menu-avatar">{{ getInitials(u.displayName || u.email) }}</div>
+            <div>
+              <p class="menu-name">{{ u.displayName || 'User' }}</p>
+              <p class="menu-email">{{ u.email }}</p>
+            </div>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item>
+            <mat-icon>person_outline</mat-icon>
+            <span>Profile</span>
+          </button>
+          <button mat-menu-item>
+            <mat-icon>settings_outlined</mat-icon>
+            <span>Account Settings</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item class="logout-btn" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Sign Out</span>
+          </button>
+        </mat-menu>
+      </div>
+    </header>
   `,
   styles: [`
-    .dashboard-header {
-      background: var(--surface-ground);
-      color: var(--text-primary);
-      z-index: 10;
-      padding: 0 1.5rem;
-      border-bottom: 1px solid var(--surface-border);
-    }
-    .search-bar {
+    .app-header {
+      height: 64px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
       background: #ffffff;
-      border-radius: 20px;
-      padding: 0.25rem 1rem;
-      margin-left: 1rem;
-      width: 300px;
-      max-width: 100%;
-      border: 1px solid var(--surface-border);
+      border-bottom: 1px solid #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .search-icon {
-      color: var(--text-muted);
-      font-size: 1.25rem;
-      width: 1.25rem;
-      height: 1.25rem;
-      margin-right: 0.5rem;
+
+    /* Left */
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
     }
-    .search-bar input {
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .icon-btn:hover {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .toggle-btn {
+      background: transparent;
+    }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      flex: 1;
+      max-width: 380px;
+      transition: all 0.2s;
+    }
+
+    .search-wrap:focus-within {
+      border-color: #4361ee;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.08);
+    }
+
+    .s-icon {
+      color: #94a3b8;
+      font-size: 1.1rem;
+      width: 1.1rem;
+      height: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
       border: none;
       outline: none;
       background: transparent;
-      width: 100%;
-      color: var(--text-primary);
+      font-size: 0.875rem;
+      color: #334155;
     }
-    .spacer {
-      flex: 1 1 auto;
+
+    .search-input::placeholder {
+      color: #94a3b8;
     }
-    .notification-btn {
-      color: var(--brand-accent);
-      background: rgba(232, 121, 149, 0.1);
-      margin-right: 1rem;
+
+    .kbd-hint {
+      font-size: 0.7rem;
+      background: #e2e8f0;
+      color: #64748b;
+      padding: 2px 6px;
+      border-radius: 5px;
+      flex-shrink: 0;
     }
-    .user-chip {
-      background: var(--brand-primary);
-      color: #ffffff;
-      border-radius: 30px;
-      padding: 4px 4px 4px 16px;
+
+    /* Right */
+    .header-right {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      height: 40px;
     }
-    .greeting {
-      font-weight: 500;
-      font-size: 0.875rem;
+
+    .notif-btn {
+      position: relative;
+      color: #64748b;
     }
-    .avatar-circle {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
+
+    .v-divider {
+      width: 1px;
+      height: 28px;
+      background: #e2e8f0;
+    }
+
+    .user-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: transparent;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.4rem 0.75rem 0.4rem 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .user-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #4361ee, #7c3aed);
+      color: white;
+      font-weight: 700;
+      font-size: 0.8rem;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .avatar-circle mat-icon {
-      font-size: 1.25rem;
-      width: 1.25rem;
-      height: 1.25rem;
+
+    .user-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      line-height: 1.2;
     }
+
+    .user-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .user-role {
+      font-size: 0.68rem;
+      color: #94a3b8;
+    }
+
+    .chevron {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+      color: #94a3b8;
+    }
+
+    /* Dropdown menu */
+    .menu-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+    }
+
+    .menu-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4361ee, #7c3aed);
+      color: white;
+      font-weight: 700;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .menu-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .menu-email {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin: 2px 0 0;
+    }
+
+    .logout-btn {
+      color: #ef4444 !important;
+    }
+
     @media (max-width: 768px) {
-      .search-bar {
+      .search-wrap {
         display: none;
       }
-      .greeting {
+      .user-text {
         display: none;
       }
-      .user-chip {
-        padding: 4px;
+      .kbd-hint {
+        display: none;
       }
     }
   `]
@@ -141,5 +307,9 @@ export class HeaderComponent {
 
   logout() {
     this.authFacade.logout();
+  }
+
+  getInitials(name: string): string {
+    return name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U';
   }
 }
