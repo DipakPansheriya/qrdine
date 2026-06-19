@@ -53,7 +53,8 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['Owner', 'Manager'] },
     children: [
-      { path: '', redirectTo: 'menu', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./features/owner/dashboard/owner-dashboard.component').then(m => m.OwnerDashboardComponent) },
       { path: 'menu', loadComponent: () => import('./features/owner/menu/menu-layout/menu-layout.component').then(m => m.MenuLayoutComponent) },
       { path: 'tables', loadComponent: () => import('./features/owner/tables/table-layout/table-layout.component').then(m => m.TableLayoutComponent) },
       { path: 'staff', loadComponent: () => import('./features/owner/staff/staff-list/staff-list.component').then(m => m.StaffListComponent) },

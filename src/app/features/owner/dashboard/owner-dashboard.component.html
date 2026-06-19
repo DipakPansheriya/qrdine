@@ -1,0 +1,332 @@
+<div class="owner-dashboard">
+
+  <!-- ── Welcome Banner ── -->
+  <div class="welcome-banner">
+    <div class="welcome-left">
+      <div class="greeting-row">
+        <span class="greeting-emoji">{{ greeting.emoji }}</span>
+        <div>
+          <h1 class="greeting-text">{{ greeting.text }}, {{ ownerFirstName }}</h1>
+          <p class="restaurant-subtitle">
+            <span class="restaurant-name">{{ facade.settings()?.restaurantName || 'Your Restaurant' }}</span>
+            <span class="dot-sep">·</span>
+            <span class="date-text">{{ todayDate }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <button class="qa-btn primary" routerLink="/owner/menu">
+        <mat-icon>add_circle</mat-icon> Add Item
+      </button>
+      <button class="qa-btn" routerLink="/owner/tables">
+        <mat-icon>table_bar</mat-icon> New Table
+      </button>
+      <button class="qa-btn" routerLink="/owner/staff">
+        <mat-icon>person_add</mat-icon> Add Staff
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Onboarding Checklist (only if incomplete) ── -->
+  <div class="onboarding-card" *ngIf="!facade.onboardingChecklist().allDone">
+    <div class="onboarding-header">
+      <div class="onboarding-title">
+        <mat-icon>rocket_launch</mat-icon>
+        <div>
+          <strong>Get Your Restaurant Ready</strong>
+          <p>Complete these steps to go live</p>
+        </div>
+      </div>
+      <div class="onboarding-progress">
+        <span>{{ facade.onboardingChecklist().percent }}% Complete</span>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" [style.width.%]="facade.onboardingChecklist().percent"></div>
+        </div>
+      </div>
+    </div>
+    <div class="checklist-steps">
+      <a class="checklist-step" *ngFor="let step of facade.onboardingChecklist().steps" [routerLink]="step.route" [class.done]="step.done">
+        <div class="step-check">
+          <mat-icon>{{ step.done ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+        </div>
+        <span>{{ step.label }}</span>
+        <mat-icon class="step-arrow" *ngIf="!step.done">chevron_right</mat-icon>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ── -->
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let card of kpiCards">
+      <div class="kpi-skeleton" *ngIf="facade.loading()"></div>
+      <ng-container *ngIf="!facade.loading()">
+        <div class="kpi-icon-wrap" [style.background]="card.bg">
+          <mat-icon [style.color]="card.color">{{ card.icon }}</mat-icon>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">{{ card.label }}</span>
+          <span class="kpi-value">{{ card.value }}</span>
+        </div>
+        <div class="kpi-trend" [class.up]="card.trend >= 0" [class.down]="card.trend < 0">
+          <mat-icon>{{ card.trend >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+          <span>{{ card.trendLabel }}</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ── Main Grid ── -->
+  <div class="main-grid">
+
+    <!-- Left Column -->
+    <div class="col-left">
+
+      <!-- Revenue Chart -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <mat-icon>bar_chart</mat-icon>
+            <span>Revenue — Last 7 Days</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-bars">
+            <div class="chart-bar-group" *ngFor="let point of facade.last7Days()">
+              <div class="chart-bar-container">
+                <div class="chart-bar-tooltip">₹{{ point.value | number:'1.0-0' }}</div>
+                <div class="chart-bar"
+                  [style.height.%]="getBarHeight(point.value)"
+                  [class.today]="point.label === todayShortDay">
+                </div>
+              </div>
+              <span class="chart-bar-label">{{ point.label }}</span>
+            </div>
+          </div>
+          <div class="chart-empty" *ngIf="noRevenue">No orders this week yet</div>
+        </div>
+      </div>
+
+      <!-- Active Tables -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <mat-icon>table_restaurant</mat-icon>
+            <span>Active Tables</span>
+          </div>
+          <a class="widget-link" routerLink="/owner/tables">Manage →</a>
+        </div>
+        <div class="tables-grid" *ngIf="facade.tables().length > 0; else noTables">
+          <div class="table-chip" *ngFor="let t of facade.tables()"
+            [class]="'status-' + (t.status || 'AVAILABLE').toLowerCase()">
+            <mat-icon>{{ getTableIcon(t.status) }}</mat-icon>
+            <span class="table-num">{{ t.tableNumber }}</span>
+            <span class="table-status">{{ t.status || 'Available' }}</span>
+          </div>
+        </div>
+        <ng-template #noTables>
+          <div class="empty-state">
+            <mat-icon>table_bar</mat-icon>
+            <p>No tables yet. <a routerLink="/owner/tables">Create one</a></p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <mat-icon>receipt_long</mat-icon>
+            <span>Recent Orders</span>
+          </div>
+        </div>
+        <div class="orders-table" *ngIf="facade.recentOrders().length > 0; else noOrders">
+          <div class="orders-head">
+            <span>Order</span>
+            <span>Table</span>
+            <span>Amount</span>
+            <span>Status</span>
+            <span>Time</span>
+          </div>
+          <div class="order-row" *ngFor="let order of facade.recentOrders()">
+            <span class="order-num">#{{ order.orderNumber || (order.orderId + '').slice(-5) }}</span>
+            <span class="order-table">{{ getTableLabel(order.tableId) }}</span>
+            <span class="order-amount">₹{{ order.grandTotal | number:'1.0-0' }}</span>
+            <span class="order-status" [class]="'status-' + (order.status || 'pending').toLowerCase()">
+              {{ order.status }}
+            </span>
+            <span class="order-time">{{ formatTime(order.createdAt) }}</span>
+          </div>
+        </div>
+        <ng-template #noOrders>
+          <div class="empty-state">
+            <mat-icon>receipt_long</mat-icon>
+            <p>No orders yet today</p>
+          </div>
+        </ng-template>
+      </div>
+
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-right">
+
+      <!-- Restaurant Status -->
+      <div class="widget status-widget">
+        <div class="restaurant-status-header">
+          <div class="restaurant-avatar">
+            {{ getInitials(facade.settings()?.restaurantName || 'R') }}
+          </div>
+          <div>
+            <strong>{{ facade.settings()?.restaurantName || 'My Restaurant' }}</strong>
+            <p>{{ facade.settings()?.phone || 'No phone set' }}</p>
+          </div>
+        </div>
+        <div class="status-row">
+          <span class="status-indicator open" *ngIf="isOpen">
+            <span class="pulse"></span> Open Now
+          </span>
+          <span class="status-indicator closed" *ngIf="!isOpen">
+            <mat-icon>do_not_disturb_on</mat-icon> Closed
+          </span>
+          <span class="operating-hours">{{ todayHours }}</span>
+        </div>
+        <a class="btn-manage" routerLink="/owner/settings">
+          <mat-icon>tune</mat-icon> Manage Settings
+        </a>
+      </div>
+
+      <!-- Staff Overview -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <mat-icon>group</mat-icon>
+            <span>Staff Overview</span>
+          </div>
+          <a class="widget-link" routerLink="/owner/staff">Manage →</a>
+        </div>
+        <div class="staff-overview">
+          <div class="staff-total">
+            <span class="staff-count">{{ facade.staffBreakdown().total }}</span>
+            <span>Total Staff</span>
+          </div>
+          <div class="staff-breakdown">
+            <div class="staff-role-row" *ngFor="let r of staffRoles">
+              <span class="role-dot" [style.background]="r.color"></span>
+              <span class="role-label">{{ r.label }}</span>
+              <span class="role-count">{{ r.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR Status -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <mat-icon>qr_code_2</mat-icon>
+            <span>QR Codes</span>
+          </div>
+          <a class="widget-link" routerLink="/owner/tables">Manage →</a>
+        </div>
+        <div class="qr-stats">
+          <div class="qr-stat">
+            <span class="qr-stat-value">{{ facade.qrStatus().total }}</span>
+            <span class="qr-stat-label">Total Tables</span>
+          </div>
+          <div class="qr-stat generated">
+            <mat-icon>check_circle</mat-icon>
+            <span class="qr-stat-value">{{ facade.qrStatus().generated }}</span>
+            <span class="qr-stat-label">QR Ready</span>
+          </div>
+          <div class="qr-stat missing" *ngIf="facade.qrStatus().missing > 0">
+            <mat-icon>warning</mat-icon>
+            <span class="qr-stat-value">{{ facade.qrStatus().missing }}</span>
+            <span class="qr-stat-label">Missing QR</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Menu Items -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <mat-icon>local_fire_department</mat-icon>
+            <span>Popular Items</span>
+          </div>
+          <a class="widget-link" routerLink="/owner/menu">Manage →</a>
+        </div>
+        <div class="popular-items" *ngIf="facade.topMenuItems().length > 0; else noItems">
+          <div class="popular-item" *ngFor="let item of facade.topMenuItems(); let i = index">
+            <span class="item-rank" [class]="'rank-' + (i + 1)">{{ i + 1 }}</span>
+            <div class="item-img" [style.background]="item.image ? 'url(' + item.image + ') center/cover' : 'linear-gradient(135deg,#f1f5f9,#e2e8f0)'">
+              <mat-icon *ngIf="!item.image">restaurant_menu</mat-icon>
+            </div>
+            <div class="item-info">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-orders">{{ item.orderCount }} orders</span>
+            </div>
+            <span class="item-revenue">₹{{ item.revenue | number:'1.0-0' }}</span>
+          </div>
+        </div>
+        <ng-template #noItems>
+          <div class="empty-state">
+            <mat-icon>restaurant_menu</mat-icon>
+            <p>No orders yet to show popular items</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Customer Experience Snapshot -->
+      <div class="widget cx-widget">
+        <div class="widget-header">
+          <div class="widget-title">
+            <mat-icon>phone_iphone</mat-icon>
+            <span>Customer Experience</span>
+          </div>
+          <a class="widget-link" routerLink="/owner/settings">Customize →</a>
+        </div>
+        <div class="cx-settings" *ngIf="facade.experience()">
+          <div class="cx-row">
+            <span>Welcome Message</span>
+            <span class="cx-val">{{ facade.experience()?.welcomeMessage || '—' }}</span>
+          </div>
+          <div class="cx-row">
+            <span>Ratings Visible</span>
+            <span class="cx-badge" [class.on]="facade.experience()?.showRestaurantRating">
+              {{ facade.experience()?.showRestaurantRating ? 'On' : 'Off' }}
+            </span>
+          </div>
+          <div class="cx-row">
+            <span>Food Images</span>
+            <span class="cx-badge" [class.on]="facade.experience()?.showFoodImages">
+              {{ facade.experience()?.showFoodImages ? 'On' : 'Off' }}
+            </span>
+          </div>
+          <div class="cx-row">
+            <span>Search Bar</span>
+            <span class="cx-badge" [class.on]="facade.experience()?.showSearchBar">
+              {{ facade.experience()?.showSearchBar ? 'On' : 'Off' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Quick Nav Cards ── -->
+  <div class="quick-nav-grid">
+    <a class="quick-nav-card" *ngFor="let nav of quickNavCards" [routerLink]="nav.route">
+      <div class="qn-icon" [style.background]="nav.bg">
+        <mat-icon [style.color]="nav.color">{{ nav.icon }}</mat-icon>
+      </div>
+      <div class="qn-info">
+        <strong>{{ nav.label }}</strong>
+        <p>{{ nav.desc }}</p>
+      </div>
+      <mat-icon class="qn-arrow">arrow_forward</mat-icon>
+    </a>
+  </div>
+
+</div>
