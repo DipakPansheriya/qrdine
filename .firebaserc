@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "qrdine-efd5f"
+  },
+  "targets": {
+    "qrdine-efd5f": {
+      "hosting": {
+        "orderbyqr": [
+          "orderbyqr"
+        ]
+      }
+    }
+  }
+}
