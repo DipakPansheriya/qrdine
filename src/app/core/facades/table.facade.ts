@@ -14,7 +14,7 @@ export class TableFacade {
   constructor(
     private tableRepo: TableRepository,
     private authFacade: AuthFacade
-  ) {}
+  ) { }
 
   async loadTables() {
     this.loading.set(true);
@@ -54,7 +54,7 @@ export class TableFacade {
       ...table,
       updatedAt: serverTimestamp()
     };
-    
+
     await firstValueFrom(this.tableRepo.update(id, updateData));
     await this.loadTables();
   }
@@ -70,7 +70,7 @@ export class TableFacade {
     if (!user) return;
 
     // The current environment url would ideally come from environment.ts, but we use hardcoded as requested
-    const qrCodeUrl = `http://localhost:4200/menu/${table.restaurantId}/${table.id}`;
+    const qrCodeUrl = `${window.location.origin}/menu/${table.restaurantId}/${table.id}`;
 
     const updateData: Partial<Table> = {
       qrCodeUrl,
