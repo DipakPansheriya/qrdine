@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>{{ data.isEditing ? 'Edit Table' : 'Create Table' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="tableForm" class="dialog-form">
+    
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Table Number / Name</mat-label>
+      <input matInput formControlName="tableNumber" placeholder="e.g. T-01 or Window 1">
+      <mat-error *ngIf="tableForm.get('tableNumber')?.hasError('required')">Table number is required.</mat-error>
+      <mat-error *ngIf="tableForm.get('tableNumber')?.hasError('notUnique')">This table number already exists.</mat-error>
+    </mat-form-field>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Capacity (Persons)</mat-label>
+        <input matInput type="number" formControlName="capacity" min="1">
+        <mat-error *ngIf="tableForm.get('capacity')?.hasError('required')">Capacity is required.</mat-error>
+        <mat-error *ngIf="tableForm.get('capacity')?.hasError('min')">Capacity must be at least 1.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option *ngFor="let s of statuses" [value]="s.value">{{ s.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close [disabled]="isSubmitting">Cancel</button>
+  <button mat-flat-button color="primary" [disabled]="tableForm.invalid || isSubmitting" (click)="onSubmit()">
+    {{ isSubmitting ? 'Saving...' : 'Save' }}
+  </button>
+</mat-dialog-actions>

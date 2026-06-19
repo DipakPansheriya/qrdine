@@ -54,7 +54,8 @@ export const routes: Routes = [
     data: { roles: ['Owner', 'Manager'] },
     children: [
       { path: '', redirectTo: 'menu', pathMatch: 'full' },
-      { path: 'menu', loadComponent: () => import('./features/owner/menu/menu-layout/menu-layout.component').then(m => m.MenuLayoutComponent) }
+      { path: 'menu', loadComponent: () => import('./features/owner/menu/menu-layout/menu-layout.component').then(m => m.MenuLayoutComponent) },
+      { path: 'tables', loadComponent: () => import('./features/owner/tables/table-layout/table-layout.component').then(m => m.TableLayoutComponent) }
     ]
   },
   {

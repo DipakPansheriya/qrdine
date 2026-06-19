@@ -40,13 +40,17 @@ export interface Staff {
 }
 
 export interface Table {
-  tableId: string;
+  id?: string;
   restaurantId: string;
   tableNumber: string;
   capacity: number;
-  status: 'Available' | 'Occupied' | 'Reserved' | 'Cleaning' | 'Disabled';
+  status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'CLEANING' | 'DISABLED';
   qrCodeUrl?: string;
-  createdAt: any;
+  lastGeneratedAt?: any;
+  generatedBy?: string;
+  createdAt?: any;
+  updatedAt?: any;
+  createdBy?: string;
 }
 
 export interface CustomerSession {

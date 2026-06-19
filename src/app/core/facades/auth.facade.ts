@@ -130,12 +130,30 @@ export class AuthFacade {
     authState(this.auth).pipe(
       switchMap(firebaseUser => {
         if (firebaseUser) {
-          return this.userRepository.getById(firebaseUser.uid);
+          return this.userRepository.getById(firebaseUser.uid).pipe(
+            catchError(err => {
+              console.error('Failed to restore user session from Firestore', err);
+              // If token exception or permission error, force logout
+              this.logout();
+              return of(null);
+            })
+          );
         }
         return of(null);
       })
-    ).subscribe(user => {
-      this.currentUserSignal.set(user || null);
+    ).subscribe({
+      next: (user) => {
+        this.currentUserSignal.set(user || null);
+        
+        // If Firebase thinks we are logged in, but we have no Firestore user document, force logout
+        if (!user && this.auth.currentUser) {
+          this.logout();
+        }
+      },
+      error: (err) => {
+        console.error('Auth state subscription error', err);
+        this.logout();
+      }
     });
   }
 }

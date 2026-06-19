@@ -55,7 +55,9 @@ service cloud.firestore {
     // Rules for Tables
     match /tables/{tableId} {
       allow read: if true; // Customers need to read table info
-      allow write: if isOwnerOrManager(request.resource.data.restaurantId) || isSuperAdmin();
+      allow create: if isOwnerOrManager(request.resource.data.restaurantId) || isSuperAdmin();
+      allow update: if (isOwnerOrManager(resource.data.restaurantId) && isOwnerOrManager(request.resource.data.restaurantId)) || isSuperAdmin();
+      allow delete: if isOwnerOrManager(resource.data.restaurantId) || isSuperAdmin();
     }
 
     // Rules for Menus (Categories, Items, Modifiers)

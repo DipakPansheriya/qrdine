@@ -298,3 +298,54 @@ body {
   from { opacity: 0; transform: translateX(10px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+.qr-dialog-panel {
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    background: var(--surface-ground) !important;
+  }
+}
+
+/* Print Styles for QR Code */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .qr-print-wrapper, .qr-print-wrapper * {
+    visibility: visible;
+  }
+
+  /* Force dialog containers to be fully visible and unconstrained for printing */
+  .cdk-overlay-container, 
+  .cdk-global-overlay-wrapper, 
+  .cdk-overlay-pane, 
+  .mat-mdc-dialog-container, 
+  .mdc-dialog__surface, 
+  .mat-mdc-dialog-content {
+    position: static !important;
+    overflow: visible !important;
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  
+  .qr-print-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) !important;
+    width: 100%;
+    max-width: 500px;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

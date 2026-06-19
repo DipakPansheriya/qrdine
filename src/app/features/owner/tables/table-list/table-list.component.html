@@ -1,0 +1,68 @@
+<div class="list-container" *ngIf="tables() as tablesList">
+  
+  <div *ngIf="loading()" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <ng-container *ngIf="tablesList.length > 0; else emptyState">
+    <div class="card-grid">
+      <div class="table-card" *ngFor="let table of tablesList">
+        
+        <div class="card-header">
+          <div class="table-info">
+            <mat-icon>table_restaurant</mat-icon>
+            <span class="table-number">Table {{ table.tableNumber }}</span>
+          </div>
+          <span class="status-chip" [ngClass]="getStatusColor(table.status)">
+            {{ table.status }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label">Capacity</span>
+            <span class="value"><mat-icon class="sm-icon">group</mat-icon> {{ table.capacity }} Persons</span>
+          </div>
+          <div class="info-row">
+            <span class="label">QR Generated</span>
+            <span class="value qr-status" [class.generated]="!!table.qrCodeUrl">
+              <mat-icon class="sm-icon">{{ table.qrCodeUrl ? 'check_circle' : 'cancel' }}</mat-icon>
+              {{ table.qrCodeUrl ? 'Yes' : 'No' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="primary-action">
+            <button *ngIf="!table.qrCodeUrl" mat-flat-button color="primary" class="full-width" (click)="generateQR(table)">
+              <mat-icon>qr_code_2</mat-icon> Generate QR
+            </button>
+            <button *ngIf="table.qrCodeUrl" mat-stroked-button color="primary" class="full-width" (click)="viewQR(table)">
+              <mat-icon>visibility</mat-icon> View QR
+            </button>
+          </div>
+          <div class="secondary-actions">
+            <button mat-icon-button color="primary" matTooltip="Edit Table" (click)="openEditDialog(table)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button class="text-warn" matTooltip="Delete Table" (click)="openDeleteDialog(table)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #emptyState>
+    <div class="empty-state" *ngIf="!loading()">
+      <div class="empty-icon-wrapper">
+        <mat-icon class="empty-icon">table_restaurant</mat-icon>
+      </div>
+      <h3>No Tables Found</h3>
+      <p>Create your first restaurant table to get started.</p>
+    </div>
+  </ng-template>
+
+</div>

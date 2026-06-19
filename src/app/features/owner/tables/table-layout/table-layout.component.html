@@ -1,0 +1,18 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Table Management</h1>
+      <p class="page-subtitle">Manage your restaurant tables, capacities, and statuses.</p>
+    </div>
+    <div class="header-actions">
+      <button mat-flat-button color="primary" (click)="openCreateTableDialog()">
+        <mat-icon>add</mat-icon>
+        Create Table
+      </button>
+    </div>
+  </div>
+
+  <div class="table-workspace">
+    <app-table-list></app-table-list>
+  </div>
+</div>

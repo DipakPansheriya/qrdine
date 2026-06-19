@@ -1,0 +1,38 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>QR Code for Table {{ data.table.tableNumber }}</h2>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <div class="qr-print-wrapper" id="qr-card-content">
+      <div class="qr-card-inner">
+        <h1 class="restaurant-name">{{ data.restaurantName }}</h1>
+        <h2 class="table-name">Table {{ data.table.tableNumber }}</h2>
+        <div class="qr-container">
+          <qrcode 
+            [qrdata]="data.table.qrCodeUrl || ''" 
+            [width]="300" 
+            [errorCorrectionLevel]="'H'">
+          </qrcode>
+        </div>
+        <p class="scan-instructions">Scan to view menu and place orders</p>
+        <p class="qr-url">{{ data.table.qrCodeUrl }}</p>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="center" class="dialog-actions no-print">
+    <button mat-stroked-button (click)="downloadPng()">
+      <mat-icon>image</mat-icon> Download PNG
+    </button>
+    <button mat-stroked-button color="primary" (click)="downloadPdf()">
+      <mat-icon>picture_as_pdf</mat-icon> Download PDF
+    </button>
+    <button mat-flat-button color="primary" (click)="printQr()">
+      <mat-icon>print</mat-icon> Print QR
+    </button>
+  </mat-dialog-actions>
+</div>

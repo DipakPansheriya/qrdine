@@ -115,6 +115,7 @@ export class SidebarComponent {
     { label: 'Restaurants', icon: 'store', route: '/admin/restaurants', roles: ['Super Admin'] },
     { label: 'Dashboard', icon: 'dashboard', route: '/owner/dashboard', roles: ['Owner', 'Manager'] },
     { label: 'Menu Management', icon: 'restaurant_menu', route: '/owner/menu', roles: ['Owner', 'Manager'] },
+    { label: 'Table Management', icon: 'table_bar', route: '/owner/tables', roles: ['Owner', 'Manager'] },
     { label: 'Staff Management', icon: 'people', route: '/owner/staff', roles: ['Owner'] },
     { label: 'Active Tables', icon: 'table_restaurant', route: '/staff/tables', roles: ['Waiter', 'Manager'] },
     { label: 'Kitchen Orders', icon: 'receipt', route: '/staff/kitchen', roles: ['Kitchen', 'Manager'] },

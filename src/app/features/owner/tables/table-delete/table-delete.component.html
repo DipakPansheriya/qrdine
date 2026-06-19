@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>Delete Table</h2>
+
+<mat-dialog-content>
+  <p>Are you sure you want to delete <strong>Table {{ data.table.tableNumber }}</strong>?</p>
+  <p class="text-warn"><small>This action cannot be undone and will permanently remove the table from your restaurant.</small></p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close [disabled]="isDeleting">Cancel</button>
+  <button mat-flat-button color="warn" [disabled]="isDeleting" (click)="onConfirm()">
+    {{ isDeleting ? 'Deleting...' : 'Delete Table' }}
+  </button>
+</mat-dialog-actions>

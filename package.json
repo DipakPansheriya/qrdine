@@ -22,7 +22,10 @@
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
     "@angular/service-worker": "^17.3.0",
+    "angularx-qrcode": "^17.0.1",
     "firebase": "^10.14.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
