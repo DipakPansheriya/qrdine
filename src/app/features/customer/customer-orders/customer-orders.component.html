@@ -1,12 +1,5 @@
 <div class="orders-container" [ngStyle]="facade.styleVariables()">
   
-  <div class="header">
-    <button mat-icon-button [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <h2>Your Orders</h2>
-    <div style="width: 48px"></div> <!-- Spacer for flex alignment -->
-  </div>
 
   <div class="orders-content">
     
@@ -75,6 +68,13 @@
           <span class="total">{{ order.grandTotal | currency:facade.restaurant()?.currency || 'USD' }}</span>
         </div>
       </div>
+    </div>
+
+    <!-- Browse Menu / Add Items Action Button -->
+    <div class="orders-actions" *ngIf="facade.orders().length > 0">
+      <button class="premium-btn" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]">
+        Browse Menu / Add Items
+      </button>
     </div>
 
   </div>
