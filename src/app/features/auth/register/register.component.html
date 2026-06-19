@@ -1,0 +1,69 @@
+<div class="auth-form-container">
+  <h2>Create Account</h2>
+  <p class="subtitle">Join QRDine to digitize your restaurant</p>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+    
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="fullName">Full Name <span class="req">*</span></label>
+        <input type="text" id="fullName" formControlName="fullName" placeholder="John Doe" />
+        <div *ngIf="registerForm.get('fullName')?.touched && registerForm.get('fullName')?.invalid" class="error-text">
+          Full name is required.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="restaurantName">Restaurant Name <span class="req">*</span></label>
+        <input type="text" id="restaurantName" formControlName="restaurantName" placeholder="The Great Cafe" />
+        <div *ngIf="registerForm.get('restaurantName')?.touched && registerForm.get('restaurantName')?.invalid" class="error-text">
+          Restaurant name is required.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email <span class="req">*</span></label>
+        <input type="email" id="email" formControlName="email" placeholder="you@example.com" />
+        <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" class="error-text">
+          Please enter a valid email.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number <span class="req">*</span></label>
+        <input type="tel" id="phone" formControlName="phone" placeholder="+1 234 567 890" />
+        <div *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid" class="error-text">
+          Phone number is required.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password <span class="req">*</span></label>
+        <input type="password" id="password" formControlName="password" placeholder="••••••••" />
+        <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid" class="error-text">
+          Password must be at least 6 characters.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password <span class="req">*</span></label>
+        <input type="password" id="confirmPassword" formControlName="confirmPassword" placeholder="••••••••" />
+        <div *ngIf="registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched" class="error-text">
+          Passwords do not match.
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="isLoading() || registerForm.invalid">
+      {{ isLoading() ? 'Creating Account...' : 'Register' }}
+    </button>
+  </form>
+
+  <div class="auth-footer">
+    <p>Already have an account? <a routerLink="/login" class="text-link">Sign In</a></p>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: var(--surface-card);
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-header-cell {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+td.mat-cell {
+  color: var(--text-primary);
+}
+
+.actions-col {
+  width: 140px;
+  text-align: right;
+  padding-right: 1rem !important;
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 3rem !important;
+  color: var(--text-muted);
+}

@@ -1,0 +1,71 @@
+<div class="page-container">
+  <div class="page-header">
+    <button mat-icon-button routerLink="/admin/restaurants" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1 class="page-title">{{ isEditMode ? 'Edit Restaurant' : 'New Restaurant' }}</h1>
+      <p class="page-subtitle">{{ isEditMode ? 'Update existing tenant details.' : 'Create a new tenant on the QRDine platform.' }}</p>
+    </div>
+  </div>
+
+  <div class="form-container mat-elevation-z2">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="restaurant-form">
+      
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Restaurant Name</mat-label>
+          <input matInput formControlName="name" placeholder="E.g. Central Perk" required>
+          <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Domain Slug</mat-label>
+          <input matInput formControlName="slug" placeholder="central-perk" required>
+          <mat-hint>Used for QR URLs (e.g. qrdine.com/q/central-perk)</mat-hint>
+          <mat-error *ngIf="form.get('slug')?.hasError('pattern')">Only lowercase letters, numbers, and hyphens allowed</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="contact@centralperk.com">
+          <mat-error *ngIf="form.get('email')?.hasError('email')">Please enter a valid email</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Phone Number</mat-label>
+          <input matInput formControlName="phone" placeholder="+1 234 567 8900">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Currency</mat-label>
+          <mat-select formControlName="currency" required>
+            <mat-option value="USD">USD ($)</mat-option>
+            <mat-option value="EUR">EUR (€)</mat-option>
+            <mat-option value="GBP">GBP (£)</mat-option>
+            <mat-option value="INR">INR (₹)</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status" required>
+            <mat-option value="active">Active</mat-option>
+            <mat-option value="inactive">Inactive</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-button type="button" routerLink="/admin/restaurants">Cancel</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">
+          {{ isEditMode ? 'Update' : 'Create' }} Restaurant
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

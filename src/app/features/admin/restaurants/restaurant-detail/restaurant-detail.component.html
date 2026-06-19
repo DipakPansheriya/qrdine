@@ -1,0 +1,97 @@
+<div class="page-container">
+  <div class="page-header">
+    <button mat-icon-button routerLink="/admin/restaurants" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div *ngIf="restaurant() as r">
+      <h1 class="page-title">{{ r.name }}</h1>
+      <p class="page-subtitle">Restaurant ID: {{ r.restaurantId }}</p>
+    </div>
+    <div class="spacer"></div>
+    <button mat-flat-button color="accent" *ngIf="restaurant() as r" [routerLink]="['/admin/restaurants', r.restaurantId, 'edit']">
+      <mat-icon>edit</mat-icon>
+      Edit
+    </button>
+  </div>
+
+  <div *ngIf="restaurant() as r; else loading" class="detail-content">
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>General Information</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Slug</span>
+            <span class="value">{{ r.slug }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Status</span>
+            <mat-chip [color]="r.status === 'active' ? 'primary' : 'warn'" selected>
+              {{ r.status | titlecase }}
+            </mat-chip>
+          </div>
+          <div class="info-item">
+            <span class="label">Email</span>
+            <span class="value">{{ r.email || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Phone</span>
+            <span class="value">{{ r.phone || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Currency</span>
+            <span class="value">{{ r.currency }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Timezone</span>
+            <span class="value">{{ r.timezone }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Created At</span>
+            <span class="value">{{ r.createdAt | date:'medium' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Updated At</span>
+            <span class="value">{{ r.updatedAt | date:'medium' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metrics-card">
+      <mat-card-header>
+        <mat-card-title>Quick Metrics</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="metrics-grid">
+        <div class="metric">
+          <mat-icon color="primary">receipt</mat-icon>
+          <div class="metric-info">
+            <span class="metric-value">0</span>
+            <span class="metric-label">Total Orders</span>
+          </div>
+        </div>
+        <div class="metric">
+          <mat-icon color="accent">people</mat-icon>
+          <div class="metric-info">
+            <span class="metric-value">0</span>
+            <span class="metric-label">Staff Members</span>
+          </div>
+        </div>
+        <div class="metric">
+          <mat-icon color="warn">table_restaurant</mat-icon>
+          <div class="metric-info">
+            <span class="metric-value">0</span>
+            <span class="metric-label">Active Tables</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <ng-template #loading>
+    <div class="loading-state" *ngIf="isLoading()">
+      Loading restaurant details...
+    </div>
+  </ng-template>
+</div>

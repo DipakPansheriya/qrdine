@@ -1,0 +1,27 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Menu Management</h1>
+      <p class="page-subtitle">Organize your categories and menu items here.</p>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button color="primary" (click)="openCategoryForm()">
+        <mat-icon>add</mat-icon>
+        New Category
+      </button>
+      <button mat-flat-button color="primary" (click)="openItemForm()">
+        <mat-icon>add</mat-icon>
+        New Item
+      </button>
+    </div>
+  </div>
+
+  <div class="menu-workspace mat-elevation-z2">
+    <div class="categories-panel">
+      <app-category-list></app-category-list>
+    </div>
+    <div class="items-panel">
+      <app-item-list></app-item-list>
+    </div>
+  </div>
+</div>

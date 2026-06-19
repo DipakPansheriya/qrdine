@@ -1,0 +1,141 @@
+import { Injectable, signal, inject } from '@angular/core';
+import { UserRepository } from '../repositories/user.repository';
+import { RestaurantRepository } from '../repositories/restaurant.repository';
+import { SubscriptionRepository } from '../repositories/subscription.repository';
+import { SettingsRepository } from '../repositories/settings.repository';
+import { User, Restaurant, Subscription, Settings } from '../models';
+import { Observable, from, of } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState } from '@angular/fire/auth';
+
+@Injectable({ providedIn: 'root' })
+export class AuthFacade {
+  private userRepository = inject(UserRepository);
+  private restaurantRepository = inject(RestaurantRepository);
+  private subscriptionRepository = inject(SubscriptionRepository);
+  private settingsRepository = inject(SettingsRepository);
+  private auth = inject(Auth);
+  private router = inject(Router);
+  
+  // State
+  private currentUserSignal = signal<User | null>(null);
+  private loadingSignal = signal<boolean>(false);
+  
+  // Selectors
+  readonly currentUser = this.currentUserSignal.asReadonly();
+  readonly isLoading = this.loadingSignal.asReadonly();
+
+  constructor() {
+    this.restoreSession();
+  }
+  
+  // Actions
+  login(email: string, password: string): Observable<User | undefined> {
+    this.loadingSignal.set(true);
+    
+    return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
+      switchMap(credential => {
+        return this.userRepository.getById(credential.user.uid).pipe(
+          tap(user => {
+            if (!user) {
+              throw new Error('USER_DOCUMENT_MISSING');
+            }
+          })
+        );
+      }),
+      tap(user => {
+        if (user) {
+          this.currentUserSignal.set(user);
+        }
+        this.loadingSignal.set(false);
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        throw error;
+      })
+    );
+  }
+
+  registerOwner(email: string, password: string, restaurantName: string, fullName: string, phone: string): Observable<any> {
+    this.loadingSignal.set(true);
+    return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
+      switchMap(credential => {
+        const uid = credential.user.uid;
+        // The UID acts as the restaurant ID for a 1-to-1 owner relation, or we generate one. 
+        // We'll use uid as the restaurant ID for simplicity, or generate a random one.
+        const restaurantId = 'res_' + uid;
+        
+        const newRestaurant: Restaurant = {
+          restaurantId,
+          name: restaurantName,
+          slug: restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+          email: email,
+          phone: phone,
+          currency: 'USD',
+          timezone: 'UTC',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        const newUser: User = {
+          uid,
+          email,
+          displayName: fullName,
+          role: 'Owner',
+          restaurantId
+        };
+
+        const newSubscription: Subscription = {
+          subscriptionId: 'sub_' + uid,
+          restaurantId,
+          plan: 'BASIC',
+          status: 'ACTIVE',
+          startDate: new Date().toISOString()
+        };
+
+        const newSettings: Settings = {
+          settingsId: 'set_' + uid,
+          restaurantId,
+          theme: 'system',
+          taxIncludedInPrice: false,
+          allowGuestCheckout: true,
+          requireTableNumber: true
+        };
+
+        return from(Promise.all([
+          this.restaurantRepository.create(newRestaurant, newRestaurant.restaurantId).toPromise(),
+          this.userRepository.create(newUser, newUser.uid).toPromise(),
+          this.subscriptionRepository.create(newSubscription, newSubscription.subscriptionId).toPromise(),
+          this.settingsRepository.create(newSettings, newSettings.settingsId).toPromise()
+        ]));
+      }),
+      tap(() => this.loadingSignal.set(false)),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        throw error;
+      })
+    );
+  }
+
+  logout(): void {
+    from(signOut(this.auth)).subscribe(() => {
+      this.currentUserSignal.set(null);
+      this.router.navigate(['/login']);
+    });
+  }
+
+  private restoreSession(): void {
+    authState(this.auth).pipe(
+      switchMap(firebaseUser => {
+        if (firebaseUser) {
+          return this.userRepository.getById(firebaseUser.uid);
+        }
+        return of(null);
+      })
+    ).subscribe(user => {
+      this.currentUserSignal.set(user || null);
+    });
+  }
+}

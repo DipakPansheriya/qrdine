@@ -1,0 +1,32 @@
+<div class="debug-container">
+  <mat-card class="debug-card">
+    <mat-card-header>
+      <mat-card-title>Developer Setup (DB Seed)</mat-card-title>
+      <mat-card-subtitle>Instantly create or log in to test accounts. Password is "password123".</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="mt-3">
+      <div class="status-message" *ngIf="message">
+        {{ message }}
+      </div>
+
+      <div class="btn-grid">
+        <button mat-flat-button color="warn" (click)="seedUser('Super Admin', 'superadmin@qrdine.com')" [disabled]="isWorking">
+          Seed Super Admin
+        </button>
+        
+        <button mat-flat-button color="primary" (click)="seedUser('Owner', 'owner@qrdine.com')" [disabled]="isWorking">
+          Seed Owner
+        </button>
+        
+        <button mat-stroked-button color="accent" (click)="seedUser('Waiter', 'waiter@qrdine.com')" [disabled]="isWorking">
+          Seed Waiter
+        </button>
+        
+        <button mat-stroked-button color="accent" (click)="seedUser('Kitchen', 'kitchen@qrdine.com')" [disabled]="isWorking">
+          Seed Kitchen
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

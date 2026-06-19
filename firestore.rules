@@ -1,0 +1,96 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Function to get user document
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Function to check if user is a Super Admin
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserData().role == 'Super Admin';
+    }
+
+    // Function to check if user belongs to the requested restaurant
+    function belongsToRestaurant(restaurantId) {
+      return isAuthenticated() && getUserData().restaurantId == restaurantId;
+    }
+
+    // Function to check if user is Owner or Manager of the restaurant
+    function isOwnerOrManager(restaurantId) {
+      let role = getUserData().role;
+      return belongsToRestaurant(restaurantId) && (role == 'Owner' || role == 'Manager');
+    }
+
+    // Rules for User documents
+    match /users/{userId} {
+      // Users can read their own data, Super Admins can read all
+      allow read: if isSuperAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      // Only Super Admins can write to users (or cloud functions)
+      allow write: if isSuperAdmin();
+    }
+
+    // Rules for Restaurants
+    match /restaurants/{restaurantId} {
+      // Anyone can read restaurant info (for the customer QR menu)
+      allow read: if true;
+      // Owners/Managers can update their own restaurant. Super Admins can do anything.
+      allow update: if isOwnerOrManager(restaurantId) || isSuperAdmin();
+      allow create, delete: if isSuperAdmin();
+    }
+
+    // Rules for Staff
+    match /staff/{staffId} {
+      allow read: if belongsToRestaurant(resource.data.restaurantId) || isSuperAdmin();
+      allow write: if isOwnerOrManager(request.resource.data.restaurantId) || isSuperAdmin();
+    }
+
+    // Rules for Tables
+    match /tables/{tableId} {
+      allow read: if true; // Customers need to read table info
+      allow write: if isOwnerOrManager(request.resource.data.restaurantId) || isSuperAdmin();
+    }
+
+    // Rules for Menus (Categories, Items, Modifiers)
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isOwnerOrManager(request.resource.data.restaurantId);
+    }
+    match /menuItems/{itemId} {
+      allow read: if true;
+      allow write: if isOwnerOrManager(request.resource.data.restaurantId);
+    }
+    match /modifierGroups/{groupId} {
+      allow read: if true;
+      allow write: if isOwnerOrManager(request.resource.data.restaurantId);
+    }
+
+    // Rules for Customer Sessions, Carts, Orders, Requests, Payments
+    // Customers (unauthenticated or anonymously authenticated) create these.
+    match /sessions/{sessionId} {
+      allow read, write: if true; // In production, refine with anonymous auth
+    }
+    match /carts/{cartId} {
+      allow read, write: if true;
+    }
+    match /orders/{orderId} {
+      allow read, write: if true; // Kitchen/Waiter will update, customers will create
+    }
+    match /customerRequests/{requestId} {
+      allow read, write: if true;
+    }
+    match /payments/{paymentId} {
+      allow read, write: if true;
+    }
+    match /feedbacks/{feedbackId} {
+      allow read, write: if true;
+    }
+  }
+}
