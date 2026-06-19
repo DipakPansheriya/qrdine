@@ -90,9 +90,9 @@ export class CustomerMenuComponent implements OnInit {
     }, 1500);
 
     const dialogRef = this.dialog.open(ModifierDialogComponent, {
-      width: '100%',
+      width: '90%',
       maxWidth: '400px',
-      panelClass: 'bottom-dialog-panel',
+      panelClass: 'center-dialog-panel',
       data: { item }
     });
 
@@ -101,5 +101,20 @@ export class CustomerMenuComponent implements OnInit {
         this.facade.addToCart(result);
       }
     });
+  }
+
+  getMyOrdersWidgetBottom(): string {
+    const hasCartItems = this.facade.cartItemCount() > 0;
+    if (!hasCartItems) {
+      return '24px';
+    }
+    const cartStyle = this.facade.experience()?.cartStyle || 'floating';
+    if (cartStyle === 'mini') {
+      return '120px';
+    } else if (cartStyle === 'sticky') {
+      return '100px';
+    } else {
+      return '124px';
+    }
   }
 }

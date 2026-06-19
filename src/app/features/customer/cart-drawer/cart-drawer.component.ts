@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
@@ -23,15 +23,30 @@ import { Router } from '@angular/router';
   templateUrl: './cart-drawer.component.html',
   styleUrls: ['./cart-drawer.component.scss']
 })
-export class CartDrawerComponent {
+export class CartDrawerComponent implements OnInit {
   public facade = inject(CustomerFacade);
-  private bottomSheetRef = inject(MatBottomSheetRef<CartDrawerComponent>);
+  private dialogRef = inject(MatDialogRef<CartDrawerComponent>);
   private router = inject(Router);
+  private renderer = inject(Renderer2);
+  private elementRef = inject(ElementRef);
 
   orderNotes = signal<string>('');
 
+  ngOnInit() {
+    let parent = this.elementRef.nativeElement.parentElement;
+    while (parent && !parent.classList.contains('cdk-overlay-pane')) {
+      parent = parent.parentElement;
+    }
+    if (parent) {
+      const vars = this.facade.styleVariables();
+      Object.keys(vars).forEach(key => {
+        this.renderer.setStyle(parent, key, vars[key]);
+      });
+    }
+  }
+
   close() {
-    this.bottomSheetRef.dismiss();
+    this.dialogRef.close();
   }
 
   updateQuantity(index: number, delta: number) {

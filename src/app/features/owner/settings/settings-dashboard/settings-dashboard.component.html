@@ -95,6 +95,23 @@
             <div class="settings-card two-col">
               <div class="field-group">
                 <div class="card-label">
+                  <mat-icon>image</mat-icon>
+                  <span>Logo URL</span>
+                </div>
+                <input class="field-input" formControlName="logo" placeholder="https://example.com/logo.png">
+              </div>
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>wallpaper</mat-icon>
+                  <span>Cover Image URL</span>
+                </div>
+                <input class="field-input" formControlName="coverImage" placeholder="https://example.com/cover.jpg">
+              </div>
+            </div>
+
+            <div class="settings-card two-col">
+              <div class="field-group">
+                <div class="card-label">
                   <mat-icon>phone</mat-icon>
                   <span>Phone</span>
                 </div>
@@ -246,6 +263,28 @@
           </div>
 
           <div class="card-group">
+            <!-- Theme Preset & Typography Style -->
+            <div class="settings-card two-col">
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>auto_awesome</mat-icon>
+                  <span>Theme Preset</span>
+                </div>
+                <select class="field-input" formControlName="themePreset">
+                  <option *ngFor="let p of themePresets" [value]="p">{{ p }}</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <div class="card-label">
+                  <mat-icon>text_fields</mat-icon>
+                  <span>Typography / Font</span>
+                </div>
+                <select class="field-input" formControlName="typographyStyle">
+                  <option *ngFor="let t of typographyStyles" [value]="t">{{ t }}</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Color Picker row -->
             <div class="settings-card">
               <div class="card-label">
@@ -316,12 +355,16 @@
               <button class="preview-btn"
                 [ngStyle]="{
                   'background': brandingForm.get('accentColor')?.value || '#FFC107',
-                  'border-radius': brandingForm.get('buttonStyle')?.value === 'pill' ? '50px' : (brandingForm.get('buttonStyle')?.value === 'square' ? '4px' : '10px')
+                  'border-radius': brandingForm.get('buttonStyle')?.value === 'pill' ? '50px' : (brandingForm.get('buttonStyle')?.value === 'square' ? '0px' : (brandingForm.get('buttonStyle')?.value === 'floating' ? '30px' : '8px'))
                 }">Order Now</button>
             </div>
           </div>
 
           <div class="panel-actions">
+            <button type="button" class="btn-preview" (click)="openPreviewDialog()">
+              <mat-icon>visibility</mat-icon>
+              Preview Experience
+            </button>
             <button class="btn-save" (click)="saveSettings()" [disabled]="facade.loading()">
               <mat-icon>save</mat-icon>
               Save Branding
@@ -387,19 +430,95 @@
                 </div>
               </div>
 
+              <!-- Layout & Card Customization -->
+              <div class="toggle-section">
+                <div class="toggle-section-head">
+                  <mat-icon>dashboard_customize</mat-icon>
+                  <div>
+                    <strong>Layout & Card Customization</strong>
+                    <p>Customize card styling, cart placement, and progress tracker</p>
+                  </div>
+                </div>
+                <div class="message-fields">
+                  <div class="message-field">
+                    <label>🖼️ Card Shadows</label>
+                    <select class="field-input" formControlName="cardShadow">
+                      <option *ngFor="let s of cardShadows" [value]="s.value">{{ s.label }}</option>
+                    </select>
+                  </div>
+                  <div class="message-field">
+                    <label>🥗 Dish Image Styling</label>
+                    <select class="field-input" formControlName="imageStyle">
+                      <option *ngFor="let img of imageStyles" [value]="img.value">{{ img.label }}</option>
+                    </select>
+                  </div>
+                  <div class="message-field">
+                    <label>🛒 Cart Experience Layout</label>
+                    <select class="field-input" formControlName="cartStyle">
+                      <option *ngFor="let c of cartStyles" [value]="c.value">{{ c.label }}</option>
+                    </select>
+                  </div>
+                  <div class="message-field">
+                    <label>📋 Order Tracking Display</label>
+                    <select class="field-input" formControlName="orderTrackingStyle">
+                      <option *ngFor="let t of trackingStyles" [value]="t.value">{{ t.label }}</option>
+                    </select>
+                  </div>
+                  
+                  <div class="toggle-list" style="padding: 0; margin-top: 0.5rem;">
+                    <label class="toggle-row">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">📱</span>
+                        <div>
+                          <span class="toggle-name">Compact Mode</span>
+                          <span class="toggle-desc">Fit more dishes in a row (horizontal layout)</span>
+                        </div>
+                      </div>
+                      <mat-slide-toggle formControlName="compactMode" color="primary"></mat-slide-toggle>
+                    </label>
+                    <label class="toggle-row">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">🖥️</span>
+                        <div>
+                          <span class="toggle-name">Large Mode</span>
+                          <span class="toggle-desc">Make images and description larger (card layout)</span>
+                        </div>
+                      </div>
+                      <mat-slide-toggle formControlName="largeMode" color="primary"></mat-slide-toggle>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
               <!-- Messages -->
               <div class="toggle-section">
                 <div class="toggle-section-head">
                   <mat-icon>chat_bubble_outline</mat-icon>
                   <div>
-                    <strong>Custom Messages</strong>
+                    <strong>Custom Messages & Banner Text</strong>
                     <p>Text shown to customers at key moments</p>
                   </div>
                 </div>
                 <div class="message-fields">
                   <div class="message-field">
-                    <label>👋 Welcome Message</label>
-                    <input class="field-input" formControlName="welcomeMessage" placeholder="Welcome! Browse our menu...">
+                    <label>👋 Welcome Message Title</label>
+                    <input class="field-input" formControlName="welcomeMessage" placeholder="e.g. Welcome to Dosa Charcoal 👋">
+                  </div>
+                  <div class="message-field">
+                    <label>📝 Welcome Message Subtitle</label>
+                    <input class="field-input" formControlName="welcomeSubtitle" placeholder="e.g. Fresh food made with love.">
+                  </div>
+                  <div class="message-field">
+                    <label>✨ Restaurant Tagline</label>
+                    <input class="field-input" formControlName="restaurantTagline" placeholder="e.g. Authentic South Indian Cuisine">
+                  </div>
+                  <div class="message-field">
+                    <label>🛒 Primary Action Button Label (Dishes list)</label>
+                    <input class="field-input" formControlName="primaryButtonLabel" placeholder="e.g. Add">
+                  </div>
+                  <div class="message-field">
+                    <label>💳 Checkout Button Label (Cart drawer)</label>
+                    <input class="field-input" formControlName="checkoutButtonLabel" placeholder="e.g. Place Order">
                   </div>
                   <div class="message-field">
                     <label>🎉 Order Success Message</label>
@@ -417,19 +536,30 @@
             <div class="cx-preview-wrap">
               <div class="phone-frame">
                 <div class="phone-notch"></div>
-                <div class="phone-screen" [ngStyle]="{'--p': previewSettings().primaryColor || '#E53935'}">
+                <div class="phone-screen" [ngStyle]="styleVariables()">
 
                   <!-- Hero -->
                   <div class="ps-hero" *ngIf="previewCx().showWelcomeBanner">
-                    <div class="ps-hero-bg"></div>
+                    <div class="ps-hero-bg" 
+                         [ngStyle]="{
+                           'background-image': generalForm.get('coverImage')?.value ? 'url(' + generalForm.get('coverImage')?.value + ')' : 'linear-gradient(135deg, ' + (previewSettings().primaryColor || '#E53935') + ', rgba(0,0,0,0.4))',
+                           'background-size': 'cover',
+                           'background-position': 'center'
+                         }">
+                    </div>
                     <div class="ps-hero-info">
-                      <div class="ps-logo"></div>
+                      <div class="ps-logo" [ngStyle]="{'background-image': generalForm.get('logo')?.value ? 'url(' + generalForm.get('logo')?.value + ')' : null, 'background-size': 'cover', 'background-position': 'center'}"></div>
                       <div>
                         <strong>{{ generalForm.get('restaurantName')?.value || 'My Restaurant' }}</strong>
                         <span *ngIf="previewCx().showRestaurantRating">⭐ 4.8</span>
                       </div>
                     </div>
-                    <p class="ps-welcome">{{ previewCx().welcomeMessage || 'Welcome!' }}</p>
+                    <p class="ps-welcome">
+                      {{ previewCx().welcomeMessage || 'Welcome!' }}
+                      <span *ngIf="previewCx().welcomeSubtitle" style="font-size: 0.55rem; color: #94a3b8; display: block; margin-top: 1px;">
+                        {{ previewCx().welcomeSubtitle }}
+                      </span>
+                    </p>
                   </div>
 
                   <!-- Search -->
@@ -439,7 +569,7 @@
 
                   <!-- Category Tabs -->
                   <div class="ps-cats" *ngIf="previewCx().showCategoryTabs">
-                    <span class="ps-cat active" [ngStyle]="{'background': previewSettings().primaryColor || '#E53935'}">All</span>
+                    <span class="ps-cat active" [ngStyle]="{'background': previewSettings().primaryColor || '#E53935', 'color': '#ffffff'}">All</span>
                     <span class="ps-cat">Starters</span>
                     <span class="ps-cat">Mains</span>
                   </div>
@@ -447,16 +577,19 @@
                   <!-- Popular -->
                   <div class="ps-popular" *ngIf="previewCx().showPopularItems">
                     <strong>🔥 Popular</strong>
-                    <div class="ps-pop-card">
-                      <div class="ps-pop-img" *ngIf="previewCx().showFoodImages"></div>
-                      <span>Biryani</span>
+                    <div class="ps-pop-row" style="display: flex; gap: 8px;">
+                      <div class="ps-pop-card">
+                        <div class="ps-pop-img" *ngIf="previewCx().showFoodImages"></div>
+                        <span>Biryani</span>
+                      </div>
                     </div>
                   </div>
 
                   <!-- Menu Item -->
                   <div class="ps-item"
                     [ngStyle]="{
-                      'border-radius': previewSettings().cardRadius === 'large' ? '18px' : previewSettings().cardRadius === 'small' ? '6px' : '12px'
+                      'border-radius': 'var(--card-radius)',
+                      'box-shadow': 'var(--card-shadow)'
                     }">
                     <div class="ps-item-img" *ngIf="previewCx().showFoodImages">
                       <span class="ps-veg" *ngIf="previewCx().showDietaryTags">🟢</span>
@@ -467,7 +600,7 @@
                       <button class="ps-add"
                         [ngStyle]="{
                           'background': previewSettings().primaryColor || '#E53935',
-                          'border-radius': previewSettings().buttonStyle === 'pill' ? '20px' : previewSettings().buttonStyle === 'square' ? '3px' : '7px'
+                          'border-radius': 'var(--btn-radius)'
                         }">ADD</button>
                     </div>
                   </div>
@@ -480,6 +613,10 @@
           </div>
 
           <div class="panel-actions">
+            <button type="button" class="btn-preview" (click)="openPreviewDialog()">
+              <mat-icon>visibility</mat-icon>
+              Preview Experience
+            </button>
             <button class="btn-save" (click)="saveCx()" [disabled]="facade.loading()">
               <mat-icon>save</mat-icon>
               Save Customer Experience

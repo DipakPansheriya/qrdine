@@ -1,4 +1,4 @@
-<div class="cart-drawer-container">
+<div class="cart-drawer-container" [ngStyle]="facade.styleVariables()">
   <div class="drawer-header">
     <h2>Your Order</h2>
     <button mat-icon-button (click)="close()">
@@ -11,24 +11,24 @@
       <div class="cart-item" *ngFor="let item of facade.cartItems(); let i = index">
         <div class="item-info">
           <span class="item-name">{{ item.name }}</span>
-          <span class="item-notes" *ngIf="item.notes">{{ item.notes }}</span>
           <div class="item-modifiers" *ngIf="item.modifiers?.length">
-            <span *ngFor="let mod of item.modifiers">{{ mod.optionName }} (+{{ mod.price | currency:facade.restaurant()?.currency || 'USD' }})</span>
+            <span *ngFor="let mod of item.modifiers">+ {{ mod.optionName }} (+{{ mod.price | currency:facade.restaurant()?.currency || 'USD' }})</span>
           </div>
+          <span class="item-notes" *ngIf="item.notes">Note: "{{ item.notes }}"</span>
           <span class="item-price">{{ item.totalPrice | currency:facade.restaurant()?.currency || 'USD' }}</span>
         </div>
         
         <div class="quantity-controls">
-          <button mat-icon-button class="qty-btn" color="warn" *ngIf="item.quantity === 1" (click)="updateQuantity(i, -1)">
+          <button class="qty-btn delete-btn" *ngIf="item.quantity === 1" (click)="updateQuantity(i, -1)">
             <mat-icon>delete</mat-icon>
           </button>
-          <button mat-icon-button class="qty-btn" *ngIf="item.quantity > 1" (click)="updateQuantity(i, -1)">
+          <button class="qty-btn" *ngIf="item.quantity > 1" (click)="updateQuantity(i, -1)">
             <mat-icon>remove</mat-icon>
           </button>
           
           <span class="qty-value">{{ item.quantity }}</span>
           
-          <button mat-icon-button class="qty-btn" color="primary" (click)="updateQuantity(i, 1)">
+          <button class="qty-btn" (click)="updateQuantity(i, 1)">
             <mat-icon>add</mat-icon>
           </button>
         </div>
@@ -57,9 +57,9 @@
   </div>
 
   <div class="drawer-footer">
-    <button mat-flat-button color="primary" class="checkout-btn" (click)="checkout()" [disabled]="facade.loading()">
+    <button class="checkout-btn" (click)="checkout()" [disabled]="facade.loading()">
       <mat-icon *ngIf="facade.loading()">hourglass_empty</mat-icon>
-      {{ facade.loading() ? 'Processing...' : 'Place Order' }}
+      <span>{{ facade.loading() ? 'Processing...' : (facade.experience()?.checkoutButtonLabel || 'Place Order') }}</span>
     </button>
   </div>
 </div>

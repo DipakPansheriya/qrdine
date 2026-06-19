@@ -1,4 +1,4 @@
-<div class="success-container">
+<div class="success-container" [ngStyle]="facade.styleVariables()">
   <div class="premium-skeleton-state" *ngIf="loading()">
     <div class="s-circle"></div>
     <div class="s-title"></div>
@@ -14,27 +14,79 @@
       <p>We've received your order and sent it to the kitchen.</p>
     </div>
 
-    <!-- Visual Progress Tracker -->
-    <div class="progress-tracker-card">
+    <!-- Visual Progress Tracker: Timeline Style -->
+    <div class="progress-tracker-card timeline-style" *ngIf="!facade.experience()?.orderTrackingStyle || facade.experience()?.orderTrackingStyle === 'timeline'">
       <div class="tracker-steps">
-        <div class="step" [class.active]="['Pending', 'Accepted', 'Preparing', 'Ready', 'Delivered'].includes(order()?.status || '')">
+        <div class="step" [class.active]="['Pending', 'Accepted', 'Preparing', 'Ready', 'Delivered', 'Completed'].includes(order()?.status || '')">
           <div class="icon-circle"><mat-icon>schedule</mat-icon></div>
           <span>Pending</span>
         </div>
-        <div class="step-line" [class.active]="['Accepted', 'Preparing', 'Ready', 'Delivered'].includes(order()?.status || '')"></div>
+        <div class="step-line" [class.active]="['Accepted', 'Preparing', 'Ready', 'Delivered', 'Completed'].includes(order()?.status || '')"></div>
         
-        <div class="step" [class.active]="['Accepted', 'Preparing', 'Ready', 'Delivered'].includes(order()?.status || '')">
+        <div class="step" [class.active]="['Accepted', 'Preparing', 'Ready', 'Delivered', 'Completed'].includes(order()?.status || '')">
           <div class="icon-circle"><mat-icon>soup_kitchen</mat-icon></div>
           <span>Preparing</span>
         </div>
-        <div class="step-line" [class.active]="['Ready', 'Delivered'].includes(order()?.status || '')"></div>
+        <div class="step-line" [class.active]="['Ready', 'Delivered', 'Completed'].includes(order()?.status || '')"></div>
         
-        <div class="step" [class.active]="['Ready', 'Delivered'].includes(order()?.status || '')">
+        <div class="step" [class.active]="['Ready', 'Delivered', 'Completed'].includes(order()?.status || '')">
           <div class="icon-circle"><mat-icon>room_service</mat-icon></div>
           <span>Ready</span>
         </div>
       </div>
       <p class="current-status-text">{{ getStatusText(order()?.status || 'Pending') }}</p>
+    </div>
+
+    <!-- Visual Progress Tracker: Stepper Style -->
+    <div class="progress-tracker-card stepper-style" *ngIf="facade.experience()?.orderTrackingStyle === 'stepper'">
+      <div class="stepper-header">
+        <span class="step-num">Step {{ getActiveStepIndex(order()?.status) }} of 3</span>
+        <h3>{{ getStatusText(order()?.status || 'Pending') }}</h3>
+      </div>
+      <div class="stepper-progress-bar">
+        <div class="stepper-fill" [style.width.%]="getStepProgressPercent(order()?.status)"></div>
+      </div>
+      <div class="stepper-labels">
+        <span [class.active]="getActiveStepIndex(order()?.status) >= 1">Confirmed</span>
+        <span [class.active]="getActiveStepIndex(order()?.status) >= 2">Preparing</span>
+        <span [class.active]="getActiveStepIndex(order()?.status) >= 3">Ready</span>
+      </div>
+    </div>
+
+    <!-- Visual Progress Tracker: Cards Style -->
+    <div class="progress-tracker-card cards-style" *ngIf="facade.experience()?.orderTrackingStyle === 'cards'">
+      <div class="status-card" [class.active]="['Pending', 'Accepted'].includes(order()?.status || '')" [class.completed]="['Preparing', 'Ready', 'Delivered', 'Completed'].includes(order()?.status || '')">
+        <div class="card-left-wrap">
+          <mat-icon class="status-main-icon">schedule</mat-icon>
+          <div class="card-info">
+            <strong>Order Confirmed</strong>
+            <p>Queue and checkout details logged</p>
+          </div>
+        </div>
+        <mat-icon class="check-icon" *ngIf="['Accepted', 'Preparing', 'Ready', 'Delivered', 'Completed'].includes(order()?.status || '')">check_circle</mat-icon>
+      </div>
+      
+      <div class="status-card" [class.active]="order()?.status === 'Preparing'" [class.completed]="['Ready', 'Delivered', 'Completed'].includes(order()?.status || '')">
+        <div class="card-left-wrap">
+          <mat-icon class="status-main-icon">soup_kitchen</mat-icon>
+          <div class="card-info">
+            <strong>Preparing Food</strong>
+            <p>Chef is cooking your selections</p>
+          </div>
+        </div>
+        <mat-icon class="check-icon" *ngIf="['Ready', 'Delivered', 'Completed'].includes(order()?.status || '')">check_circle</mat-icon>
+      </div>
+      
+      <div class="status-card" [class.active]="['Ready', 'Delivered', 'Completed'].includes(order()?.status || '')" [class.completed]="['Delivered', 'Completed'].includes(order()?.status || '')">
+        <div class="card-left-wrap">
+          <mat-icon class="status-main-icon">room_service</mat-icon>
+          <div class="card-info">
+            <strong>Ready to Serve</strong>
+            <p>Fresh order served at your table</p>
+          </div>
+        </div>
+        <mat-icon class="check-icon" *ngIf="['Delivered', 'Completed'].includes(order()?.status || '')">check_circle</mat-icon>
+      </div>
     </div>
 
     <div class="info-card">

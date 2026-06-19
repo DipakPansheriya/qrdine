@@ -210,9 +210,11 @@ export interface Settings {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
-  buttonStyle: 'rounded' | 'square' | 'pill';
+  buttonStyle: 'rounded' | 'square' | 'pill' | 'floating';
   cardRadius: 'small' | 'medium' | 'large';
   themeMode: 'Default' | 'Orange' | 'Green' | 'Red' | 'Custom';
+  typographyStyle?: 'Modern Sans' | 'Classic Serif' | 'Playful Rounded' | 'Elegant Editorial';
+  themePreset?: 'Classic Restaurant' | 'Modern Cafe' | 'Luxury Dining' | 'Fast Food' | 'Minimal' | 'Custom';
   createdAt: any;
   updatedAt: any;
 }
@@ -243,6 +245,17 @@ export interface CustomerExperience {
   allowQuantityEditing: boolean;
   requireBillRequest: boolean;
   autoCloseSession: boolean;
+  // Extended configuration fields
+  welcomeSubtitle?: string;
+  restaurantTagline?: string;
+  cardShadow?: 'none' | 'subtle' | 'shadow';
+  imageStyle?: 'square' | 'rounded' | 'circle';
+  compactMode?: boolean;
+  largeMode?: boolean;
+  cartStyle?: 'floating' | 'sticky' | 'mini';
+  orderTrackingStyle?: 'timeline' | 'stepper' | 'cards';
+  primaryButtonLabel?: string;
+  checkoutButtonLabel?: string;
   updatedAt: any;
 }
 

@@ -74,6 +74,7 @@ export class OwnerSettingsFacade {
           gstPercentage: data.gstPercentage || 0, serviceChargePercentage: data.serviceChargePercentage || 0, currency: data.currency || 'INR',
           primaryColor: data.primaryColor || '#E53935', secondaryColor: data.secondaryColor || '#424242', accentColor: data.accentColor || '#FFC107',
           buttonStyle: data.buttonStyle || 'rounded', cardRadius: data.cardRadius || 'medium', themeMode: data.themeMode || 'Default',
+          themePreset: data.themePreset || 'Classic Restaurant', typographyStyle: data.typographyStyle || 'Modern Sans',
           createdAt: serverTimestamp(), updatedAt: serverTimestamp()
         };
         await firstValueFrom(this.settingsRepo.create(newSettings));
@@ -118,6 +119,16 @@ export class OwnerSettingsFacade {
           allowQuantityEditing: data.allowQuantityEditing ?? true,
           requireBillRequest: data.requireBillRequest ?? true,
           autoCloseSession: data.autoCloseSession ?? true,
+          welcomeSubtitle: data.welcomeSubtitle || '',
+          restaurantTagline: data.restaurantTagline || '',
+          cardShadow: data.cardShadow || 'subtle',
+          imageStyle: data.imageStyle || 'rounded',
+          compactMode: data.compactMode ?? false,
+          largeMode: data.largeMode ?? false,
+          cartStyle: data.cartStyle || 'floating',
+          orderTrackingStyle: data.orderTrackingStyle || 'timeline',
+          primaryButtonLabel: data.primaryButtonLabel || 'Add',
+          checkoutButtonLabel: data.checkoutButtonLabel || 'Place Order',
           updatedAt: serverTimestamp()
         };
         await firstValueFrom(this.cxRepo.create(newCx));

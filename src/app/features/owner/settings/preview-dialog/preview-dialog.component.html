@@ -1,0 +1,345 @@
+<div class="preview-dialog">
+  
+  <div class="dialog-header">
+    <div class="header-left">
+      <h2>Live Customer Experience Preview</h2>
+      <p>Preview exactly what customers see based on your current settings before saving.</p>
+    </div>
+    <button mat-icon-button (click)="close()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="dialog-body">
+    
+    <!-- Left Navigation Controls (Screens Selector) -->
+    <div class="screen-selector-controls">
+      <h3>Select Screen to Preview</h3>
+      <div class="selector-buttons">
+        <button class="selector-btn" [class.active]="activeScreen() === 'menu'" (click)="setScreen('menu')">
+          <mat-icon>restaurant_menu</mat-icon>
+          <span>1. Digital Menu</span>
+        </button>
+        <button class="selector-btn" [class.active]="activeScreen() === 'cart'" (click)="setScreen('cart')">
+          <mat-icon>shopping_cart</mat-icon>
+          <span>2. Shopping Cart</span>
+        </button>
+        <button class="selector-btn" [class.active]="activeScreen() === 'tracking'" (click)="setScreen('tracking')">
+          <mat-icon>track_changes</mat-icon>
+          <span>3. Live Order Tracking</span>
+        </button>
+        <button class="selector-btn" [class.active]="activeScreen() === 'success'" (click)="setScreen('success')">
+          <mat-icon>check_circle</mat-icon>
+          <span>4. Order Success Screen</span>
+        </button>
+      </div>
+      
+      <!-- Interactive status toggles for the tracking screen inside dialog -->
+      <div class="tracking-state-selector" *ngIf="activeScreen() === 'tracking'">
+        <label>Simulate Order Status:</label>
+        <div class="state-chips">
+          <button class="state-chip" [class.active]="activeTrackStatus() === 'Pending'" (click)="activeTrackStatus.set('Pending')">Pending</button>
+          <button class="state-chip" [class.active]="activeTrackStatus() === 'Preparing'" (click)="activeTrackStatus.set('Preparing')">Preparing</button>
+          <button class="state-chip" [class.active]="activeTrackStatus() === 'Ready'" (click)="activeTrackStatus.set('Ready')">Ready / Served</button>
+        </div>
+      </div>
+
+      <div class="preview-disclaimer">
+        <mat-icon>info</mat-icon>
+        <p>This is a live mockup driven by your active configuration. Use settings on the dashboard to adjust these options.</p>
+      </div>
+    </div>
+
+    <!-- Right: Simulated Phone Mockup -->
+    <div class="phone-simulator-panel">
+      <div class="phone-frame-wrapper">
+        <div class="phone-notch"></div>
+        <div class="phone-screen-container" [ngStyle]="styleVariables()">
+        <div class="phone-scrollable-area">
+
+          <!-- ────────────────────────────────────────── -->
+          <!-- SCREEN 1: MENU PREVIEW                     -->
+          <!-- ────────────────────────────────────────── -->
+          <ng-container *ngIf="activeScreen() === 'menu'">
+            <div class="mock-header" [class.no-cover]="cx()?.showWelcomeBanner === false">
+              <div class="mock-cover" *ngIf="cx()?.showWelcomeBanner !== false"
+                   [ngStyle]="{
+                     'background-image': settings()?.coverImage ? 'url(' + settings().coverImage + ')' : 'linear-gradient(135deg, ' + (settings()?.primaryColor || '#E53935') + ', ' + (settings()?.secondaryColor || '#424242') + ')',
+                     'background-size': 'cover',
+                     'background-position': 'center'
+                   }">
+                <div class="mock-overlay"></div>
+              </div>
+              <div class="mock-header-content" [class.no-cover-content]="cx()?.showWelcomeBanner === false">
+                <div class="mock-logo"
+                     [ngStyle]="{'background-image': settings()?.logo ? 'url(' + settings().logo + ')' : null, 'background-size': 'cover', 'background-position': 'center'}"></div>
+                <div class="mock-rest-info">
+                  <span class="mock-tagline" *ngIf="cx()?.restaurantTagline">{{ cx()?.restaurantTagline }}</span>
+                  <h4>{{ restaurantName() }}</h4>
+                  <p class="mock-desc" *ngIf="restaurantDesc()">{{ restaurantDesc() }}</p>
+                  <div class="mock-meta">
+                    <span class="m-tag rating" *ngIf="cx()?.showRestaurantRating !== false">⭐ 4.8</span>
+                    <span class="m-tag open">🕒 Open Now</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="mock-welcome-msg" *ngIf="cx()?.showWelcomeBanner !== false && cx()?.welcomeMessage">
+              {{ cx()?.welcomeMessage }}
+              <span class="mock-welcome-sub" *ngIf="cx()?.welcomeSubtitle"><br>{{ cx()?.welcomeSubtitle }}</span>
+            </p>
+
+            <div class="mock-search" *ngIf="cx()?.showSearchBar !== false">
+              <mat-icon>search</mat-icon>
+              <span>Search dishes...</span>
+            </div>
+
+            <div class="mock-cats" *ngIf="cx()?.showCategoryTabs !== false">
+              <span class="m-cat active">All</span>
+              <span class="m-cat">Starters</span>
+              <span class="m-cat">Mains</span>
+            </div>
+
+            <div class="mock-popular" *ngIf="cx()?.showPopularItems !== false">
+              <h5>🔥 Popular Dishes</h5>
+              <div class="mock-pop-row">
+                <div class="mock-pop-card">
+                  <div class="p-img" *ngIf="cx()?.showFoodImages !== false">
+                    <div class="p-dietary" *ngIf="cx()?.showDietaryTags !== false"></div>
+                  </div>
+                  <strong>Paneer Tikka</strong>
+                  <span>₹250</span>
+                </div>
+                <div class="mock-pop-card">
+                  <div class="p-img" *ngIf="cx()?.showFoodImages !== false">
+                    <div class="p-dietary" *ngIf="cx()?.showDietaryTags !== false"></div>
+                  </div>
+                  <strong>Masala Dosa</strong>
+                  <span>₹160</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mock-items" [class.compact-grid]="cx()?.compactMode" [class.large-grid]="cx()?.largeMode">
+              <h5>Dishes</h5>
+              <div class="mock-card" [class.compact-card]="cx()?.compactMode" [class.large-card]="cx()?.largeMode">
+                <div class="card-img" *ngIf="cx()?.showFoodImages !== false">
+                  <div class="card-tag" *ngIf="cx()?.showDietaryTags !== false">🌱 Veg</div>
+                </div>
+                <div class="card-body">
+                  <div class="card-title-row">
+                    <strong>Paneer Charcoal Dosa</strong>
+                    <span class="card-price">₹220</span>
+                  </div>
+                  <p class="card-desc">Signature active charcoal dosa with spiced paneer.</p>
+                  <div class="card-footer-row">
+                    <span class="time-tag" *ngIf="cx()?.showPreparationTime !== false">🕒 12 mins</span>
+                    <button class="add-btn">{{ cx()?.primaryButtonLabel || 'Add' }}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mock-cart-bar-wrap" *ngIf="cx()?.cartStyle !== 'mini'">
+              <div class="mock-cart-bar" [class.sticky]="cx()?.cartStyle === 'sticky'" [class.floating]="cx()?.cartStyle === 'floating' || !cx()?.cartStyle">
+                <div class="cart-left">
+                  <div class="cart-icon">
+                    <mat-icon>shopping_cart</mat-icon>
+                    <span class="badge">1</span>
+                  </div>
+                  <div class="totals">
+                    <span class="label">1 Item</span>
+                    <span class="price">₹220</span>
+                  </div>
+                </div>
+                <div class="cart-right">
+                  <span>View Order</span>
+                  <mat-icon>arrow_forward</mat-icon>
+                </div>
+              </div>
+            </div>
+
+            <div class="mock-cart-bar-wrap mini" *ngIf="cx()?.cartStyle === 'mini'">
+              <div class="mock-cart-bar mini-circle">
+                <mat-icon>shopping_cart</mat-icon>
+                <span class="badge">1</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ────────────────────────────────────────── -->
+          <!-- SCREEN 2: CART PREVIEW                     -->
+          <!-- ────────────────────────────────────────── -->
+          <ng-container *ngIf="activeScreen() === 'cart'">
+            <div class="cart-screen">
+              <div class="cart-header">
+                <h4>Your Order</h4>
+              </div>
+              <div class="cart-body">
+                <div class="cart-item">
+                  <div class="item-details">
+                    <strong>Paneer Charcoal Dosa</strong>
+                    <span class="mod-desc">+ Extra Cheese (+₹40)</span>
+                    <span class="price">₹260</span>
+                  </div>
+                  <div class="qty-control">
+                    <button>-</button>
+                    <span>1</span>
+                    <button>+</button>
+                  </div>
+                </div>
+                
+                <div class="notes-box">
+                  <span class="label">Order Notes</span>
+                  <div class="notes-input">e.g. Make it spicy</div>
+                </div>
+
+                <div class="totals-box">
+                  <div class="totals-row">
+                    <span>Subtotal</span>
+                    <span>₹260.00</span>
+                  </div>
+                  <div class="totals-row">
+                    <span>Taxes</span>
+                    <span>₹26.00</span>
+                  </div>
+                  <div class="totals-row total-highlight">
+                    <span>Grand Total</span>
+                    <span>₹286.00</span>
+                  </div>
+                </div>
+              </div>
+              <div class="cart-footer">
+                <button class="checkout-btn">{{ cx()?.checkoutButtonLabel || 'Place Order' }}</button>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ────────────────────────────────────────── -->
+          <!-- SCREEN 3: ORDER TRACKING PREVIEW           -->
+          <!-- ────────────────────────────────────────── -->
+          <ng-container *ngIf="activeScreen() === 'tracking'">
+            <div class="tracking-screen">
+              <div class="tracking-header">
+                <div class="confetti">🎉</div>
+                <h4>Order Confirmed</h4>
+                <p>Sending to the kitchen.</p>
+              </div>
+              
+              <!-- Timeline Style -->
+              <div class="progress-box timeline" *ngIf="!cx()?.orderTrackingStyle || cx()?.orderTrackingStyle === 'timeline'">
+                <div class="steps-row">
+                  <div class="step" [class.active]="['Pending', 'Preparing', 'Ready'].includes(activeTrackStatus())">
+                    <div class="circle"><mat-icon>schedule</mat-icon></div>
+                    <span>Pending</span>
+                  </div>
+                  <div class="step-line" [class.active]="['Preparing', 'Ready'].includes(activeTrackStatus())"></div>
+                  
+                  <div class="step" [class.active]="['Preparing', 'Ready'].includes(activeTrackStatus())">
+                    <div class="circle"><mat-icon>soup_kitchen</mat-icon></div>
+                    <span>Preparing</span>
+                  </div>
+                  <div class="step-line" [class.active]="activeTrackStatus() === 'Ready'"></div>
+                  
+                  <div class="step" [class.active]="activeTrackStatus() === 'Ready'">
+                    <div class="circle"><mat-icon>room_service</mat-icon></div>
+                    <span>Ready</span>
+                  </div>
+                </div>
+                <p class="status-msg">{{ getStatusText(activeTrackStatus()) }}</p>
+              </div>
+
+              <!-- Stepper Style -->
+              <div class="progress-box stepper" *ngIf="cx()?.orderTrackingStyle === 'stepper'">
+                <div class="stepper-head">
+                  <span class="label">Step {{ getActiveStepIndex(activeTrackStatus()) }} of 3</span>
+                  <h4>{{ getStatusText(activeTrackStatus()) }}</h4>
+                </div>
+                <div class="stepper-bar">
+                  <div class="stepper-fill" [style.width.%]="getStepProgressPercent(activeTrackStatus())"></div>
+                </div>
+                <div class="stepper-labels">
+                  <span [class.active]="getActiveStepIndex(activeTrackStatus()) >= 1">Confirmed</span>
+                  <span [class.active]="getActiveStepIndex(activeTrackStatus()) >= 2">Preparing</span>
+                  <span [class.active]="getActiveStepIndex(activeTrackStatus()) >= 3">Ready</span>
+                </div>
+              </div>
+
+              <!-- Cards Style -->
+              <div class="progress-box cards" *ngIf="cx()?.orderTrackingStyle === 'cards'">
+                <div class="status-card" [class.active]="activeTrackStatus() === 'Pending'" [class.completed]="['Preparing', 'Ready'].includes(activeTrackStatus())">
+                  <mat-icon class="card-icon">schedule</mat-icon>
+                  <div class="card-info">
+                    <strong>Order Confirmed</strong>
+                    <p>Queued for checkout</p>
+                  </div>
+                </div>
+                
+                <div class="status-card" [class.active]="activeTrackStatus() === 'Preparing'" [class.completed]="activeTrackStatus() === 'Ready'">
+                  <mat-icon class="card-icon">soup_kitchen</mat-icon>
+                  <div class="card-info">
+                    <strong>Preparing Food</strong>
+                    <p>Chef is cooking your dish</p>
+                  </div>
+                </div>
+                
+                <div class="status-card" [class.active]="activeTrackStatus() === 'Ready'">
+                  <mat-icon class="card-icon">room_service</mat-icon>
+                  <div class="card-info">
+                    <strong>Ready to Serve</strong>
+                    <p>Food served at table</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-card">
+                <div class="info-row">
+                  <span>Order #</span>
+                  <strong>#4929</strong>
+                </div>
+                <div class="info-row">
+                  <span>Total Amount</span>
+                  <strong>₹286.00</strong>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ────────────────────────────────────────── -->
+          <!-- SCREEN 4: SUCCESS SCREEN PREVIEW           -->
+          <!-- ────────────────────────────────────────── -->
+          <ng-container *ngIf="activeScreen() === 'success'">
+            <div class="success-screen">
+              <div class="success-icon-wrap">
+                <mat-icon>check_circle</mat-icon>
+              </div>
+              <h3>Payment Successful!</h3>
+              <p>Thank you for dining with us. Your bill is fully settled.</p>
+              
+              <div class="summary-box">
+                <div class="row">
+                  <span>Order Reference</span>
+                  <strong>#4929</strong>
+                </div>
+                <div class="row">
+                  <span>Amount Paid</span>
+                  <strong>₹286.00</strong>
+                </div>
+                <div class="row">
+                  <span>Payment Mode</span>
+                  <span>UPI / Mock Payment</span>
+                </div>
+              </div>
+
+              <button class="feedback-btn">Share Feedback</button>
+            </div>
+          </ng-container>
+
+        </div>
+        <div class="phone-home-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+</div>

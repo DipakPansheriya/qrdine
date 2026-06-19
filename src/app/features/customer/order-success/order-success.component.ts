@@ -73,4 +73,18 @@ export class OrderSuccessComponent implements OnInit, OnDestroy {
       default: return 'info';
     }
   }
+
+  getActiveStepIndex(status?: string): number {
+    if (!status) return 1;
+    if (['Pending', 'Accepted'].includes(status)) return 1;
+    if (status === 'Preparing') return 2;
+    return 3;
+  }
+
+  getStepProgressPercent(status?: string): number {
+    if (!status) return 33;
+    if (['Pending', 'Accepted'].includes(status)) return 33;
+    if (status === 'Preparing') return 66;
+    return 100;
+  }
 }

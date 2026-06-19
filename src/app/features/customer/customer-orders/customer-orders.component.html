@@ -1,4 +1,4 @@
-<div class="orders-container">
+<div class="orders-container" [ngStyle]="facade.styleVariables()">
   
   <div class="header">
     <button mat-icon-button [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]">
@@ -26,7 +26,7 @@
       
       <div class="order-card active-card" 
            *ngFor="let order of facade.activeOrders()"
-           [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'track', order.orderId]">
+           [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'success', order.orderId]">
         
         <div class="card-header">
           <div class="order-id">
@@ -60,7 +60,7 @@
       
       <div class="order-card past-card" 
            *ngFor="let order of facade.pastOrders()"
-           [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'track', order.orderId]">
+           [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'success', order.orderId]">
         
         <div class="card-header">
           <div class="order-id">

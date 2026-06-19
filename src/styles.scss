@@ -349,3 +349,43 @@ body {
     display: none !important;
   }
 }
+
+/* Custom Preview Dialog Overrides to prevent layout cutting/overflow */
+.custom-preview-dialog {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+  }
+  .mdc-dialog__surface {
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  .mat-mdc-dialog-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+}
+
+/* Custom Bottom Sheet Overrides to prevent layout height cutting/overflow */
+.cart-bottom-sheet {
+  border-top-left-radius: 24px !important;
+  border-top-right-radius: 24px !important;
+  overflow: hidden !important;
+  max-height: 80vh !important;
+}
+
+.mat-mdc-bottom-sheet-container {
+  padding: 0 !important;
+  max-height: 80vh !important;
+  border-top-left-radius: 24px !important;
+  border-top-right-radius: 24px !important;
+}
+
+/* Custom Dialog Overlay Overrides to support dynamic border radius on overlays */
+.cart-dialog-panel, .center-dialog-panel {
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    border-radius: var(--card-radius, 24px) !important;
+    overflow: hidden !important;
+  }
+}

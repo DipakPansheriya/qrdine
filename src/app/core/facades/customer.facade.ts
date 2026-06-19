@@ -7,6 +7,7 @@ import { MenuCategoryRepository } from '../repositories/menu-category.repository
 import { MenuItemRepository } from '../repositories/menu-item.repository';
 import { SettingsRepository } from '../repositories/settings.repository';
 import { CustomerExperienceRepository } from '../repositories/customer-experience.repository';
+import { CustomerExperienceService } from '../services/customer-experience.service';
 import { Restaurant, Table, CustomerSession, MenuCategory, MenuItem, CartItem, Order, Settings, CustomerExperience } from '../models';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
@@ -36,13 +37,18 @@ export class CustomerFacade {
   cartSubtotal = computed(() => this.cartItems().reduce((acc, item) => acc + item.totalPrice, 0));
   
   // Tax logic (assume flat 10% for mock or use settings, keeping simple for now)
-  cartTax = computed(() => this.cartSubtotal() * 0.10); 
-  cartGrandTotal = computed(() => this.cartSubtotal() + this.cartTax());
+  cartTax = computed(() => this.cartSubtotal() * (this.settings()?.gstPercentage ? (this.settings()!.gstPercentage / 100) : 0.10)); 
+  cartGrandTotal = computed(() => this.cartSubtotal() + this.cartTax() + (this.settings()?.serviceChargePercentage ? (this.cartSubtotal() * this.settings()!.serviceChargePercentage / 100) : 0));
 
   activeOrders = computed(() => this.orders().filter(o => ['Pending', 'Accepted', 'Preparing', 'Ready'].includes(o.status)));
   pastOrders = computed(() => this.orders().filter(o => ['Delivered', 'Completed', 'Cancelled'].includes(o.status)));
 
+  // Style variables driving the customer view dynamic layout
+  styleVariables = computed(() => this.cxService.getStyleVariables(this.settings(), this.experience()));
+
   private ordersSub: Subscription | null = null;
+  private settingsSub: Subscription | null = null;
+  private cxSub: Subscription | null = null;
 
   constructor(
     private restaurantRepo: RestaurantRepository,
@@ -52,7 +58,8 @@ export class CustomerFacade {
     private itemRepo: MenuItemRepository,
     private orderRepo: OrderRepository,
     private settingsRepo: SettingsRepository,
-    private cxRepo: CustomerExperienceRepository
+    private cxRepo: CustomerExperienceRepository,
+    private cxService: CustomerExperienceService
   ) {
     this.restoreCart();
   }
@@ -69,6 +76,7 @@ export class CustomerFacade {
       // 2. Validate Table
       const tbl = await firstValueFrom(this.tableRepo.getById(tableId));
       if (!tbl || tbl.restaurantId !== restaurantId) throw new Error('TABLE_NOT_FOUND');
+      tbl.id = tableId; // Ensure ID is set for routing and queries
       
       this.restaurant.set(rest);
       this.table.set(tbl);
@@ -160,14 +168,52 @@ export class CustomerFacade {
     this.items.set(availableItems);
   }
 
-  private async loadSettingsAndExperience(restaurantId: string) {
-    const [settings, cx] = await Promise.all([
-      firstValueFrom(this.settingsRepo.getByRestaurant(restaurantId)),
-      firstValueFrom(this.cxRepo.getByRestaurant(restaurantId))
-    ]);
-    
-    this.settings.set(settings);
-    this.experience.set(cx);
+  private loadSettingsAndExperience(restaurantId: string): Promise<void> {
+    if (this.settingsSub) this.settingsSub.unsubscribe();
+    if (this.cxSub) this.cxSub.unsubscribe();
+
+    return new Promise<void>((resolve, reject) => {
+      let loadedSettings = false;
+      let loadedCx = false;
+      let hasResolved = false;
+
+      const resolveIfAllDone = () => {
+        if (loadedSettings && loadedCx && !hasResolved) {
+          hasResolved = true;
+          resolve();
+        }
+      };
+
+      this.settingsSub = this.settingsRepo.getByRestaurant(restaurantId).subscribe({
+        next: (s) => {
+          this.settings.set(s);
+          loadedSettings = true;
+          resolveIfAllDone();
+        },
+        error: (err) => {
+          console.error(err);
+          if (!hasResolved) {
+            hasResolved = true;
+            reject(err);
+          }
+        }
+      });
+
+      this.cxSub = this.cxRepo.getByRestaurant(restaurantId).subscribe({
+        next: (cx) => {
+          this.experience.set(cx);
+          loadedCx = true;
+          resolveIfAllDone();
+        },
+        error: (err) => {
+          console.error(err);
+          if (!hasResolved) {
+            hasResolved = true;
+            reject(err);
+          }
+        }
+      });
+    });
   }
 
   // Cart Management

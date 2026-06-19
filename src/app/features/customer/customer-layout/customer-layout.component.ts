@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
 import { Subscription } from 'rxjs';
 import { CartDrawerComponent } from '../cart-drawer/cart-drawer.component';
@@ -21,7 +22,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
     MatIconModule, 
     MatBadgeModule,
     MatProgressSpinnerModule,
-    MatBottomSheetModule
+    MatBottomSheetModule,
+    MatDialogModule
   ],
   templateUrl: './customer-layout.component.html',
   styleUrls: ['./customer-layout.component.scss'],
@@ -42,6 +44,7 @@ export class CustomerLayoutComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private bottomSheet = inject(MatBottomSheet);
+  private dialog = inject(MatDialog);
   private sub = new Subscription();
 
   isError = signal<boolean>(false);
@@ -67,8 +70,11 @@ export class CustomerLayoutComponent implements OnInit, OnDestroy {
 
   openCart() {
     if (this.facade.cartItemCount() === 0) return;
-    this.bottomSheet.open(CartDrawerComponent, {
-      panelClass: 'cart-bottom-sheet'
+    this.dialog.open(CartDrawerComponent, {
+      width: '90%',
+      maxWidth: '500px',
+      position: { top: '40px' },
+      panelClass: 'cart-dialog-panel'
     });
   }
 }

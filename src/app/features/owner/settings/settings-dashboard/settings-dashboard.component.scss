@@ -706,7 +706,8 @@
 
   .ps-hero-bg {
     height: 80px;
-    background: linear-gradient(135deg, var(--p, #E53935), rgba(0,0,0,0.4));
+    background-color: var(--p, #E53935);
+    background-image: linear-gradient(135deg, var(--p, #E53935), rgba(0,0,0,0.4));
     opacity: 0.7;
   }
 
@@ -725,7 +726,7 @@
     width: 30px;
     height: 30px;
     border-radius: 8px;
-    background: var(--p, #E53935);
+    background-color: var(--p, #E53935);
   }
 
   .ps-welcome {
@@ -848,6 +849,32 @@
   justify-content: flex-end;
   padding-top: 1rem;
   border-top: 1px solid #f1f5f9;
+  gap: 1rem;
+}
+
+.btn-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: auto;
+
+  mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; color: #64748b; }
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    mat-icon { color: #0f172a; }
+  }
 }
 
 .btn-save {

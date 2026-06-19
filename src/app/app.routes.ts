@@ -90,7 +90,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/customer/customer-orders/customer-orders.component').then(m => m.CustomerOrdersComponent)
       },
       {
-        path: 'track/:orderId',
+        path: 'success/:orderId',
         loadComponent: () => import('./features/customer/order-success/order-success.component').then(m => m.OrderSuccessComponent)
       }
     ]

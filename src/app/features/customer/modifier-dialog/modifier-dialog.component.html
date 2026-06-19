@@ -1,28 +1,27 @@
-<h2 mat-dialog-title>{{ data.item.name }}</h2>
+<div class="modifier-dialog-container" [ngStyle]="facade.styleVariables()">
+  <h2 mat-dialog-title>{{ data.item.name }}</h2>
 
-<mat-dialog-content>
-  <div class="item-details">
-    <p class="desc" *ngIf="data.item.description">{{ data.item.description }}</p>
-    <span class="price">{{ data.item.price | currency:'USD' }}</span>
-  </div>
+  <mat-dialog-content>
+    <div class="item-details">
+      <p class="desc" *ngIf="data.item.description">{{ data.item.description }}</p>
+      <span class="price">{{ data.item.price | currency:facade.restaurant()?.currency || 'USD' }}</span>
+    </div>
 
-  <!-- Mock Modifiers Placeholder -->
-  <!-- <div class="modifier-groups"> ... </div> -->
+    <mat-form-field appearance="outline" class="notes-field">
+      <mat-label>Special Instructions</mat-label>
+      <textarea matInput rows="2" placeholder="e.g., Less spicy, no onions..." [ngModel]="notes()" (ngModelChange)="notes.set($event)"></textarea>
+    </mat-form-field>
+  </mat-dialog-content>
 
-  <mat-form-field appearance="outline" class="notes-field">
-    <mat-label>Special Instructions</mat-label>
-    <textarea matInput rows="2" placeholder="e.g., Less spicy, no onions..." [ngModel]="notes()" (ngModelChange)="notes.set($event)"></textarea>
-  </mat-form-field>
-</mat-dialog-content>
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <div class="quantity-selector">
+      <button mat-icon-button (click)="updateQuantity(-1)"><mat-icon>remove</mat-icon></button>
+      <span>{{ quantity() }}</span>
+      <button mat-icon-button (click)="updateQuantity(1)"><mat-icon>add</mat-icon></button>
+    </div>
 
-<mat-dialog-actions align="end" class="dialog-actions">
-  <div class="quantity-selector">
-    <button mat-icon-button (click)="updateQuantity(-1)"><mat-icon>remove</mat-icon></button>
-    <span>{{ quantity() }}</span>
-    <button mat-icon-button color="primary" (click)="updateQuantity(1)"><mat-icon>add</mat-icon></button>
-  </div>
-
-  <button mat-flat-button color="primary" (click)="addToCart()" class="add-btn">
-    Add - {{ (data.item.price * quantity()) | currency:'USD' }}
-  </button>
-</mat-dialog-actions>
+    <button mat-flat-button class="add-btn" (click)="addToCart()">
+      Add - {{ (data.item.price * quantity()) | currency:facade.restaurant()?.currency || 'USD' }}
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -1,51 +1,82 @@
+.modifier-dialog-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  background-color: white;
+  border-radius: var(--card-radius, 12px);
+  font-family: var(--font-family), sans-serif;
+
+  *:not(mat-icon):not(.material-icons) {
+    font-family: var(--font-family), sans-serif;
+  }
+
+  mat-icon, .material-icons {
+    font-family: 'Material Icons' !important;
+  }
+}
+
 .item-details {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 
   .desc {
     margin: 0;
     color: var(--text-secondary);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     line-height: 1.4;
   }
 
   .price {
     font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--brand-primary);
+    font-weight: 750;
+    color: var(--primary-color, var(--brand-primary));
   }
 }
 
 .notes-field {
   width: 100%;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
   border-top: 1px solid var(--surface-border);
 
   .quantity-selector {
     display: flex;
     align-items: center;
     background: var(--surface-ground);
-    border-radius: 20px;
+    border-radius: var(--btn-radius, 20px) !important;
     border: 1px solid var(--surface-border);
+
+    button {
+      color: var(--text-primary);
+    }
 
     span {
       width: 24px;
       text-align: center;
       font-weight: 700;
+      font-size: 0.95rem;
     }
   }
 
   .add-btn {
-    border-radius: 20px;
+    background-color: var(--primary-color, var(--brand-primary)) !important;
+    color: white !important;
+    border-radius: var(--btn-radius, 20px) !important;
     padding: 0 24px;
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      opacity: 0.95;
+    }
   }
 }

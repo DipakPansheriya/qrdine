@@ -12,7 +12,7 @@
   </div>
 
   <!-- Horizontal Scroll Category Chips -->
-  <div class="category-track-wrapper" *ngIf="!searchQuery() && facade.categories().length > 0">
+  <div class="category-track-wrapper" *ngIf="!searchQuery() && facade.categories().length > 0 && facade.experience()?.showCategoryTabs !== false">
     <div class="category-track">
       <button class="cat-chip" 
               *ngFor="let cat of facade.categories(); let i = index" 
@@ -22,7 +22,7 @@
       </button>
     </div>
   </div>
-
+ 
   <div class="scrollable-content">
     
     <!-- Empty State (No Menu) -->
@@ -31,21 +31,21 @@
       <h3>Menu Coming Soon</h3>
       <p>We're currently preparing our digital menu.</p>
     </div>
-
+ 
     <!-- Empty State (No Search Results) -->
     <div class="empty-state" *ngIf="searchQuery() && filteredItems().length === 0">
       <div class="illustration">🔍</div>
       <h3>No matches found</h3>
       <p>Try searching for something else.</p>
     </div>
-
+ 
     <!-- Featured Popular Section (Only show when not searching and on first category) -->
     <div class="popular-section" *ngIf="!searchQuery() && selectedCategoryIndex() === 0 && popularItems.length > 0 && facade.experience()?.showPopularItems !== false">
       <h3 class="section-title">🔥 Popular Dishes</h3>
       <div class="popular-track">
         <div class="popular-card" *ngFor="let item of popularItems" (click)="addToCart(item)">
-          <div class="p-img" [ngStyle]="{'background-image': 'url(' + (item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80') + ')'}">
-            <div class="dietary-badge" [ngClass]="item.vegType.toLowerCase().replace(' ', '-')"></div>
+          <div class="p-img" *ngIf="facade.experience()?.showFoodImages !== false" [ngStyle]="{'background-image': 'url(' + (item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80') + ')', 'border-radius': 'var(--image-radius)'}">
+            <div class="dietary-badge" *ngIf="facade.experience()?.showDietaryTags !== false" [ngClass]="item.vegType.toLowerCase().replace(' ', '-')"></div>
           </div>
           <div class="p-content">
             <h4>{{ item.name }}</h4>
@@ -54,16 +54,20 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- Main Menu Items Grid -->
-    <div class="items-grid" *ngIf="filteredItems().length > 0">
+    <div class="items-grid" [class.compact-grid]="facade.experience()?.compactMode" [class.large-grid]="facade.experience()?.largeMode" *ngIf="filteredItems().length > 0">
       
       <h3 class="section-title" *ngIf="searchQuery()">Search Results</h3>
       <h3 class="section-title" *ngIf="!searchQuery()">{{ getCategoryName(facade.categories()[selectedCategoryIndex()].categoryId) }}</h3>
-
-      <div class="premium-card" *ngFor="let item of filteredItems()">
-        <div class="card-img" [ngStyle]="{'background-image': 'url(' + (item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80') + ')'}">
-          <div class="tags-overlay">
+ 
+      <div class="premium-card" 
+           [class.compact-card]="facade.experience()?.compactMode" 
+           [class.large-card]="facade.experience()?.largeMode"
+           *ngFor="let item of filteredItems()">
+        
+        <div class="card-img" *ngIf="facade.experience()?.showFoodImages !== false" [ngStyle]="{'background-image': 'url(' + (item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80') + ')', 'border-radius': 'var(--image-radius)'}">
+          <div class="tags-overlay" *ngIf="facade.experience()?.showDietaryTags !== false">
             <span class="tiny-chip" *ngIf="item.vegType === 'Veg'">🌱 Veg</span>
             <span class="tiny-chip non-veg" *ngIf="item.vegType === 'Non Veg'">🍗 Non Veg</span>
             <span class="tiny-chip egg" *ngIf="item.vegType === 'Egg'">🥚 Egg</span>
@@ -80,13 +84,13 @@
           
           <div class="card-footer-row">
             <div class="meta">
-              <span *ngIf="item.preparationTime">🕒 {{ item.preparationTime }} mins</span>
+              <span *ngIf="item.preparationTime && facade.experience()?.showPreparationTime !== false">🕒 {{ item.preparationTime }} mins</span>
             </div>
             
             <button class="add-btn" 
                     [class.added]="addedStates()[item.itemId]" 
                     (click)="addToCart(item)">
-              <span class="btn-text" *ngIf="!addedStates()[item.itemId]">Add</span>
+              <span class="btn-text" *ngIf="!addedStates()[item.itemId]">{{ facade.experience()?.primaryButtonLabel || 'Add' }}</span>
               <span class="btn-text success" *ngIf="addedStates()[item.itemId]">✓ Added</span>
             </button>
           </div>
@@ -97,7 +101,10 @@
   </div>
 
   <!-- My Orders Floating Widget -->
-  <div class="my-orders-widget" *ngIf="facade.activeOrders().length > 0" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'orders']">
+  <div class="my-orders-widget" 
+       [style.bottom]="getMyOrdersWidgetBottom()"
+       *ngIf="facade.activeOrders().length > 0" 
+       [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'orders']">
     <div class="orders-icon">
       <mat-icon>receipt_long</mat-icon>
       <span class="badge">{{ facade.activeOrders().length }}</span>
