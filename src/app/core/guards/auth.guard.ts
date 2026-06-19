@@ -1,15 +1,19 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
-import { AuthFacade } from '../facades/auth.facade';
+import { Auth, authState } from '@angular/fire/auth';
+import { map, take } from 'rxjs/operators';
 
 export const authGuard: CanActivateFn = (route, state) => {
-  const authFacade = inject(AuthFacade);
+  const auth = inject(Auth);
   const router = inject(Router);
 
-  if (authFacade.currentUser()) {
-    return true;
-  }
-
-  // Check if they are trying to access a protected route without a session
-  return router.createUrlTree(['/login']);
+  return authState(auth).pipe(
+    take(1),
+    map(firebaseUser => {
+      if (firebaseUser) {
+        return true;
+      }
+      return router.createUrlTree(['/login']);
+    })
+  );
 };

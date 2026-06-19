@@ -1,0 +1,108 @@
+<div class="premium-menu-container">
+  
+  <!-- Pill Search Bar -->
+  <div class="search-section" [class.searching]="searchQuery().length > 0">
+    <div class="search-pill">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Search your favorite dishes..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+      <button mat-icon-button *ngIf="searchQuery()" (click)="searchQuery.set('')" class="clear-btn">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Horizontal Scroll Category Chips -->
+  <div class="category-track-wrapper" *ngIf="!searchQuery() && facade.categories().length > 0">
+    <div class="category-track">
+      <button class="cat-chip" 
+              *ngFor="let cat of facade.categories(); let i = index" 
+              [class.active]="selectedCategoryIndex() === i"
+              (click)="onCategoryChange(i)">
+        {{ cat.name }}
+      </button>
+    </div>
+  </div>
+
+  <div class="scrollable-content">
+    
+    <!-- Empty State (No Menu) -->
+    <div class="empty-state" *ngIf="facade.categories().length === 0 && !facade.loading()">
+      <div class="illustration">🍽️</div>
+      <h3>Menu Coming Soon</h3>
+      <p>We're currently preparing our digital menu.</p>
+    </div>
+
+    <!-- Empty State (No Search Results) -->
+    <div class="empty-state" *ngIf="searchQuery() && filteredItems().length === 0">
+      <div class="illustration">🔍</div>
+      <h3>No matches found</h3>
+      <p>Try searching for something else.</p>
+    </div>
+
+    <!-- Featured Popular Section (Only show when not searching and on first category) -->
+    <div class="popular-section" *ngIf="!searchQuery() && selectedCategoryIndex() === 0 && popularItems.length > 0">
+      <h3 class="section-title">🔥 Popular Dishes</h3>
+      <div class="popular-track">
+        <div class="popular-card" *ngFor="let item of popularItems" (click)="addToCart(item)">
+          <div class="p-img" [ngStyle]="{'background-image': 'url(' + (item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80') + ')'}">
+            <div class="dietary-badge" [ngClass]="item.vegType.toLowerCase().replace(' ', '-')"></div>
+          </div>
+          <div class="p-content">
+            <h4>{{ item.name }}</h4>
+            <span class="p-price">{{ item.price | currency:facade.restaurant()?.currency || 'USD' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Menu Items Grid -->
+    <div class="items-grid" *ngIf="filteredItems().length > 0">
+      
+      <h3 class="section-title" *ngIf="searchQuery()">Search Results</h3>
+      <h3 class="section-title" *ngIf="!searchQuery()">{{ getCategoryName(facade.categories()[selectedCategoryIndex()]?.categoryId) }}</h3>
+
+      <div class="premium-card" *ngFor="let item of filteredItems()">
+        <div class="card-img" [ngStyle]="{'background-image': 'url(' + (item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80') + ')'}">
+          <div class="tags-overlay">
+            <span class="tiny-chip" *ngIf="item.vegType === 'Veg'">🌱 Veg</span>
+            <span class="tiny-chip non-veg" *ngIf="item.vegType === 'Non Veg'">🍗 Non Veg</span>
+            <span class="tiny-chip egg" *ngIf="item.vegType === 'Egg'">🥚 Egg</span>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="card-header-row">
+            <h4>{{ item.name }}</h4>
+            <span class="price">{{ item.price | currency:facade.restaurant()?.currency || 'USD' }}</span>
+          </div>
+          
+          <p class="desc" *ngIf="item.description">{{ item.description }}</p>
+          
+          <div class="card-footer-row">
+            <div class="meta">
+              <span *ngIf="item.preparationTime">🕒 {{ item.preparationTime }} mins</span>
+            </div>
+            
+            <button class="add-btn" 
+                    [class.added]="addedStates()[item.itemId]" 
+                    (click)="addToCart(item)">
+              <span class="btn-text" *ngIf="!addedStates()[item.itemId]">Add</span>
+              <span class="btn-text success" *ngIf="addedStates()[item.itemId]">✓ Added</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- My Orders Floating Widget -->
+  <div class="my-orders-widget" *ngIf="facade.activeOrders().length > 0" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'orders']">
+    <div class="orders-icon">
+      <mat-icon>receipt_long</mat-icon>
+      <span class="badge">{{ facade.activeOrders().length }}</span>
+    </div>
+    <span class="text">My Orders</span>
+    <mat-icon class="arrow">arrow_forward</mat-icon>
+  </div>
+</div>

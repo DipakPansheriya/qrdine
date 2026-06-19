@@ -1,0 +1,92 @@
+<div class="success-container">
+  <div class="premium-skeleton-state" *ngIf="loading()">
+    <div class="s-circle"></div>
+    <div class="s-title"></div>
+    <div class="s-subtitle"></div>
+    <div class="s-card"></div>
+  </div>
+
+  <div class="order-details-premium" *ngIf="!loading() && order()">
+    
+    <div class="header-section">
+      <div class="confetti">🎉</div>
+      <h2>Order Confirmed!</h2>
+      <p>We've received your order and sent it to the kitchen.</p>
+    </div>
+
+    <!-- Visual Progress Tracker -->
+    <div class="progress-tracker-card">
+      <div class="tracker-steps">
+        <div class="step" [class.active]="['Pending', 'Accepted', 'Preparing', 'Ready', 'Delivered'].includes(order()?.status || '')">
+          <div class="icon-circle"><mat-icon>schedule</mat-icon></div>
+          <span>Pending</span>
+        </div>
+        <div class="step-line" [class.active]="['Accepted', 'Preparing', 'Ready', 'Delivered'].includes(order()?.status || '')"></div>
+        
+        <div class="step" [class.active]="['Accepted', 'Preparing', 'Ready', 'Delivered'].includes(order()?.status || '')">
+          <div class="icon-circle"><mat-icon>soup_kitchen</mat-icon></div>
+          <span>Preparing</span>
+        </div>
+        <div class="step-line" [class.active]="['Ready', 'Delivered'].includes(order()?.status || '')"></div>
+        
+        <div class="step" [class.active]="['Ready', 'Delivered'].includes(order()?.status || '')">
+          <div class="icon-circle"><mat-icon>room_service</mat-icon></div>
+          <span>Ready</span>
+        </div>
+      </div>
+      <p class="current-status-text">{{ getStatusText(order()?.status || 'Pending') }}</p>
+    </div>
+
+    <div class="info-card">
+      <div class="info-row">
+        <span>Order Number</span>
+        <strong class="highlight">#{{ order()?.orderNumber }}</strong>
+      </div>
+      <div class="info-row">
+        <span>Estimated Time</span>
+        <strong>15 mins</strong>
+      </div>
+      <div class="info-row highlight-total">
+        <span>Total Amount</span>
+        <strong>{{ order()?.grandTotal | currency:facade.restaurant()?.currency || 'USD' }}</strong>
+      </div>
+    </div>
+
+    <!-- Order Items List -->
+    <div class="order-items-card">
+      <h3 class="card-title">Order Summary</h3>
+      <div class="item-row" *ngFor="let item of order()?.items">
+        <div class="qty">{{ item.quantity }}x</div>
+        <div class="name-desc">
+          <span class="name">{{ item.name }}</span>
+          <span class="notes" *ngIf="item.notes">{{ item.notes }}</span>
+        </div>
+        <div class="price">{{ item.totalPrice | currency:facade.restaurant()?.currency || 'USD' }}</div>
+      </div>
+      
+      <div class="notes-section" *ngIf="order()?.notes">
+        <mat-icon>notes</mat-icon>
+        <span>{{ order()?.notes }}</span>
+      </div>
+    </div>
+
+    <div class="tracking-actions">
+      <button class="premium-btn outline" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]">
+        Browse Menu
+      </button>
+      <button class="premium-btn" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'orders']">
+        View All Orders
+      </button>
+    </div>
+
+  </div>
+
+  <div class="error-state" *ngIf="!loading() && !order()">
+    <div class="confetti">😕</div>
+    <h2>Order Not Found</h2>
+    <p>We couldn't track this order.</p>
+    <button class="premium-btn" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]">
+      Back to Menu
+    </button>
+  </div>
+</div>

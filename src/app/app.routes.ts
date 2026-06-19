@@ -75,6 +75,24 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'menu/:restaurantId/:tableId',
+    loadComponent: () => import('./features/customer/customer-layout/customer-layout.component').then(m => m.CustomerLayoutComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/customer/customer-menu/customer-menu.component').then(m => m.CustomerMenuComponent)
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./features/customer/customer-orders/customer-orders.component').then(m => m.CustomerOrdersComponent)
+      },
+      {
+        path: 'track/:orderId',
+        loadComponent: () => import('./features/customer/order-success/order-success.component').then(m => m.OrderSuccessComponent)
+      }
+    ]
+  },
+  {
     path: '**',
     redirectTo: 'login'
   }
