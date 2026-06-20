@@ -1,8 +1,8 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { MenuCategoryRepository } from '../repositories/menu-category.repository';
 import { MenuItemRepository } from '../repositories/menu-item.repository';
 import { MenuCategory, MenuItem } from '../models';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, Subscription } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuthFacade } from './auth.facade';
 
@@ -18,6 +18,10 @@ export class MenuFacade {
   private selectedCategoryIdSignal = signal<string | null>(null);
   private loadingSignal = signal<boolean>(false);
 
+  // Subscriptions
+  private categoriesSub: Subscription | null = null;
+  private itemsSub: Subscription | null = null;
+
   // Selectors
   readonly categories = this.categoriesSignal.asReadonly();
   readonly items = this.itemsSignal.asReadonly();
@@ -32,39 +36,63 @@ export class MenuFacade {
     return allItems.filter(item => item.categoryId === catId);
   });
 
+  constructor() {
+    effect(() => {
+      const user = this.authFacade.currentUser();
+      if (user?.restaurantId) {
+        this.subscribeToMenuData(user.restaurantId);
+      } else {
+        this.unsubscribe();
+        this.categoriesSignal.set([]);
+        this.itemsSignal.set([]);
+      }
+    }, { allowSignalWrites: true });
+  }
+
+  private subscribeToMenuData(restaurantId: string) {
+    this.loadingSignal.set(true);
+    this.unsubscribe();
+
+    this.categoriesSub = this.categoryRepo.getByRestaurant(restaurantId).subscribe({
+      next: (categories) => {
+        const sorted = (categories || []).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        this.categoriesSignal.set(sorted);
+        
+        if (sorted.length > 0 && !this.selectedCategoryIdSignal()) {
+          this.selectedCategoryIdSignal.set(sorted[0].categoryId);
+        }
+        this.loadingSignal.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.loadingSignal.set(false);
+      }
+    });
+
+    this.itemsSub = this.itemRepo.getByRestaurant(restaurantId).subscribe({
+      next: (items) => {
+        this.itemsSignal.set(items || []);
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+
+  private unsubscribe() {
+    if (this.categoriesSub) {
+      this.categoriesSub.unsubscribe();
+      this.categoriesSub = null;
+    }
+    if (this.itemsSub) {
+      this.itemsSub.unsubscribe();
+      this.itemsSub = null;
+    }
+  }
+
   // Actions
   loadMenuData(): void {
-    const user = this.authFacade.currentUser();
-    if (!user || !user.restaurantId) return;
-
-    this.loadingSignal.set(true);
-
-    // In a real Firestore setup with complex queries, we would add query constraints to BaseRepository
-    // For MVP with basic BaseRepository, we fetch all and filter client side, or assume
-    // we'll implement queries later. Let's assume we fetch all for now and filter by restaurantId.
-    
-    // We use firstValueFrom since collectionData is a hot observable
-    Promise.all([
-      firstValueFrom(this.categoryRepo.getAll()),
-      firstValueFrom(this.itemRepo.getAll())
-    ]).then(([categories, items]) => {
-      // Filter by the current user's restaurant
-      const myCategories = (categories || []).filter(c => c.restaurantId === user.restaurantId)
-                                             .sort((a, b) => a.sortOrder - b.sortOrder);
-      const myItems = (items || []).filter(i => i.restaurantId === user.restaurantId);
-      
-      this.categoriesSignal.set(myCategories);
-      this.itemsSignal.set(myItems);
-      
-      if (myCategories.length > 0 && !this.selectedCategoryIdSignal()) {
-        this.selectedCategoryIdSignal.set(myCategories[0].categoryId);
-      }
-      
-      this.loadingSignal.set(false);
-    }).catch(error => {
-      console.error(error);
-      this.loadingSignal.set(false);
-    });
+    // Realtime subscriptions are managed automatically via the constructor effect
   }
 
   selectCategory(categoryId: string): void {
@@ -73,11 +101,11 @@ export class MenuFacade {
 
   // Category Actions
   createCategory(category: MenuCategory): Observable<any> {
-    return this.categoryRepo.create(category).pipe(tap(() => this.loadMenuData()));
+    return this.categoryRepo.create(category);
   }
 
   updateCategory(id: string, data: Partial<MenuCategory>): Observable<void> {
-    return this.categoryRepo.update(id, data).pipe(tap(() => this.loadMenuData()));
+    return this.categoryRepo.update(id, data);
   }
 
   deleteCategory(id: string): Observable<void> {
@@ -86,21 +114,20 @@ export class MenuFacade {
         if (this.selectedCategoryIdSignal() === id) {
           this.selectedCategoryIdSignal.set(null);
         }
-        this.loadMenuData();
       })
     );
   }
 
   // Item Actions
   createItem(item: MenuItem): Observable<any> {
-    return this.itemRepo.create(item).pipe(tap(() => this.loadMenuData()));
+    return this.itemRepo.create(item);
   }
 
   updateItem(id: string, data: Partial<MenuItem>): Observable<void> {
-    return this.itemRepo.update(id, data).pipe(tap(() => this.loadMenuData()));
+    return this.itemRepo.update(id, data);
   }
 
   deleteItem(id: string): Observable<void> {
-    return this.itemRepo.delete(id).pipe(tap(() => this.loadMenuData()));
+    return this.itemRepo.delete(id);
   }
 }

@@ -1,5 +1,11 @@
 <div class="premium-menu-container">
   
+  <!-- Reorder Limit Banner -->
+  <div class="reorder-banner" *ngIf="facade.experience()?.allowReorder === false && facade.orders().length > 0">
+    <mat-icon>info</mat-icon>
+    <span>Reordering is disabled for this session. You can view your current order details below.</span>
+  </div>
+  
   <!-- Pill Search Bar -->
   <div class="search-section" [class.searching]="searchQuery().length > 0" *ngIf="facade.experience()?.showSearchBar !== false">
     <div class="search-pill">
@@ -89,6 +95,7 @@
             
             <button class="add-btn" 
                     [class.added]="addedStates()[item.itemId]" 
+                    [disabled]="facade.experience()?.allowReorder === false && facade.orders().length > 0"
                     (click)="addToCart(item)">
               <span class="btn-text" *ngIf="!addedStates()[item.itemId]">{{ facade.experience()?.primaryButtonLabel || 'Add' }}</span>
               <span class="btn-text success" *ngIf="addedStates()[item.itemId]">✓ Added</span>
@@ -112,4 +119,53 @@
     <span class="text">My Orders</span>
     <mat-icon class="arrow">arrow_forward</mat-icon>
   </div>
+
+  <!-- Duplicate QR Warning Overlay Modal -->
+  <div class="modal-overlay" *ngIf="facade.showDuplicateSessionWarning()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <mat-icon class="warning-icon">warning</mat-icon>
+        <h3>Table Already Occupied</h3>
+      </div>
+      <div class="modal-body">
+        <p>This table (Table {{ facade.table()?.tableNumber }}) has an active session.</p>
+        <p class="desc">To prevent accidental duplicate ordering sessions, please select an option below:</p>
+      </div>
+      <div class="modal-actions vertical">
+        <button mat-flat-button color="primary" class="action-btn" (click)="joinExistingSession()">
+          <mat-icon>visibility</mat-icon>
+          View Existing Session Order
+        </button>
+        <button mat-stroked-button class="action-btn outline" (click)="requestHelp()">
+          <mat-icon>notifications_active</mat-icon>
+          Request Assistance
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restore Session / Active Order Overlay Modal -->
+  <div class="modal-overlay" *ngIf="facade.showSessionRestorePrompt()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <mat-icon class="info-icon">receipt_long</mat-icon>
+        <h3>Active Session Detected</h3>
+      </div>
+      <div class="modal-body">
+        <p>Welcome back! You have an active order session at Table {{ facade.table()?.tableNumber }}.</p>
+        <p class="desc">What would you like to do?</p>
+      </div>
+      <div class="modal-actions vertical">
+        <button mat-flat-button color="primary" class="action-btn" (click)="continueOrder()">
+          <mat-icon>add_shopping_cart</mat-icon>
+          Continue Session (Add Items)
+        </button>
+        <button mat-stroked-button class="action-btn outline" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'orders']">
+          <mat-icon>receipt</mat-icon>
+          View Current Order Status
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>

@@ -414,7 +414,7 @@
 
 .orders-head {
   display: grid;
-  grid-template-columns: 1fr 0.6fr 0.8fr 1fr 0.6fr;
+  grid-template-columns: 1fr 1fr 0.6fr 0.8fr 1fr 0.6fr 1.5fr;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -427,7 +427,7 @@
 
 .order-row {
   display: grid;
-  grid-template-columns: 1fr 0.6fr 0.8fr 1fr 0.6fr;
+  grid-template-columns: 1fr 1fr 0.6fr 0.8fr 1fr 0.6fr 1.5fr;
   align-items: center;
   padding: 0.6rem 0;
   border-bottom: 1px solid #f8fafc;
@@ -438,6 +438,7 @@
 }
 
 .order-num { font-weight: 700; color: #1e293b; }
+.order-customer { color: #1e293b; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 0.5rem; }
 .order-table { color: #64748b; }
 .order-amount { font-weight: 700; color: #0f172a; }
 .order-time { color: #94a3b8; font-size: 0.75rem; }
@@ -457,6 +458,74 @@
   &.status-ready { background: #f0fdf4; color: #16a34a; }
   &.status-delivered { background: #f0fdf4; color: #059669; }
   &.status-cancelled { background: #fef2f2; color: #ef4444; }
+}
+
+.order-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .no-actions {
+    color: #cbd5e1;
+    font-size: 0.82rem;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    outline: none;
+
+    mat-icon {
+      font-size: 0.85rem;
+      width: 0.85rem;
+      height: 0.85rem;
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &.btn-accept {
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: #bfdbfe;
+      &:hover { background: #dbeafe; }
+    }
+
+    &.btn-prepare {
+      background: #fdf4ff;
+      color: #9333ea;
+      border-color: #e9d5ff;
+      &:hover { background: #f3e8ff; }
+    }
+
+    &.btn-ready {
+      background: #fffbeb;
+      color: #d97706;
+      border-color: #fde68a;
+      &:hover { background: #fef3c7; }
+    }
+
+    &.btn-complete {
+      background: #f0fdf4;
+      color: #16a34a;
+      border-color: #bbf7d0;
+      &:hover { background: #dcfce7; }
+    }
+  }
 }
 
 /* ── Restaurant Status Widget ── */

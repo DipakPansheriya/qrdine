@@ -93,7 +93,7 @@
       margin-top: 0.5rem;
       font-weight: 800;
       font-size: 0.95rem;
-      color: var(--primary-color, var(--brand-primary));
+      color: var(--primary-color);
     }
   }
 
@@ -136,7 +136,7 @@
       }
       
       &.delete-btn {
-        color: var(--brand-warn, #ef4444);
+        color: #ef4444;
       }
     }
 
@@ -198,7 +198,7 @@
     font-size: 1rem;
     font-weight: 800;
     border-radius: var(--btn-radius) !important;
-    background-color: var(--primary-color, var(--brand-primary)) !important;
+    background-color: var(--primary-color) !important;
     color: white !important;
     border: none;
     cursor: pointer;

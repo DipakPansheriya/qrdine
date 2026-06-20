@@ -31,8 +31,11 @@ export class CartDrawerComponent implements OnInit {
   private elementRef = inject(ElementRef);
 
   orderNotes = signal<string>('');
+  customerName = signal<string>('');
 
   ngOnInit() {
+    this.customerName.set(localStorage.getItem('qrdine_customer_name') || '');
+
     let parent = this.elementRef.nativeElement.parentElement;
     while (parent && !parent.classList.contains('cdk-overlay-pane')) {
       parent = parent.parentElement;
@@ -58,7 +61,18 @@ export class CartDrawerComponent implements OnInit {
 
   async checkout() {
     try {
-      const orderId = await this.facade.placeOrder(this.orderNotes());
+      const name = this.customerName().trim();
+      const requireName = this.facade.experience()?.requireCustomerName ?? true;
+      if (requireName && !name) {
+        alert('Please enter your name to place the order.');
+        return;
+      }
+      
+      if (name) {
+        localStorage.setItem('qrdine_customer_name', name);
+      }
+
+      const orderId = await this.facade.placeOrder(this.orderNotes(), name);
       this.close();
       
       const restId = this.facade.restaurant()?.restaurantId;

@@ -31,7 +31,7 @@
   .price {
     font-size: 1.15rem;
     font-weight: 750;
-    color: var(--primary-color, var(--brand-primary));
+    color: var(--primary-color);
   }
 }
 
@@ -67,7 +67,7 @@
   }
 
   .add-btn {
-    background-color: var(--primary-color, var(--brand-primary)) !important;
+    background-color: var(--primary-color) !important;
     color: white !important;
     border-radius: var(--btn-radius, 20px) !important;
     padding: 0 24px;

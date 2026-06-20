@@ -52,6 +52,7 @@ export interface Table {
   createdAt?: any;
   updatedAt?: any;
   createdBy?: string;
+  activeSessionId?: string;
 }
 
 export interface CustomerSession {
@@ -138,6 +139,7 @@ export interface Order {
   status: 'Pending' | 'Accepted' | 'Preparing' | 'Ready' | 'Delivered' | 'Completed' | 'Cancelled' | 'Refunded';
   createdAt: any;
   updatedAt: any;
+  customerName?: string;
 }
 
 export interface CustomerRequest {
@@ -256,6 +258,11 @@ export interface CustomerExperience {
   orderTrackingStyle?: 'timeline' | 'stepper' | 'cards';
   primaryButtonLabel?: string;
   checkoutButtonLabel?: string;
+  allowReorder?: boolean;
+  requireCustomerName?: boolean;
+  autoOccupyTable?: boolean;
+  autoFreeTable?: boolean;
+  sessionTimeout?: '15' | '30' | '60' | 'Never' | string;
   updatedAt: any;
 }
 

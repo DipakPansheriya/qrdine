@@ -62,6 +62,14 @@
         </div>
         <mat-icon class="nav-btn-arrow">chevron_right</mat-icon>
       </button>
+      <button class="nav-btn" [class.active]="activeTab === 'qr-experience'" (click)="setTab('qr-experience')">
+        <div class="nav-btn-icon"><mat-icon>qr_code_2</mat-icon></div>
+        <div class="nav-btn-text">
+          <span class="nav-btn-label">Table QR Experience</span>
+          <span class="nav-btn-desc">Session limits & automations</span>
+        </div>
+        <mat-icon class="nav-btn-arrow">chevron_right</mat-icon>
+      </button>
     </nav>
 
     <!-- Right Content Panel -->
@@ -620,6 +628,94 @@
             <button class="btn-save" (click)="saveCx()" [disabled]="facade.loading()">
               <mat-icon>save</mat-icon>
               Save Customer Experience
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── TABLE QR EXPERIENCE ── -->
+      <div class="panel-section" *ngIf="activeTab === 'qr-experience'">
+        <form [formGroup]="cxForm">
+          <div class="section-head">
+            <h2>Table QR Experience</h2>
+            <p>Control ordering behavior, duplicate scans, and automatic table status tracking</p>
+          </div>
+
+          <div class="card-group">
+            <div class="settings-card toggle-card">
+              <div class="toggle-info">
+                <mat-icon class="toggle-icon-mat">people</mat-icon>
+                <div>
+                  <strong>Allow Multiple Orders Per Table</strong>
+                  <p>When enabled, different customer devices can place separate orders at the same table. When disabled, subsequent scans must join the active session.</p>
+                </div>
+              </div>
+              <mat-slide-toggle formControlName="allowMultipleOrders" color="primary"></mat-slide-toggle>
+            </div>
+
+            <div class="settings-card toggle-card">
+              <div class="toggle-info">
+                <mat-icon class="toggle-icon-mat">replay</mat-icon>
+                <div>
+                  <strong>Allow Reorder During Active Session</strong>
+                  <p>Permit customers to place additional orders after their first order is already active.</p>
+                </div>
+              </div>
+              <mat-slide-toggle formControlName="allowReorder" color="primary"></mat-slide-toggle>
+            </div>
+
+            <div class="settings-card toggle-card">
+              <div class="toggle-info">
+                <mat-icon class="toggle-icon-mat">badge</mat-icon>
+                <div>
+                  <strong>Require Customer Name</strong>
+                  <p>Ask customers to input their name (e.g. John) before checking out and placing their first order.</p>
+                </div>
+              </div>
+              <mat-slide-toggle formControlName="requireCustomerName" color="primary"></mat-slide-toggle>
+            </div>
+
+            <div class="settings-card toggle-card">
+              <div class="toggle-info">
+                <mat-icon class="toggle-icon-mat">vpn_key</mat-icon>
+                <div>
+                  <strong>Auto Occupy Table On First Order</strong>
+                  <p>Automatically update table status to 'OCCUPIED' and associate it with the active customer session on order placement.</p>
+                </div>
+              </div>
+              <mat-slide-toggle formControlName="autoOccupyTable" color="primary"></mat-slide-toggle>
+            </div>
+
+            <div class="settings-card toggle-card">
+              <div class="toggle-info">
+                <mat-icon class="toggle-icon-mat">no_meeting_room</mat-icon>
+                <div>
+                  <strong>Auto Free Table After Payment / Completion</strong>
+                  <p>Automatically set table status back to 'AVAILABLE' and clear the active session once the order is completed.</p>
+                </div>
+              </div>
+              <mat-slide-toggle formControlName="autoFreeTable" color="primary"></mat-slide-toggle>
+            </div>
+
+            <div class="settings-card">
+              <div class="card-label">
+                <mat-icon>hourglass_bottom</mat-icon>
+                <span>Order Session Timeout</span>
+              </div>
+              <p class="field-desc">Duration after which an inactive table session will expire automatically on customer re-scan.</p>
+              <select class="field-input" formControlName="sessionTimeout">
+                <option value="15">15 Minutes</option>
+                <option value="30">30 Minutes</option>
+                <option value="60">60 Minutes</option>
+                <option value="Never">Never</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-save" (click)="saveCx()" [disabled]="facade.loading()">
+              <mat-icon>save</mat-icon>
+              Save QR Experience
             </button>
           </div>
         </form>

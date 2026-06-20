@@ -90,6 +90,10 @@
     </div>
 
     <div class="info-card">
+      <div class="info-row" *ngIf="order()?.customerName">
+        <span>Customer</span>
+        <strong>{{ order()?.customerName }}</strong>
+      </div>
       <div class="info-row">
         <span>Order Number</span>
         <strong class="highlight">#{{ order()?.orderNumber }}</strong>

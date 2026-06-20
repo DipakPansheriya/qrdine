@@ -62,6 +62,19 @@ export class CustomerMenuComponent implements OnInit {
 
   ngOnInit() {}
 
+  joinExistingSession() {
+    this.facade.joinExistingTableSession();
+  }
+
+  async requestHelp() {
+    await this.facade.requestAssistance();
+    alert('Assistance requested. A waiter will be with you shortly.');
+  }
+
+  continueOrder() {
+    this.facade.showSessionRestorePrompt.set(false);
+  }
+
   onCategoryChange(index: number) {
     this.selectedCategoryIndex.set(index);
     this.searchQuery.set(''); // Clear search on category switch

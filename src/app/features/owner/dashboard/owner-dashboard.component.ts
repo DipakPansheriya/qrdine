@@ -133,4 +133,8 @@ export class OwnerDashboardComponent implements OnInit {
   ];
 
   ngOnInit() {}
+
+  async updateStatus(orderId: string, status: string) {
+    await this.facade.updateOrderStatus(orderId, status as any);
+  }
 }
