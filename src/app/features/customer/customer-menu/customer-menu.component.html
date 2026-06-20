@@ -107,6 +107,24 @@
 
   </div>
 
+  <!-- Bill Request Widget -->
+  <div class="my-orders-widget bill-widget" 
+       [style.bottom]="getBillWidgetBottom()"
+       *ngIf="facade.session() && (!facade.session()?.billStatus || facade.session()?.billStatus === 'Requested' || facade.session()?.billStatus === 'Generating' || facade.session()?.billStatus === 'Ready')"
+       (click)="onRequestBill()">
+    <div class="orders-icon" [ngClass]="facade.session()?.billStatus ? 'active-status' : ''">
+      <mat-icon *ngIf="!facade.session()?.billStatus">receipt</mat-icon>
+      <mat-icon *ngIf="facade.session()?.billStatus === 'Requested'">hourglass_empty</mat-icon>
+      <mat-icon *ngIf="facade.session()?.billStatus === 'Generating'">sync</mat-icon>
+      <mat-icon *ngIf="facade.session()?.billStatus === 'Ready'">check_circle</mat-icon>
+    </div>
+    <span class="text" *ngIf="!facade.session()?.billStatus">Request Bill</span>
+    <span class="text" *ngIf="facade.session()?.billStatus === 'Requested'">Bill Requested</span>
+    <span class="text" *ngIf="facade.session()?.billStatus === 'Generating'">Generating...</span>
+    <span class="text" *ngIf="facade.session()?.billStatus === 'Ready'">Bill Ready</span>
+    <mat-icon class="arrow" *ngIf="!facade.session()?.billStatus">arrow_forward</mat-icon>
+  </div>
+
   <!-- My Orders Floating Widget -->
   <div class="my-orders-widget" 
        [style.bottom]="getMyOrdersWidgetBottom()"

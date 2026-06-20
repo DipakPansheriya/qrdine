@@ -281,6 +281,39 @@
   .arrow { font-size: 18px; width: 18px; height: 18px; color: white; opacity: 0.8; }
 }
 
+/* --- Bill Request Widget overrides --- */
+.bill-widget {
+  background: white;
+  color: #212529;
+  border: 1px solid #dee2e6;
+  
+  .text {
+    color: #212529;
+  }
+  .arrow {
+    color: #212529;
+  }
+  
+  .orders-icon {
+    background: #f8f9fa;
+    color: #212529;
+    border: 1px solid #dee2e6;
+    
+    &.active-status {
+      background: var(--primary-color, #ff6b6b);
+      color: white;
+      border: none;
+      animation: pulse-soft 2s infinite;
+    }
+  }
+}
+
+@keyframes pulse-soft {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+}
+
 /* Modal Overlay & Cards (Duplicate & Restore Sessions) */
 .modal-overlay {
   position: fixed;

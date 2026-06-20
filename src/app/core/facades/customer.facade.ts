@@ -56,6 +56,7 @@ export class CustomerFacade {
   private ordersSub: Subscription | null = null;
   private settingsSub: Subscription | null = null;
   private cxSub: Subscription | null = null;
+  private sessionSub: Subscription | null = null;
 
   constructor(
     private restaurantRepo: RestaurantRepository,
@@ -179,7 +180,8 @@ export class CustomerFacade {
       // Restore cart items
       this.restoreCartForTable(tableId);
 
-      // Listen to Session Orders
+      // Listen to Session and Orders
+      this.listenToSession(currentSessionId);
       this.listenToOrders(currentSessionId);
 
       // Artificial delay for premium skeleton loading experience
@@ -227,6 +229,22 @@ export class CustomerFacade {
       const collRef = collection(this.firestore, 'requests');
       await addDoc(collRef, request);
     }
+  }
+
+  async requestBill() {
+    const sess = this.session();
+    if (sess && !sess.billStatus) {
+      await firstValueFrom(this.sessionRepo.update(sess.sessionId, { billStatus: 'Requested' }));
+    }
+  }
+
+  private listenToSession(sessionId: string) {
+    if (this.sessionSub) this.sessionSub.unsubscribe();
+    this.sessionSub = this.sessionRepo.getById(sessionId).subscribe(session => {
+      if (session) {
+        this.session.set(session);
+      }
+    });
   }
 
   private async createNewSession(restaurantId: string, tableId: string): Promise<string> {

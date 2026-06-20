@@ -1,0 +1,103 @@
+<div class="waiter-container">
+  <!-- Top Metrics -->
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <div class="metric-value">{{ waiterFacade.kpis().tablesServed }}</div>
+      <div class="metric-label">Tables Served</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ waiterFacade.kpis().ordersDelivered }}</div>
+      <div class="metric-label">Orders Delivered</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ waiterFacade.kpis().avgResponseTime }}m</div>
+      <div class="metric-label">Avg Response</div>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    
+    <!-- Table Grid -->
+    <div class="table-grid-section">
+      <h2 class="section-title">Table Overview</h2>
+      <div class="table-grid">
+        <div class="table-card" *ngFor="let table of waiterFacade.tables()" [ngClass]="getTableClass(table.status)" matRipple>
+          <div class="table-header">
+            <span class="table-number">T{{ table.tableNumber }}</span>
+            <span class="table-status">{{ table.status }}</span>
+          </div>
+          <div class="table-capacity">
+            <mat-icon>people</mat-icon> {{ table.capacity }}
+          </div>
+          
+          <div class="table-indicators">
+            <span class="indicator request-indicator" *ngIf="getTableRequests(table.id || '').length > 0">
+              <mat-icon>pan_tool</mat-icon>
+            </span>
+            <span class="indicator food-indicator" *ngIf="getTableReadyOrders(table.id || '').length > 0">
+              <mat-icon>restaurant</mat-icon>
+            </span>
+            <span class="indicator bill-indicator" *ngIf="getTableBillRequest(table.id || '')">
+              <mat-icon>receipt</mat-icon>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Center Sidebar -->
+    <div class="action-sidebar">
+      
+      <!-- Customer Requests -->
+      <div class="action-section">
+        <h2 class="section-title">Customer Requests <span class="badge" *ngIf="waiterFacade.activeRequests().length">{{ waiterFacade.activeRequests().length }}</span></h2>
+        
+        <div class="empty-state" *ngIf="waiterFacade.activeRequests().length === 0">
+          <mat-icon>check_circle_outline</mat-icon>
+          <p>No pending requests</p>
+        </div>
+
+        <div class="action-card request-card" *ngFor="let req of waiterFacade.activeRequests()">
+          <div class="card-left">
+            <div class="table-badge">T{{ getTableName(req.tableId) }}</div>
+          </div>
+          <div class="card-content">
+            <h4>{{ req.type }}</h4>
+            <span class="time">{{ req.createdAt?.toDate ? (req.createdAt.toDate() | date:'shortTime') : '' }}</span>
+          </div>
+          <div class="card-actions">
+            <button mat-icon-button color="primary" (click)="waiterFacade.resolveRequest(req.requestId)">
+              <mat-icon>check_circle</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ready Orders -->
+      <div class="action-section">
+        <h2 class="section-title">Ready for Delivery <span class="badge" *ngIf="waiterFacade.readyOrders().length">{{ waiterFacade.readyOrders().length }}</span></h2>
+        
+        <div class="empty-state" *ngIf="waiterFacade.readyOrders().length === 0">
+          <mat-icon>local_dining</mat-icon>
+          <p>No orders ready</p>
+        </div>
+
+        <div class="action-card order-card" *ngFor="let order of waiterFacade.readyOrders()">
+          <div class="card-left">
+            <div class="table-badge">T{{ getTableName(order.tableId) }}</div>
+          </div>
+          <div class="card-content">
+            <h4>Order #{{ order.orderNumber }}</h4>
+            <span class="time">{{ order.items.length }} items</span>
+          </div>
+          <div class="card-actions">
+            <button mat-button color="primary" (click)="waiterFacade.markOrderDelivered(order.orderId)">
+              DELIVER
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

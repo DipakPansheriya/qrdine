@@ -8,7 +8,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 import { StaffFacade } from '../../../../core/facades/staff.facade';
 import { StaffFormComponent } from '../staff-form/staff-form.component';
-import { Staff } from '../../../../core/models';
+import { User } from '../../../../core/models';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -28,24 +28,25 @@ export class StaffListComponent implements OnInit {
   filteredStaff = computed(() => {
     const query = this.searchQuery().toLowerCase();
     return this.facade.staffList().filter(s => 
-      s.name.toLowerCase().includes(query) || 
+      (s.name || s.displayName || '').toLowerCase().includes(query) || 
       s.email.toLowerCase().includes(query) ||
-      (s.phone && s.phone.includes(query))
+      (s.phone && s.phone.includes(query)) ||
+      (s.mobile && s.mobile.includes(query))
     );
   });
 
   ngOnInit() {}
 
-  openStaffForm(staff?: Staff) {
+  openStaffForm(staff?: User) {
     this.dialog.open(StaffFormComponent, {
       width: '500px',
       data: { staff }
     });
   }
 
-  async toggleStatus(staff: Staff) {
+  async toggleStatus(staff: User) {
     const newStatus = staff.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    await this.facade.updateStaff(staff.staffId, { status: newStatus });
+    await this.facade.updateStaff(staff.uid, { status: newStatus });
   }
 
   getRoleColor(role: string): string {

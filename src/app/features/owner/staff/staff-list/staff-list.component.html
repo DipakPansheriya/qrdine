@@ -19,10 +19,10 @@
         <th mat-header-cell *matHeaderCellDef> Name </th>
         <td mat-cell *matCellDef="let element"> 
           <div class="staff-name-cell">
-            <div class="avatar">{{ element.name.charAt(0).toUpperCase() }}</div>
+            <div class="avatar">{{ (element.name || element.displayName || '?').charAt(0).toUpperCase() }}</div>
             <div class="name-info">
-              <strong>{{element.name}}</strong>
-              <span class="phone">{{element.phone}}</span>
+              <strong>{{element.name || element.displayName}}</strong>
+              <span class="phone">{{element.phone || element.mobile}}</span>
             </div>
           </div>
         </td>

@@ -130,4 +130,21 @@ export class CustomerMenuComponent implements OnInit {
       return '124px';
     }
   }
+
+  async onRequestBill() {
+    const status = this.facade.session()?.billStatus;
+    if (!status) {
+      await this.facade.requestBill();
+    }
+  }
+
+  getBillWidgetBottom(): string {
+    const baseStr = this.getMyOrdersWidgetBottom();
+    const basePx = parseInt(baseStr, 10);
+    const hasOrders = this.facade.activeOrders().length > 0;
+    if (hasOrders) {
+      return `${basePx + 64}px`;
+    }
+    return baseStr;
+  }
 }
