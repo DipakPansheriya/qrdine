@@ -1,15 +1,19 @@
 <div class="cashier-container">
   <!-- Top Metrics -->
   <div class="metrics-bar">
-    <div class="metric-card">
+    <div class="kpi-card">
       <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
       <div class="metric-label">Today's Revenue</div>
     </div>
-    <div class="metric-card">
+    <div class="kpi-card">
       <div class="metric-value">{{ cashierFacade.kpis().completedOrders }}</div>
       <div class="metric-label">Completed Orders</div>
     </div>
-    <div class="metric-card">
+    <div class="kpi-card">
+      <div class="metric-value">{{ cashierFacade.activeBills().length }}</div>
+      <div class="metric-label">Active Bills</div>
+    </div>
+    <div class="kpi-card">
       <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
       <div class="metric-label">Average Bill</div>
     </div>
@@ -18,34 +22,45 @@
   <div class="dashboard-content">
     
     <!-- Left Panel: Active Bills -->
-    <div class="panel active-bills-panel">
-      <h2 class="section-title">Active Bills</h2>
+    <div class="panel active-bills-panel glass-panel">
+      <div class="panel-header">
+        <h2 class="section-title">Active Bills</h2>
+        <div class="search-box">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Search tables or bills...">
+        </div>
+      </div>
       
       <div class="empty-state" *ngIf="cashierFacade.activeBills().length === 0">
-        <mat-icon>receipt_long</mat-icon>
+        <img src="assets/images/empty-bills.svg" alt="No bills" onerror="this.style.display='none'">
+        <mat-icon *ngIf="true">receipt_long</mat-icon>
         <p>No active bills currently.</p>
       </div>
 
       <div class="bill-list">
-        <div class="bill-card" 
+        <div class="bill-card touch-target" 
              *ngFor="let table of cashierFacade.activeBills()" 
              [class.selected]="selectedTable()?.id === table.id"
              (click)="selectTable(table)">
           <div class="table-info">
-            <span class="table-number">Table {{ table.tableNumber }}</span>
-            <span class="status-badge" [ngClass]="getSession(table.activeSessionId || '')?.billStatus ? 'status-' + getSession(table.activeSessionId || '')?.billStatus?.toLowerCase() : 'status-occupied'">
-              {{ getSession(table.activeSessionId || '')?.billStatus ? 'Bill ' + getSession(table.activeSessionId || '')?.billStatus : 'Occupied' }}
-            </span>
+            <div class="table-avatar">T{{ table.tableNumber }}</div>
+            <div class="table-details">
+              <span class="status-badge" [ngClass]="getSession(table.activeSessionId || '')?.billStatus ? 'status-' + getSession(table.activeSessionId || '')?.billStatus?.toLowerCase() : 'status-occupied'">
+                {{ getSession(table.activeSessionId || '')?.billStatus ? 'Bill ' + getSession(table.activeSessionId || '')?.billStatus : 'Occupied' }}
+              </span>
+            </div>
           </div>
-          <mat-icon>chevron_right</mat-icon>
+          <div class="card-arrow">
+            <mat-icon>chevron_right</mat-icon>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Right Panel: Checkout/Invoice -->
-    <div class="panel checkout-panel">
+    <div class="panel checkout-panel glass-panel">
       
-      <div class="empty-state" *ngIf="!selectedTable()">
+      <div class="empty-state checkout-empty" *ngIf="!selectedTable()">
         <mat-icon>point_of_sale</mat-icon>
         <p>Select a table to view the bill and process payment.</p>
       </div>
@@ -60,7 +75,7 @@
             <p *ngIf="cashierFacade.settingsFacade.settings()?.gstNumber">GST No: {{ cashierFacade.settingsFacade.settings()?.gstNumber }}</p>
             <div class="divider"></div>
             <div class="invoice-meta">
-              <span><strong>Table:</strong> {{ selectedTable()?.tableNumber }}</span>
+              <span><strong>Table:</strong> T{{ selectedTable()?.tableNumber }}</span>
               <span><strong>Date:</strong> {{ today | date:'short' }}</span>
             </div>
           </div>
@@ -92,7 +107,7 @@
             </div>
             <div class="summary-row" *ngIf="selectedBill()?.discount > 0">
               <span>Discount</span>
-              <span>-{{ selectedBill()?.discount | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span class="text-success">-{{ selectedBill()?.discount | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
             </div>
             <div class="summary-row" *ngIf="selectedBill()?.serviceCharge > 0">
               <span>Service Charge</span>
@@ -103,49 +118,68 @@
               <span>{{ selectedBill()?.tax | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
             </div>
             
-            <div class="divider"></div>
+            <div class="divider thick-divider"></div>
             
             <div class="summary-row grand-total">
-              <span>GRAND TOTAL</span>
-              <span>{{ selectedBill()?.grandTotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span>AMOUNT DUE</span>
+              <span class="total-amount">{{ selectedBill()?.grandTotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
             </div>
-          </div>
-          
-          <div class="invoice-footer">
-            <p>Thank you for dining with us!</p>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="checkout-actions">
           <div class="payment-methods" *ngIf="!processingPayment()">
-            <h3>Process Payment</h3>
+            <h3>Complete Payment</h3>
             <div class="method-buttons">
-              <button mat-flat-button color="primary" (click)="processPayment('Cash')">
-                <mat-icon>payments</mat-icon> Cash
+              <button class="payment-btn touch-target cash-btn" (click)="processPayment('Cash')">
+                <mat-icon>payments</mat-icon> 
+                <span>Cash</span>
               </button>
-              <button mat-flat-button color="accent" (click)="processPayment('Mock Credit Card')">
-                <mat-icon>credit_card</mat-icon> Card
+              <button class="payment-btn touch-target upi-btn" (click)="processPayment('Mock UPI')">
+                <mat-icon>qr_code_scanner</mat-icon> 
+                <span>UPI</span>
               </button>
-              <button mat-flat-button color="warn" (click)="processPayment('Mock UPI')">
-                <mat-icon>qr_code_scanner</mat-icon> UPI
+              <button class="payment-btn touch-target card-btn" (click)="processPayment('Mock Credit Card')">
+                <mat-icon>credit_card</mat-icon> 
+                <span>Card</span>
               </button>
             </div>
             <div class="print-action">
-              <button mat-stroked-button (click)="printInvoice()">
-                <mat-icon>print</mat-icon> Print / PDF Receipt
+              <button mat-stroked-button class="touch-target print-btn" (click)="printInvoice()">
+                <mat-icon>receipt</mat-icon> Print / PDF Receipt
               </button>
             </div>
           </div>
           
           <div class="processing-state" *ngIf="processingPayment()">
-            <mat-icon class="spin">sync</mat-icon>
-            <p>Processing Payment...</p>
+            <div class="spinner-border"></div>
+            <h2>Processing Payment...</h2>
+            <p>Please wait while the transaction completes.</p>
           </div>
         </div>
 
       </div>
     </div>
+  </div>
 
+  <!-- Payment Success Overlay -->
+  <div class="payment-success-overlay glass-panel" *ngIf="paymentSuccess()">
+    <div class="success-content">
+      <div class="success-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <h2>Payment Successful!</h2>
+      <p>Order closed and table released.</p>
+      
+      <div class="success-actions">
+        <button mat-flat-button color="primary" class="touch-target" (click)="printInvoice()">
+          <mat-icon>print</mat-icon> Print Receipt
+        </button>
+        <button mat-stroked-button class="touch-target" (click)="dismissSuccess()">
+          Back to Dashboard
+        </button>
+      </div>
+    </div>
   </div>
 </div>

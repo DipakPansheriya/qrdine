@@ -1,33 +1,44 @@
 <div class="waiter-container">
   <!-- Top Metrics -->
   <div class="metrics-bar">
-    <div class="metric-card">
+    <div class="kpi-card">
       <div class="metric-value">{{ waiterFacade.kpis().tablesServed }}</div>
       <div class="metric-label">Tables Served</div>
     </div>
-    <div class="metric-card">
+    <div class="kpi-card">
       <div class="metric-value">{{ waiterFacade.kpis().ordersDelivered }}</div>
       <div class="metric-label">Orders Delivered</div>
     </div>
-    <div class="metric-card">
+    <div class="kpi-card">
       <div class="metric-value">{{ waiterFacade.kpis().avgResponseTime }}m</div>
-      <div class="metric-label">Avg Response</div>
+      <div class="metric-label">Avg Response Time</div>
+    </div>
+    <div class="kpi-card">
+      <div class="metric-value">{{ waiterFacade.activeRequests().length }}</div>
+      <div class="metric-label">Active Requests</div>
     </div>
   </div>
 
   <div class="dashboard-content">
     
     <!-- Table Grid -->
-    <div class="table-grid-section">
-      <h2 class="section-title">Table Overview</h2>
+    <div class="table-grid-section glass-panel">
+      <div class="section-header">
+        <h2 class="section-title">Floor Overview</h2>
+        <div class="legend">
+          <span class="legend-item"><span class="dot bg-success"></span> Available</span>
+          <span class="legend-item"><span class="dot bg-danger"></span> Occupied</span>
+          <span class="legend-item"><span class="dot bg-warning"></span> Reserved</span>
+        </div>
+      </div>
       <div class="table-grid">
-        <div class="table-card" *ngFor="let table of waiterFacade.tables()" [ngClass]="getTableClass(table.status)" matRipple>
+        <div class="table-card touch-target" *ngFor="let table of waiterFacade.tables()" [ngClass]="getTableClass(table.status)" matRipple>
           <div class="table-header">
             <span class="table-number">T{{ table.tableNumber }}</span>
-            <span class="table-status">{{ table.status }}</span>
+            <span class="table-status-dot"></span>
           </div>
           <div class="table-capacity">
-            <mat-icon>people</mat-icon> {{ table.capacity }}
+            <mat-icon>group</mat-icon> {{ table.capacity }}
           </div>
           
           <div class="table-indicators">
@@ -35,10 +46,10 @@
               <mat-icon>pan_tool</mat-icon>
             </span>
             <span class="indicator food-indicator" *ngIf="getTableReadyOrders(table.id || '').length > 0">
-              <mat-icon>restaurant</mat-icon>
+              <mat-icon>room_service</mat-icon>
             </span>
             <span class="indicator bill-indicator" *ngIf="getTableBillRequest(table.id || '')">
-              <mat-icon>receipt</mat-icon>
+              <mat-icon>receipt_long</mat-icon>
             </span>
           </div>
         </div>
@@ -49,55 +60,82 @@
     <div class="action-sidebar">
       
       <!-- Customer Requests -->
-      <div class="action-section">
-        <h2 class="section-title">Customer Requests <span class="badge" *ngIf="waiterFacade.activeRequests().length">{{ waiterFacade.activeRequests().length }}</span></h2>
+      <div class="action-section glass-panel">
+        <h2 class="section-title">
+          <mat-icon>notifications_active</mat-icon> 
+          Customer Requests 
+          <span class="badge" *ngIf="waiterFacade.activeRequests().length">{{ waiterFacade.activeRequests().length }}</span>
+        </h2>
         
         <div class="empty-state" *ngIf="waiterFacade.activeRequests().length === 0">
-          <mat-icon>check_circle_outline</mat-icon>
+          <img src="assets/images/empty-requests.svg" alt="No requests" onerror="this.style.display='none'">
+          <mat-icon *ngIf="true">check_circle_outline</mat-icon>
           <p>No pending requests</p>
         </div>
 
-        <div class="action-card request-card" *ngFor="let req of waiterFacade.activeRequests()">
-          <div class="card-left">
-            <div class="table-badge">T{{ getTableName(req.tableId) }}</div>
-          </div>
-          <div class="card-content">
-            <h4>{{ req.type }}</h4>
-            <span class="time">{{ req.createdAt?.toDate ? (req.createdAt.toDate() | date:'shortTime') : '' }}</span>
-          </div>
-          <div class="card-actions">
-            <button mat-icon-button color="primary" (click)="waiterFacade.resolveRequest(req.requestId)">
-              <mat-icon>check_circle</mat-icon>
-            </button>
+        <div class="action-list">
+          <div class="action-card request-card touch-target" *ngFor="let req of waiterFacade.activeRequests()">
+            <div class="card-left">
+              <div class="table-badge">T{{ getTableName(req.tableId) }}</div>
+            </div>
+            <div class="card-content">
+              <h4>{{ req.type }}</h4>
+              <span class="time">{{ req.createdAt?.toDate ? (req.createdAt.toDate() | date:'shortTime') : 'Just now' }}</span>
+            </div>
+            <div class="card-actions">
+              <button mat-flat-button color="primary" class="touch-target" (click)="waiterFacade.resolveRequest(req.requestId)">
+                Complete
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Ready Orders -->
-      <div class="action-section">
-        <h2 class="section-title">Ready for Delivery <span class="badge" *ngIf="waiterFacade.readyOrders().length">{{ waiterFacade.readyOrders().length }}</span></h2>
+      <!-- Ready Items -->
+      <div class="action-section glass-panel">
+        <h2 class="section-title">
+          <mat-icon>restaurant_menu</mat-icon> 
+          Ready Items Queue 
+          <span class="badge" *ngIf="waiterFacade.deliverableItems().length">{{ waiterFacade.deliverableItems().length }}</span>
+        </h2>
         
-        <div class="empty-state" *ngIf="waiterFacade.readyOrders().length === 0">
+        <div class="empty-state" *ngIf="waiterFacade.deliverableItems().length === 0">
           <mat-icon>local_dining</mat-icon>
-          <p>No orders ready</p>
+          <p>No items ready</p>
         </div>
 
-        <div class="action-card order-card" *ngFor="let order of waiterFacade.readyOrders()">
-          <div class="card-left">
-            <div class="table-badge">T{{ getTableName(order.tableId) }}</div>
+        <div class="action-list">
+          <div class="action-card order-card touch-target" *ngFor="let d of waiterFacade.deliverableItems()" (click)="toggleDeliveryItem(d.orderId, d.itemIndex)">
+            <div class="card-left">
+              <mat-icon class="select-icon" [color]="isDeliveryItemSelected(d.orderId, d.itemIndex) ? 'primary' : ''">
+                {{ isDeliveryItemSelected(d.orderId, d.itemIndex) ? 'check_box' : 'check_box_outline_blank' }}
+              </mat-icon>
+            </div>
+            <div class="card-content">
+              <h4>{{ d.item.quantity }}x {{ d.item.name }}</h4>
+              <span class="time">Table T{{ d.tableNumber }} (Order #{{ d.orderNumber }})</span>
+            </div>
           </div>
-          <div class="card-content">
-            <h4>Order #{{ order.orderNumber }}</h4>
-            <span class="time">{{ order.items.length }} items</span>
-          </div>
-          <div class="card-actions">
-            <button mat-button color="primary" (click)="waiterFacade.markOrderDelivered(order.orderId)">
-              DELIVER
-            </button>
-          </div>
+        </div>
+
+        <div class="action-footer" *ngIf="waiterFacade.deliverableItems().length > 0">
+          <button mat-flat-button class="success-btn touch-target w-100" [disabled]="selectedDeliveryItems.size === 0" (click)="deliverSelected()">
+            Deliver Selected Items ({{ selectedDeliveryItems.size }})
+          </button>
         </div>
       </div>
 
     </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation (Visible only on mobile via CSS) -->
+  <div class="mobile-bottom-nav glass-panel">
+    <button class="nav-btn active" matRipple><mat-icon>grid_view</mat-icon><span>Tables</span></button>
+    <button class="nav-btn" matRipple><mat-icon>notifications</mat-icon>
+      <span class="badge" *ngIf="waiterFacade.activeRequests().length">{{ waiterFacade.activeRequests().length }}</span>
+    </button>
+    <button class="nav-btn" matRipple><mat-icon>room_service</mat-icon>
+      <span class="badge" *ngIf="waiterFacade.readyOrders().length">{{ waiterFacade.readyOrders().length }}</span>
+    </button>
   </div>
 </div>

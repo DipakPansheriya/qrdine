@@ -55,6 +55,8 @@ export class OrderSuccessComponent implements OnInit, OnDestroy {
       case 'Pending': return 'Waiting for confirmation...';
       case 'Accepted': return 'Order accepted!';
       case 'Preparing': return 'Kitchen is preparing your food.';
+      case 'Partially Ready': return 'Some items are ready.';
+      case 'Partially Delivered': return 'Some items have been delivered.';
       case 'Ready': return 'Your order is ready to be served!';
       case 'Delivered': return 'Enjoy your meal!';
       case 'Completed': return 'Order completed.';
@@ -67,6 +69,8 @@ export class OrderSuccessComponent implements OnInit, OnDestroy {
       case 'Pending': return 'schedule';
       case 'Accepted': return 'thumb_up';
       case 'Preparing': return 'soup_kitchen';
+      case 'Partially Ready': return 'room_service';
+      case 'Partially Delivered': return 'restaurant';
       case 'Ready': return 'room_service';
       case 'Delivered': return 'restaurant';
       case 'Completed': return 'check_circle';
@@ -77,14 +81,14 @@ export class OrderSuccessComponent implements OnInit, OnDestroy {
   getActiveStepIndex(status?: string): number {
     if (!status) return 1;
     if (['Pending', 'Accepted'].includes(status)) return 1;
-    if (status === 'Preparing') return 2;
+    if (['Preparing', 'Partially Ready'].includes(status)) return 2;
     return 3;
   }
 
   getStepProgressPercent(status?: string): number {
     if (!status) return 33;
     if (['Pending', 'Accepted'].includes(status)) return 33;
-    if (status === 'Preparing') return 66;
+    if (['Preparing', 'Partially Ready'].includes(status)) return 66;
     return 100;
   }
 }

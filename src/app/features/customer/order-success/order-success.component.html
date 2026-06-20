@@ -116,6 +116,9 @@
         <div class="name-desc">
           <span class="name">{{ item.name }}</span>
           <span class="notes" *ngIf="item.notes">{{ item.notes }}</span>
+          <div class="item-cust-status" [ngClass]="'status-' + (item.deliveryStatus === 'Delivered' ? 'delivered' : item.kitchenStatus?.toLowerCase() || 'pending')">
+             {{ item.deliveryStatus === 'Delivered' ? 'Delivered' : item.kitchenStatus || 'Pending' }}
+          </div>
         </div>
         <div class="price">{{ item.totalPrice | currency:facade.restaurant()?.currency || 'USD' }}</div>
       </div>

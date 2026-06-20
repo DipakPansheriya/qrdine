@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MatCardModule } from '@angular/material/card';
@@ -8,6 +8,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { KitchenFacade } from '../../../core/facades/kitchen.facade';
 import { Order } from '../../../core/models';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-kitchen-orders',
@@ -22,7 +23,15 @@ import { Order } from '../../../core/models';
     MatChipsModule
   ],
   templateUrl: './kitchen-orders.component.html',
-  styleUrls: ['./kitchen-orders.component.scss']
+  styleUrls: ['./kitchen-orders.component.scss'],
+  animations: [
+    trigger('listAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px)' }),
+        animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ])
+  ]
 })
 export class KitchenOrdersComponent implements OnInit, OnDestroy {
   kitchenFacade = inject(KitchenFacade);
@@ -30,6 +39,17 @@ export class KitchenOrdersComponent implements OnInit, OnDestroy {
   // Timer state
   currentTime = new Date();
   private timerInt: any;
+  private previousPendingCount = 0;
+
+  constructor() {
+    effect(() => {
+      const currentCount = this.kitchenFacade.pendingOrders().length;
+      if (currentCount > this.previousPendingCount) {
+        this.playSound();
+      }
+      this.previousPendingCount = currentCount;
+    });
+  }
 
   ngOnInit() {
     this.timerInt = setInterval(() => {
@@ -41,6 +61,11 @@ export class KitchenOrdersComponent implements OnInit, OnDestroy {
     if (this.timerInt) {
       clearInterval(this.timerInt);
     }
+  }
+
+  playSound() {
+    const audio = new Audio('assets/sounds/notification.mp3');
+    audio.play().catch(e => console.log('Audio play failed, likely due to browser policy without interaction', e));
   }
 
   drop(event: CdkDragDrop<Order[]>) {
@@ -67,8 +92,8 @@ export class KitchenOrdersComponent implements OnInit, OnDestroy {
     return 'timer-normal';
   }
 
-  toggleItemStatus(order: Order, index: number, event: any) {
-    const status = event.checked ? 'Ready' : 'Pending';
+  setItemStatus(order: Order, index: number, status: 'Pending' | 'Preparing' | 'Ready', event: Event) {
+    event.stopPropagation();
     this.kitchenFacade.updateItemStatus(order, index, status);
   }
 }

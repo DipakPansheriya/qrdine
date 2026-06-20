@@ -425,7 +425,11 @@ export class CustomerFacade {
       tableId: tbl.id!,
       sessionId: sess.sessionId,
       orderNumber: Math.floor(1000 + Math.random() * 9000),
-      items: [...this.cartItems()],
+      items: this.cartItems().map(item => ({
+        ...item,
+        kitchenStatus: 'Pending' as const,
+        deliveryStatus: 'Pending' as const
+      })),
       subtotal: this.cartSubtotal(),
       tax: this.cartTax(),
       discount: 0,

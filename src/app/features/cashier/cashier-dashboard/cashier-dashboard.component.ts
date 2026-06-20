@@ -31,6 +31,7 @@ export class CashierDashboardComponent {
   today = new Date();
 
   processingPayment = signal(false);
+  paymentSuccess = signal(false);
 
   selectTable(table: Table) {
     if (!table.activeSessionId) return;
@@ -66,13 +67,19 @@ export class CashierDashboardComponent {
     this.processingPayment.set(true);
     try {
       await this.cashierFacade.processPayment(table.id!, table.activeSessionId!, bill.grandTotal, method);
-      this.selectedTable.set(null);
-      this.selectedBill.set(null);
+      this.paymentSuccess.set(true); // Show success overlay
+      // Wait for user to dismiss or auto dismiss
     } catch (e) {
       console.error(e);
     } finally {
       this.processingPayment.set(false);
     }
+  }
+
+  dismissSuccess() {
+    this.paymentSuccess.set(false);
+    this.selectedTable.set(null);
+    this.selectedBill.set(null);
   }
 
   async printInvoice() {
