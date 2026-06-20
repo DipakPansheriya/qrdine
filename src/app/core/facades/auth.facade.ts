@@ -5,7 +5,7 @@ import { SubscriptionRepository } from '../repositories/subscription.repository'
 import { SettingsRepository } from '../repositories/settings.repository';
 import { User, Restaurant, Subscription, Settings } from '../models';
 import { Observable, from, of } from 'rxjs';
-import { switchMap, tap, catchError } from 'rxjs/operators';
+import { switchMap, tap, catchError, take } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState } from '@angular/fire/auth';
 import { serverTimestamp } from '@angular/fire/firestore';
@@ -38,6 +38,7 @@ export class AuthFacade {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap(credential => {
         return this.userRepository.getById(credential.user.uid).pipe(
+          take(1),
           switchMap(user => {
             if (!user) {
               throw new Error('USER_DOCUMENT_MISSING');
