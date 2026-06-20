@@ -110,7 +110,11 @@ export interface CartItem {
   modifiers: { groupName: string; optionName: string; price: number }[];
   notes?: string;
   totalPrice: number;
-  status?: 'Pending' | 'Ready';
+  status?: 'Pending' | 'Ready'; // Legacy status for cart view
+  kitchenStatus?: 'Pending' | 'Preparing' | 'Ready';
+  deliveryStatus?: 'Pending' | 'Delivered';
+  preparedAt?: any;
+  deliveredAt?: any;
 }
 
 export interface Cart {
@@ -136,7 +140,7 @@ export interface Order {
   discount: number;
   grandTotal: number;
   notes?: string;
-  status: 'Pending' | 'Accepted' | 'Preparing' | 'Ready' | 'Delivered' | 'Completed' | 'Cancelled' | 'Refunded';
+  status: 'Pending' | 'Accepted' | 'Preparing' | 'Partially Ready' | 'Partially Delivered' | 'Ready' | 'Delivered' | 'Completed' | 'Cancelled' | 'Refunded';
   createdAt: any;
   updatedAt: any;
   customerName?: string;

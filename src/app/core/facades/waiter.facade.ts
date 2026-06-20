@@ -7,6 +7,7 @@ import { CustomerSessionRepository } from '../repositories/customer-session.repo
 import { Table, CustomerRequest, Order, CustomerSession } from '../models';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
+import { calculateOrderStatus } from '../utils/order.utils';
 
 @Injectable({ providedIn: 'root' })
 export class WaiterFacade {
@@ -167,6 +168,28 @@ export class WaiterFacade {
     });
   }
 
+  deliverableItems = computed(() => {
+    const items: { orderId: string; tableId: string; tableNumber: string; orderNumber: number; itemIndex: number; item: any }[] = [];
+    
+    this.allOrders().forEach(order => {
+      const table = this.tables().find(t => t.id === order.tableId);
+      order.items.forEach((item, index) => {
+        if (item.kitchenStatus === 'Ready' && item.deliveryStatus !== 'Delivered') {
+          items.push({
+            orderId: order.orderId,
+            tableId: order.tableId,
+            tableNumber: table?.tableNumber || '?',
+            orderNumber: order.orderNumber,
+            itemIndex: index,
+            item
+          });
+        }
+      });
+    });
+    
+    return items;
+  });
+
   async resolveRequest(requestId: string) {
     try {
       await firstValueFrom(this.requestRepo.update(requestId, { 
@@ -178,9 +201,51 @@ export class WaiterFacade {
     }
   }
 
+  async deliverItems(orderId: string, itemIndexes: number[]) {
+    try {
+      const order = this.allOrders().find(o => o.orderId === orderId);
+      if (!order) return;
+
+      const updatedItems = [...order.items];
+      itemIndexes.forEach(index => {
+        const newItem = { 
+          ...updatedItems[index], 
+          deliveryStatus: 'Delivered' as const,
+          deliveredAt: new Date() as any
+        };
+        Object.keys(newItem).forEach(k => {
+          if ((newItem as any)[k] === undefined) {
+            delete (newItem as any)[k];
+          }
+        });
+        updatedItems[index] = newItem;
+      });
+
+      const newOrderStatus = calculateOrderStatus(updatedItems);
+
+      await firstValueFrom(this.orderRepo.update(orderId, { 
+        items: updatedItems, 
+        status: newOrderStatus,
+        updatedAt: serverTimestamp() 
+      }));
+    } catch (err) {
+      console.error('Failed to deliver items:', err);
+    }
+  }
+
   async markOrderDelivered(orderId: string) {
     try {
+      const order = this.allOrders().find(o => o.orderId === orderId);
+      if (!order) return;
+      const updatedItems = order.items.map(i => {
+        const newItem = {...i, deliveryStatus: 'Delivered' as const, deliveredAt: new Date() as any};
+        Object.keys(newItem).forEach(k => {
+          if ((newItem as any)[k] === undefined) delete (newItem as any)[k];
+        });
+        return newItem;
+      });
       await firstValueFrom(this.orderRepo.update(orderId, { 
+        items: updatedItems,
         status: 'Delivered', 
         updatedAt: serverTimestamp() 
       }));

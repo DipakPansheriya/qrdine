@@ -4,6 +4,7 @@ import { OrderRepository } from '../repositories/order.repository';
 import { Order, CartItem } from '../models';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
+import { calculateOrderStatus } from '../utils/order.utils';
 
 @Injectable({ providedIn: 'root' })
 export class KitchenFacade {
@@ -111,17 +112,76 @@ export class KitchenFacade {
 
   async updateOrderStatus(orderId: string, status: Order['status']) {
     try {
-      await firstValueFrom(this.orderRepo.update(orderId, { status, updatedAt: serverTimestamp() }));
+      const order = this.kitchenOrders().find(o => o.orderId === orderId);
+      let updatedItems = order ? [...order.items] : [];
+
+      if (order && (status === 'Preparing' || status === 'Ready')) {
+        updatedItems = order.items.map(item => {
+          let ks = item.kitchenStatus || 'Pending';
+          let prepTime = item.preparedAt;
+
+          if (status === 'Preparing' && ks === 'Pending') {
+            ks = 'Preparing';
+          } else if (status === 'Ready' && ks !== 'Ready') {
+            ks = 'Ready';
+            prepTime = new Date() as any;
+          }
+          
+          const newItem = {
+            ...item,
+            kitchenStatus: ks,
+            preparedAt: prepTime
+          };
+          
+          // Remove undefined values
+          Object.keys(newItem).forEach(k => {
+            if ((newItem as any)[k] === undefined) {
+              delete (newItem as any)[k];
+            }
+          });
+          
+          return newItem;
+        });
+      }
+
+      await firstValueFrom(this.orderRepo.update(orderId, { 
+        status, 
+        ...(order ? { items: updatedItems } : {}),
+        updatedAt: serverTimestamp() 
+      }));
     } catch (err) {
       console.error('Failed to update order status:', err);
     }
   }
 
-  async updateItemStatus(order: Order, itemIndex: number, itemStatus: 'Pending' | 'Ready') {
+  async updateItemStatus(order: Order, itemIndex: number, kitchenStatus: 'Pending' | 'Preparing' | 'Ready') {
     try {
       const updatedItems = [...order.items];
-      updatedItems[itemIndex] = { ...updatedItems[itemIndex], status: itemStatus };
-      await firstValueFrom(this.orderRepo.update(order.orderId, { items: updatedItems, updatedAt: serverTimestamp() }));
+      const updatedItem = { 
+        ...updatedItems[itemIndex], 
+        kitchenStatus
+      };
+      
+      if (kitchenStatus === 'Ready') {
+        updatedItem.preparedAt = new Date() as any;
+      }
+      
+      // Remove undefined values
+      Object.keys(updatedItem).forEach(k => {
+        if ((updatedItem as any)[k] === undefined) {
+          delete (updatedItem as any)[k];
+        }
+      });
+      
+      updatedItems[itemIndex] = updatedItem;
+      
+      const newOrderStatus = calculateOrderStatus(updatedItems);
+
+      await firstValueFrom(this.orderRepo.update(order.orderId, { 
+        items: updatedItems, 
+        status: newOrderStatus,
+        updatedAt: serverTimestamp() 
+      }));
     } catch (err) {
       console.error('Failed to update item status:', err);
     }

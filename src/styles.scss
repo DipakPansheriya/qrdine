@@ -11,8 +11,17 @@
   --electric-violet: #4361ee;
   --vivid-pink: #e87995;
 
+  // Phase 2 Redesign Colors
+  --theme-primary: #2563EB;
+  --theme-success: #10B981;
+  --theme-warning: #F59E0B;
+  --theme-danger: #EF4444;
+  --theme-background: #F8FAFC;
+  --theme-card-bg: rgba(255, 255, 255, 0.9);
+  --theme-glass-border: rgba(255, 255, 255, 0.3);
+
   // Surface Colors
-  --surface-ground: #f4f7fe; // Light Grey (Davur background)
+  --surface-ground: var(--theme-background); // Updated to new background
   --surface-card: #ffffff;   // White Cards
   --surface-border: #e2e8f0; // Soft Borders
   --surface-hover: #f8fafc;
@@ -60,6 +69,47 @@ body {
   background: linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+// Phase 2 Utilities
+.glass-panel {
+  background: var(--theme-card-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--theme-glass-border) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+  border-radius: 16px !important;
+}
+
+.kpi-card {
+  @extend .glass-panel;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100px;
+  
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--theme-primary);
+    margin-bottom: 0.25rem;
+  }
+  
+  .metric-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Material Override to make it light mode friendly out of the box */

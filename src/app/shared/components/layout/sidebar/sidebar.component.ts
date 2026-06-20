@@ -321,8 +321,6 @@ export class SidebarComponent {
   @Input() isCollapsed = false;
 
   private navItems: NavItem[] = [
-    { label: 'System Dashboard', icon: 'grid_view', route: '/admin/dashboard', permission: '*' },
-    { label: 'Restaurants', icon: 'store', route: '/admin/restaurants', permission: '*' },
     { label: 'Dashboard', icon: 'grid_view', route: '/owner/dashboard', permission: 'view_dashboard' },
     { label: 'Menu Management', icon: 'menu_book', route: '/owner/menu', permission: 'manage_menu' },
     { label: 'Table Management', icon: 'table_bar', route: '/owner/tables', permission: 'manage_tables' },
@@ -336,13 +334,13 @@ export class SidebarComponent {
   allowedNavItems = computed(() => {
     const currentUser = this.user();
     if (!currentUser) return [];
-    
+
     return this.navItems.filter(item => {
       // Super Admins only see admin routes
       if (currentUser.role === 'Super Admin') {
         return item.route.startsWith('/admin');
       }
-      
+
       return this.permissionService.hasPermission(item.permission);
     });
   });

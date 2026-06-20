@@ -31,21 +31,21 @@ export const routes: Routes = [
     data: { permission: '*' },
     children: [
       { path: '', redirectTo: 'restaurants', pathMatch: 'full' },
-      { 
-        path: 'restaurants', 
-        loadComponent: () => import('./features/admin/restaurants/restaurant-list/restaurant-list.component').then(m => m.RestaurantListComponent) 
+      {
+        path: 'restaurants',
+        loadComponent: () => import('./features/admin/restaurants/restaurant-list/restaurant-list.component').then(m => m.RestaurantListComponent)
       },
-      { 
-        path: 'restaurants/new', 
-        loadComponent: () => import('./features/admin/restaurants/restaurant-form/restaurant-form.component').then(m => m.RestaurantFormComponent) 
+      {
+        path: 'restaurants/new',
+        loadComponent: () => import('./features/admin/restaurants/restaurant-form/restaurant-form.component').then(m => m.RestaurantFormComponent)
       },
-      { 
-        path: 'restaurants/:id', 
-        loadComponent: () => import('./features/admin/restaurants/restaurant-detail/restaurant-detail.component').then(m => m.RestaurantDetailComponent) 
+      {
+        path: 'restaurants/:id',
+        loadComponent: () => import('./features/admin/restaurants/restaurant-detail/restaurant-detail.component').then(m => m.RestaurantDetailComponent)
       },
-      { 
-        path: 'restaurants/:id/edit', 
-        loadComponent: () => import('./features/admin/restaurants/restaurant-form/restaurant-form.component').then(m => m.RestaurantFormComponent) 
+      {
+        path: 'restaurants/:id/edit',
+        loadComponent: () => import('./features/admin/restaurants/restaurant-form/restaurant-form.component').then(m => m.RestaurantFormComponent)
       }
     ]
   },
