@@ -129,6 +129,11 @@ export class OwnerSettingsFacade {
           orderTrackingStyle: data.orderTrackingStyle || 'timeline',
           primaryButtonLabel: data.primaryButtonLabel || 'Add',
           checkoutButtonLabel: data.checkoutButtonLabel || 'Place Order',
+          allowReorder: data.allowReorder ?? true,
+          requireCustomerName: data.requireCustomerName ?? true,
+          autoOccupyTable: data.autoOccupyTable ?? true,
+          autoFreeTable: data.autoFreeTable ?? true,
+          sessionTimeout: data.sessionTimeout || 'Never',
           updatedAt: serverTimestamp()
         };
         await firstValueFrom(this.cxRepo.create(newCx));

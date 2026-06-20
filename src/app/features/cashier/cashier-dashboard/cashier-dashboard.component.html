@@ -1,0 +1,151 @@
+<div class="cashier-container">
+  <!-- Top Metrics -->
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
+      <div class="metric-label">Today's Revenue</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ cashierFacade.kpis().completedOrders }}</div>
+      <div class="metric-label">Completed Orders</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
+      <div class="metric-label">Average Bill</div>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    
+    <!-- Left Panel: Active Bills -->
+    <div class="panel active-bills-panel">
+      <h2 class="section-title">Active Bills</h2>
+      
+      <div class="empty-state" *ngIf="cashierFacade.activeBills().length === 0">
+        <mat-icon>receipt_long</mat-icon>
+        <p>No active bills currently.</p>
+      </div>
+
+      <div class="bill-list">
+        <div class="bill-card" 
+             *ngFor="let table of cashierFacade.activeBills()" 
+             [class.selected]="selectedTable()?.id === table.id"
+             (click)="selectTable(table)">
+          <div class="table-info">
+            <span class="table-number">Table {{ table.tableNumber }}</span>
+            <span class="status-badge" [ngClass]="getSession(table.activeSessionId || '')?.billStatus ? 'status-' + getSession(table.activeSessionId || '')?.billStatus?.toLowerCase() : 'status-occupied'">
+              {{ getSession(table.activeSessionId || '')?.billStatus ? 'Bill ' + getSession(table.activeSessionId || '')?.billStatus : 'Occupied' }}
+            </span>
+          </div>
+          <mat-icon>chevron_right</mat-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Checkout/Invoice -->
+    <div class="panel checkout-panel">
+      
+      <div class="empty-state" *ngIf="!selectedTable()">
+        <mat-icon>point_of_sale</mat-icon>
+        <p>Select a table to view the bill and process payment.</p>
+      </div>
+
+      <div class="invoice-container" *ngIf="selectedTable() && selectedBill()">
+        
+        <!-- The Printable Invoice Area -->
+        <div id="printable-invoice" class="invoice-paper">
+          <div class="invoice-header">
+            <h2>{{ cashierFacade.settingsFacade.settings()?.restaurantName || 'Restaurant' }}</h2>
+            <p>{{ cashierFacade.settingsFacade.settings()?.address }}</p>
+            <p *ngIf="cashierFacade.settingsFacade.settings()?.gstNumber">GST No: {{ cashierFacade.settingsFacade.settings()?.gstNumber }}</p>
+            <div class="divider"></div>
+            <div class="invoice-meta">
+              <span><strong>Table:</strong> {{ selectedTable()?.tableNumber }}</span>
+              <span><strong>Date:</strong> {{ today | date:'short' }}</span>
+            </div>
+          </div>
+          
+          <div class="invoice-items">
+            <div class="item-row header-row">
+              <span class="item-name">Item</span>
+              <span class="item-qty">Qty</span>
+              <span class="item-price">Price</span>
+            </div>
+            
+            <div class="item-row" *ngFor="let item of selectedBill()?.items">
+              <span class="item-name">{{ item.name }}
+                <div class="modifiers" *ngIf="item.modifiers?.length">
+                  <small *ngFor="let mod of item.modifiers">- {{ mod.optionName }}</small>
+                </div>
+              </span>
+              <span class="item-qty">{{ item.quantity }}</span>
+              <span class="item-price">{{ item.totalPrice | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+            </div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="invoice-summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>{{ selectedBill()?.subtotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+            </div>
+            <div class="summary-row" *ngIf="selectedBill()?.discount > 0">
+              <span>Discount</span>
+              <span>-{{ selectedBill()?.discount | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+            </div>
+            <div class="summary-row" *ngIf="selectedBill()?.serviceCharge > 0">
+              <span>Service Charge</span>
+              <span>{{ selectedBill()?.serviceCharge | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+            </div>
+            <div class="summary-row" *ngIf="selectedBill()?.tax > 0">
+              <span>Tax (GST)</span>
+              <span>{{ selectedBill()?.tax | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="summary-row grand-total">
+              <span>GRAND TOTAL</span>
+              <span>{{ selectedBill()?.grandTotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+            </div>
+          </div>
+          
+          <div class="invoice-footer">
+            <p>Thank you for dining with us!</p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="checkout-actions">
+          <div class="payment-methods" *ngIf="!processingPayment()">
+            <h3>Process Payment</h3>
+            <div class="method-buttons">
+              <button mat-flat-button color="primary" (click)="processPayment('Cash')">
+                <mat-icon>payments</mat-icon> Cash
+              </button>
+              <button mat-flat-button color="accent" (click)="processPayment('Mock Credit Card')">
+                <mat-icon>credit_card</mat-icon> Card
+              </button>
+              <button mat-flat-button color="warn" (click)="processPayment('Mock UPI')">
+                <mat-icon>qr_code_scanner</mat-icon> UPI
+              </button>
+            </div>
+            <div class="print-action">
+              <button mat-stroked-button (click)="printInvoice()">
+                <mat-icon>print</mat-icon> Print / PDF Receipt
+              </button>
+            </div>
+          </div>
+          
+          <div class="processing-state" *ngIf="processingPayment()">
+            <mat-icon class="spin">sync</mat-icon>
+            <p>Processing Payment...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

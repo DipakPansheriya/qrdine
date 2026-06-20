@@ -5,8 +5,11 @@ import { TableFacade } from './table.facade';
 import { StaffFacade } from './staff.facade';
 import { OwnerSettingsFacade } from './owner-settings.facade';
 import { OrderRepository } from '../repositories/order.repository';
+import { TableRepository } from '../repositories/table.repository';
+import { CustomerSessionRepository } from '../repositories/customer-session.repository';
 import { Order } from '../models';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { serverTimestamp } from '@angular/fire/firestore';
 
 export interface DashboardKpi {
   todayOrders: number;
@@ -30,6 +33,8 @@ export class DashboardFacade {
   private staffFacade = inject(StaffFacade);
   private settingsFacade = inject(OwnerSettingsFacade);
   private orderRepo = inject(OrderRepository);
+  private tableRepo = inject(TableRepository);
+  private sessionRepo = inject(CustomerSessionRepository);
 
   // State
   loading = signal(true);
@@ -185,5 +190,36 @@ export class DashboardFacade {
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  async updateOrderStatus(orderId: string, status: Order['status']) {
+    try {
+      await firstValueFrom(this.orderRepo.update(orderId, { status, updatedAt: serverTimestamp() }));
+      
+      // Auto Free Table on Payment/Completion (BUG 5 / FEATURE 2)
+      if (status === 'Completed' || status === 'Cancelled') {
+        const order = this.allOrders().find(o => o.orderId === orderId);
+        if (order) {
+          const autoFree = this.experience()?.autoFreeTable ?? true;
+          if (autoFree) {
+            // Update table to AVAILABLE and clear session ID
+            await firstValueFrom(this.tableRepo.update(order.tableId, {
+              status: 'AVAILABLE',
+              activeSessionId: ''
+            }));
+
+            // Close the customer session
+            if (order.sessionId) {
+              await firstValueFrom(this.sessionRepo.update(order.sessionId, {
+                status: status === 'Completed' ? 'Completed' : 'Cancelled',
+                endTime: serverTimestamp()
+              }));
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update order status:', err);
+    }
   }
 }

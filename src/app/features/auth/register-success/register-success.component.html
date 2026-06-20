@@ -1,13 +1,26 @@
-<div class="auth-form-container">
-  <div style="text-align: center; margin-bottom: 2rem;">
-    <div style="width: 80px; height: 80px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 1.5rem;">
-      ✓
+<div class="auth-form-container success-container">
+  <div class="success-icon-wrap">
+    <div class="success-icon-bg"></div>
+    <div class="success-icon">
+      <mat-icon>check_circle</mat-icon>
     </div>
-    <h2>Registration Successful!</h2>
-    <p class="subtitle mt-3">Welcome to QRDine. Your restaurant account has been created and your initial setup is complete.</p>
   </div>
 
-  <div class="form-actions" style="justify-content: center;">
-    <button routerLink="/login" class="btn-primary" style="width: 100%;">Proceed to Login</button>
-  </div>
+  <h2>Registration Successful!</h2>
+  <p class="subtitle">Welcome to QRDine. Your restaurant account has been created and your initial setup is complete.</p>
+
+  <button mat-flat-button 
+          color="primary" 
+          class="btn-primary-saas" 
+          (click)="proceedToLogin()" 
+          [disabled]="isLoading()">
+    <span *ngIf="!isLoading()" class="btn-content">
+      Proceed to Login
+      <mat-icon>arrow_forward</mat-icon>
+    </span>
+    <span *ngIf="isLoading()" class="btn-loading">
+      <mat-progress-spinner mode="indeterminate" diameter="20"></mat-progress-spinner>
+      <span>Connecting to account...</span>
+    </span>
+  </button>
 </div>

@@ -21,23 +21,21 @@ export type Role = 'Super Admin' | 'Owner' | 'Manager' | 'Waiter' | 'Kitchen' | 
 
 export interface User {
   uid: string;
-  email: string;
-  password?: string; // For mock local storage authentication
-  displayName?: string;
-  role: Role;
   restaurantId?: string; // Null for Super Admin
-}
-
-export interface Staff {
-  staffId: string;
-  restaurantId: string;
-  name: string;
+  name?: string;
+  displayName?: string;
   email: string;
+  mobile?: string;
   phone?: string;
   role: Role;
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
-  createdAt: any;
+  permissions?: string[];
+  mustChangePassword?: boolean;
+  status?: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED';
+  lastLoginAt?: any;
+  createdAt?: any;
   updatedAt?: any;
+  createdBy?: string;
+  password?: string; // For mock local storage authentication
 }
 
 export interface Table {
@@ -52,6 +50,7 @@ export interface Table {
   createdAt?: any;
   updatedAt?: any;
   createdBy?: string;
+  activeSessionId?: string;
 }
 
 export interface CustomerSession {
@@ -63,6 +62,7 @@ export interface CustomerSession {
   customerCount: number;
   status: 'Active' | 'Completed' | 'Cancelled';
   currentBillAmount: number;
+  billStatus?: 'Requested' | 'Generating' | 'Ready' | 'Paid' | 'Closed';
 }
 
 export interface MenuCategory {
@@ -110,6 +110,7 @@ export interface CartItem {
   modifiers: { groupName: string; optionName: string; price: number }[];
   notes?: string;
   totalPrice: number;
+  status?: 'Pending' | 'Ready';
 }
 
 export interface Cart {
@@ -138,6 +139,7 @@ export interface Order {
   status: 'Pending' | 'Accepted' | 'Preparing' | 'Ready' | 'Delivered' | 'Completed' | 'Cancelled' | 'Refunded';
   createdAt: any;
   updatedAt: any;
+  customerName?: string;
 }
 
 export interface CustomerRequest {
@@ -148,6 +150,7 @@ export interface CustomerRequest {
   type: 'Call Waiter' | 'Request Water' | 'Request Cutlery' | 'Need Assistance' | 'Request Bill';
   status: 'Pending' | 'Resolved';
   createdAt: any;
+  resolvedAt?: any;
 }
 
 export interface Payment {
@@ -256,6 +259,11 @@ export interface CustomerExperience {
   orderTrackingStyle?: 'timeline' | 'stepper' | 'cards';
   primaryButtonLabel?: string;
   checkoutButtonLabel?: string;
+  allowReorder?: boolean;
+  requireCustomerName?: boolean;
+  autoOccupyTable?: boolean;
+  autoFreeTable?: boolean;
+  sessionTimeout?: '15' | '30' | '60' | 'Never' | string;
   updatedAt: any;
 }
 

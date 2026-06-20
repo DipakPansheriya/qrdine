@@ -182,7 +182,12 @@ export class SettingsDashboardComponent implements OnInit {
       cartStyle: ['floating'],
       orderTrackingStyle: ['timeline'],
       primaryButtonLabel: ['Add'],
-      checkoutButtonLabel: ['Place Order']
+      checkoutButtonLabel: ['Place Order'],
+      allowReorder: [true],
+      requireCustomerName: [true],
+      autoOccupyTable: [true],
+      autoFreeTable: [true],
+      sessionTimeout: ['Never']
     });
 
     // When themePreset changes, if it's not 'Custom', patch the brandingForm colors/styles!

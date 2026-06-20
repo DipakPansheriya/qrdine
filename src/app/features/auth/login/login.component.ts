@@ -37,6 +37,20 @@ export class LoginComponent {
     this.authFacade.login(email, password).subscribe({
       next: (user: User | undefined) => {
         if (user) {
+          if (user.status === 'INACTIVE' || user.status === 'SUSPENDED') {
+            this.errorMessage = 'Your account has been disabled.';
+            this.authFacade.logout();
+            return;
+          }
+          if (user.status === 'PENDING') {
+            this.errorMessage = 'Account pending activation.';
+            this.authFacade.logout();
+            return;
+          }
+          if (user.mustChangePassword) {
+            this.router.navigate(['/change-password']);
+            return;
+          }
           this.routeUserByRole(user.role);
         }
       },
@@ -62,9 +76,13 @@ export class LoginComponent {
         this.router.navigate(['/owner']);
         break;
       case 'Waiter':
+        this.router.navigate(['/waiter/dashboard']);
+        break;
       case 'Kitchen':
+        this.router.navigate(['/kitchen/orders']);
+        break;
       case 'Cashier':
-        this.router.navigate(['/staff']);
+        this.router.navigate(['/cashier/dashboard']);
         break;
       default:
         this.router.navigate(['/login']);

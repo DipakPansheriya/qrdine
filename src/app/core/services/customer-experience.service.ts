@@ -140,8 +140,10 @@ export class CustomerExperienceService {
 
     return {
       '--primary-color': theme.primaryColor,
+      '--primary-color-light': theme.primaryColor + '1a', // 10% opacity
       '--secondary-color': theme.secondaryColor,
       '--accent-color': theme.accentColor,
+      '--accent-color-light': theme.accentColor + '1a', // 10% opacity
       '--btn-radius': btnRadius,
       '--card-radius': cardRadius,
       '--font-family': fontFamily,

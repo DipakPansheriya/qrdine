@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   {
@@ -13,6 +14,7 @@ export const routes: Routes = [
     loadComponent: () => import('./layouts/auth-layout/auth-layout.component').then(m => m.AuthLayoutComponent),
     children: [
       { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
+      { path: 'change-password', loadComponent: () => import('./features/auth/change-password/change-password.component').then(m => m.ChangePasswordComponent) },
       { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
       { path: 'register', loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) },
       { path: 'register-success', loadComponent: () => import('./features/auth/register-success/register-success.component').then(m => m.RegisterSuccessComponent) }
@@ -25,8 +27,8 @@ export const routes: Routes = [
   {
     path: 'admin',
     loadComponent: () => import('./layouts/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['Super Admin'] },
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: '*' },
     children: [
       { path: '', redirectTo: 'restaurants', pathMatch: 'full' },
       { 
@@ -50,8 +52,8 @@ export const routes: Routes = [
   {
     path: 'owner',
     loadComponent: () => import('./layouts/owner-layout/owner-layout.component').then(m => m.OwnerLayoutComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['Owner', 'Manager'] },
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'view_dashboard' },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./features/owner/dashboard/owner-dashboard.component').then(m => m.OwnerDashboardComponent) },
@@ -62,10 +64,40 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'kitchen',
+    loadComponent: () => import('./layouts/staff-layout/staff-layout.component').then(m => m.StaffLayoutComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'update_order_status' },
+    children: [
+      { path: '', redirectTo: 'orders', pathMatch: 'full' },
+      { path: 'orders', loadComponent: () => import('./features/kitchen/kitchen-orders/kitchen-orders.component').then(m => m.KitchenOrdersComponent) }
+    ]
+  },
+  {
+    path: 'waiter',
+    loadComponent: () => import('./layouts/staff-layout/staff-layout.component').then(m => m.StaffLayoutComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'view_tables' },
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./features/waiter/waiter-dashboard/waiter-dashboard.component').then(m => m.WaiterDashboardComponent) }
+    ]
+  },
+  {
+    path: 'cashier',
+    loadComponent: () => import('./layouts/staff-layout/staff-layout.component').then(m => m.StaffLayoutComponent),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'view_bills' },
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./features/cashier/cashier-dashboard/cashier-dashboard.component').then(m => m.CashierDashboardComponent) }
+    ]
+  },
+  {
     path: 'staff',
     loadComponent: () => import('./layouts/staff-layout/staff-layout.component').then(m => m.StaffLayoutComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['Waiter', 'Kitchen', 'Cashier'] },
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'view_dashboard' },
     children: [
       // Staff specific routes
     ]

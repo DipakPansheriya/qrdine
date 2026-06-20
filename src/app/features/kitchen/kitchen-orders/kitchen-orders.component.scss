@@ -1,0 +1,197 @@
+.kitchen-container {
+  padding: 24px;
+  height: calc(100vh - 64px); /* Adjust based on header */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background-color: var(--surface-color, #f5f7fa);
+}
+
+.metrics-bar {
+  display: flex;
+  gap: 16px;
+  
+  .metric-card {
+    background: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary-color, #ff6b6b);
+    }
+    
+    .metric-label {
+      font-size: 14px;
+      color: #6c757d;
+      margin-top: 4px;
+    }
+  }
+}
+
+.kanban-board {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+}
+
+.kanban-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ebecf0;
+  border-radius: 12px;
+  overflow: hidden;
+  
+  .column-header {
+    padding: 16px;
+    background: rgba(0,0,0,0.02);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #343a40;
+    }
+  }
+}
+
+.kanban-list {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100px;
+}
+
+.order-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:active {
+    cursor: grabbing;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .card-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    
+    &.timer-normal { background: #51cf66; }
+    &.timer-warning { background: #fcc419; color: #343a40; }
+    &.timer-critical { background: #ff6b6b; }
+    
+    .order-number {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    
+    .timer {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+      font-size: 14px;
+      
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+  
+  .card-body {
+    padding: 16px;
+    
+    .customer-info {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: #495057;
+    }
+    
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      
+      .item-row {
+        .qty {
+          font-weight: 600;
+          color: var(--primary-color, #ff6b6b);
+        }
+        
+        .modifiers, .notes {
+          margin-top: 2px;
+          line-height: 1.2;
+        }
+
+        .item-meta {
+          display: block;
+          margin-left: 28px;
+          color: #6c757d;
+        }
+        
+        .note-meta {
+          color: #d97706; /* Tailwind Amber 600 */
+        }
+      }
+    }
+    
+    .order-notes {
+      margin-top: 12px;
+      padding: 8px;
+      background: #fff3cd;
+      color: #856404;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+  }
+  
+  .card-actions {
+    padding: 12px 16px;
+    border-top: 1px solid #eee;
+    
+    .w-100 {
+      width: 100%;
+    }
+  }
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px -3px rgba(0, 0, 0, 0.2),
+              0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  opacity: 0.9;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.kanban-list.cdk-drop-list-dragging .order-card:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

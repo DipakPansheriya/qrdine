@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { RestaurantRepository } from '../repositories/restaurant.repository';
 import { TableRepository } from '../repositories/table.repository';
 import { CustomerSessionRepository } from '../repositories/customer-session.repository';
@@ -10,10 +10,12 @@ import { CustomerExperienceRepository } from '../repositories/customer-experienc
 import { CustomerExperienceService } from '../services/customer-experience.service';
 import { Restaurant, Table, CustomerSession, MenuCategory, MenuItem, CartItem, Order, Settings, CustomerExperience } from '../models';
 import { firstValueFrom, Subscription } from 'rxjs';
-import { serverTimestamp } from '@angular/fire/firestore';
+import { serverTimestamp, Firestore, collection, addDoc } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerFacade {
+  private firestore = inject(Firestore);
+
   // State Signals
   restaurant = signal<Restaurant | null>(null);
   table = signal<Table | null>(null);
@@ -32,6 +34,11 @@ export class CustomerFacade {
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
 
+  // New signals for restore session & duplicate session management
+  showSessionRestorePrompt = signal<boolean>(false);
+  showDuplicateSessionWarning = signal<boolean>(false);
+  activeTableSessionId = signal<string | null>(null);
+
   // Computed Selectors
   cartItemCount = computed(() => this.cartItems().reduce((acc, item) => acc + item.quantity, 0));
   cartSubtotal = computed(() => this.cartItems().reduce((acc, item) => acc + item.totalPrice, 0));
@@ -49,6 +56,7 @@ export class CustomerFacade {
   private ordersSub: Subscription | null = null;
   private settingsSub: Subscription | null = null;
   private cxSub: Subscription | null = null;
+  private sessionSub: Subscription | null = null;
 
   constructor(
     private restaurantRepo: RestaurantRepository,
@@ -68,6 +76,10 @@ export class CustomerFacade {
   async initializeSession(restaurantId: string, tableId: string) {
     this.loading.set(true);
     this.error.set(null);
+    this.showSessionRestorePrompt.set(false);
+    this.showDuplicateSessionWarning.set(false);
+    this.activeTableSessionId.set(null);
+
     try {
       // 1. Validate Restaurant
       const rest = await firstValueFrom(this.restaurantRepo.getById(restaurantId));
@@ -81,28 +93,95 @@ export class CustomerFacade {
       this.restaurant.set(rest);
       this.table.set(tbl);
 
-      // 3. Setup Session
-      const savedSessionId = sessionStorage.getItem(`qrdine_session_${tableId}`);
+      // Load Settings and Experience first to check configurations
+      await this.loadSettingsAndExperience(restaurantId);
+
+      // 3. Setup Session (BUG 3: localStorage)
+      const savedSessionKey = `qrdine_session_${tableId}`;
+      const savedSessionId = localStorage.getItem(savedSessionKey);
       let currentSessionId = '';
-      if (savedSessionId) {
-        const existingSession = await firstValueFrom(this.sessionRepo.getById(savedSessionId));
-        if (existingSession && existingSession.status === 'Active') {
-          this.session.set(existingSession);
-          currentSessionId = savedSessionId;
+
+      const isOccupied = tbl.status === 'OCCUPIED';
+      const activeSessionIdOnTable = tbl.activeSessionId;
+
+      if (isOccupied && activeSessionIdOnTable) {
+        // Table already occupied
+        if (savedSessionId === activeSessionIdOnTable) {
+          // Returning customer device scanning the same table QR
+          const existingSession = await firstValueFrom(this.sessionRepo.getById(savedSessionId));
+          if (existingSession && existingSession.status === 'Active') {
+            // Check timeout if configured (FEATURE 2)
+            const timeoutRule = this.experience()?.sessionTimeout || 'Never';
+            let hasTimedOut = false;
+            if (timeoutRule !== 'Never') {
+              const timeoutMs = parseInt(timeoutRule, 10) * 60 * 1000;
+              const startTimeMs = existingSession.startTime?.toMillis ? existingSession.startTime.toMillis() : new Date(existingSession.startTime).getTime();
+              if (Date.now() - startTimeMs > timeoutMs) {
+                hasTimedOut = true;
+              }
+            }
+
+            if (!hasTimedOut) {
+              this.session.set(existingSession);
+              currentSessionId = savedSessionId;
+              this.showSessionRestorePrompt.set(true);
+            } else {
+              // Create new session due to timeout
+              currentSessionId = await this.createNewSession(restaurantId, tableId);
+            }
+          } else {
+            currentSessionId = await this.createNewSession(restaurantId, tableId);
+          }
+        } else {
+          // Different customer/device scanning the QR (FEATURE 1)
+          const allowMultiple = this.experience()?.allowMultipleOrders ?? true;
+          if (!allowMultiple) {
+            this.showDuplicateSessionWarning.set(true);
+            this.activeTableSessionId.set(activeSessionIdOnTable);
+            this.loading.set(false);
+            return; // Halt and show warning
+          } else {
+            currentSessionId = await this.createNewSession(restaurantId, tableId);
+          }
+        }
+      } else {
+        // Table is available or not occupied
+        if (savedSessionId) {
+          const existingSession = await firstValueFrom(this.sessionRepo.getById(savedSessionId));
+          if (existingSession && existingSession.status === 'Active') {
+            // Check timeout if configured (FEATURE 2)
+            const timeoutRule = this.experience()?.sessionTimeout || 'Never';
+            let hasTimedOut = false;
+            if (timeoutRule !== 'Never') {
+              const timeoutMs = parseInt(timeoutRule, 10) * 60 * 1000;
+              const startTimeMs = existingSession.startTime?.toMillis ? existingSession.startTime.toMillis() : new Date(existingSession.startTime).getTime();
+              if (Date.now() - startTimeMs > timeoutMs) {
+                hasTimedOut = true;
+              }
+            }
+
+            if (!hasTimedOut) {
+              this.session.set(existingSession);
+              currentSessionId = savedSessionId;
+            } else {
+              currentSessionId = await this.createNewSession(restaurantId, tableId);
+            }
+          } else {
+            currentSessionId = await this.createNewSession(restaurantId, tableId);
+          }
         } else {
           currentSessionId = await this.createNewSession(restaurantId, tableId);
         }
-      } else {
-        currentSessionId = await this.createNewSession(restaurantId, tableId);
       }
 
-      // 4. Load Menu and Settings
-      await Promise.all([
-        this.loadMenu(restaurantId),
-        this.loadSettingsAndExperience(restaurantId)
-      ]);
+      // Load Menu
+      await this.loadMenu(restaurantId);
 
-      // 5. Listen to Session Orders
+      // Restore cart items
+      this.restoreCartForTable(tableId);
+
+      // Listen to Session and Orders
+      this.listenToSession(currentSessionId);
       this.listenToOrders(currentSessionId);
 
       // Artificial delay for premium skeleton loading experience
@@ -116,8 +195,59 @@ export class CustomerFacade {
     }
   }
 
+  async joinExistingTableSession() {
+    const existingSessionId = this.activeTableSessionId();
+    const tbl = this.table();
+    if (existingSessionId && tbl) {
+      localStorage.setItem(`qrdine_session_${tbl.id!}`, existingSessionId);
+      const existingSession = await firstValueFrom(this.sessionRepo.getById(existingSessionId));
+      if (existingSession) {
+        this.session.set(existingSession);
+        this.showDuplicateSessionWarning.set(false);
+        this.restoreCartForTable(tbl.id!);
+        this.listenToOrders(existingSessionId);
+      }
+    }
+  }
+
+  async requestAssistance() {
+    const tbl = this.table();
+    const rest = this.restaurant();
+    const sess = this.session();
+    if (tbl && rest) {
+      const requestId = 'req_' + Math.random().toString(36).substring(2, 9) + Date.now();
+      const request = {
+        requestId,
+        restaurantId: rest.restaurantId,
+        tableId: tbl.id!,
+        sessionId: sess?.sessionId || tbl.activeSessionId || '',
+        type: 'Need Assistance',
+        status: 'Pending',
+        createdAt: serverTimestamp()
+      };
+      
+      const collRef = collection(this.firestore, 'requests');
+      await addDoc(collRef, request);
+    }
+  }
+
+  async requestBill() {
+    const sess = this.session();
+    if (sess && !sess.billStatus) {
+      await firstValueFrom(this.sessionRepo.update(sess.sessionId, { billStatus: 'Requested' }));
+    }
+  }
+
+  private listenToSession(sessionId: string) {
+    if (this.sessionSub) this.sessionSub.unsubscribe();
+    this.sessionSub = this.sessionRepo.getById(sessionId).subscribe(session => {
+      if (session) {
+        this.session.set(session);
+      }
+    });
+  }
+
   private async createNewSession(restaurantId: string, tableId: string): Promise<string> {
-    // Generate simple unique ID
     const sessionId = 'sess_' + Math.random().toString(36).substring(2, 9) + Date.now();
     
     const newSession: CustomerSession = {
@@ -125,24 +255,23 @@ export class CustomerFacade {
       restaurantId,
       tableId,
       startTime: serverTimestamp(),
-      customerCount: 1, // Default, could be asked in a dialog
+      customerCount: 1,
       status: 'Active',
       currentBillAmount: 0
     };
 
     await firstValueFrom(this.sessionRepo.create(newSession, sessionId));
     this.session.set(newSession);
-    sessionStorage.setItem(`qrdine_session_${tableId}`, sessionId);
+    localStorage.setItem(`qrdine_session_${tableId}`, sessionId);
     return sessionId;
   }
 
   private listenToOrders(sessionId: string) {
     if (this.ordersSub) this.ordersSub.unsubscribe();
     this.ordersSub = this.orderRepo.getBySession(sessionId).subscribe(orders => {
-      // Sort orders by createdAt desc (newest first)
       const sorted = [...orders].sort((a, b) => {
-        const timeA = a.createdAt?.toMillis() || 0;
-        const timeB = b.createdAt?.toMillis() || 0;
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt).getTime();
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt).getTime();
         return timeB - timeA;
       });
       this.orders.set(sorted);
@@ -158,10 +287,7 @@ export class CustomerFacade {
       firstValueFrom(items$)
     ]);
 
-    // Sort categories
     cats.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-    
-    // Filter available items
     const availableItems = items.filter(i => i.availability === 'Available');
 
     this.categories.set(cats);
@@ -219,7 +345,6 @@ export class CustomerFacade {
   // Cart Management
   addToCart(item: CartItem) {
     this.cartItems.update(items => {
-      // Very basic collision detection. Real app might check modifiers specifically.
       const existing = items.find(i => i.itemId === item.itemId && i.notes === item.notes);
       if (existing) {
         existing.quantity += item.quantity;
@@ -236,7 +361,6 @@ export class CustomerFacade {
       const target = items[index];
       if (target) {
         target.quantity += delta;
-        // recalculate price based on unit price (assuming total was quantity * unit)
         const unitPrice = target.totalPrice / (target.quantity - delta);
         target.totalPrice = target.quantity * unitPrice;
         
@@ -257,24 +381,25 @@ export class CustomerFacade {
   private saveCart() {
     const tbl = this.table();
     if (tbl) {
-      sessionStorage.setItem(`qrdine_cart_${tbl.id}`, JSON.stringify(this.cartItems()));
+      localStorage.setItem(`qrdine_cart_${tbl.id}`, JSON.stringify(this.cartItems()));
     }
   }
 
   private restoreCart() {
-    // We can't restore perfectly in constructor because tableId isn't known yet.
-    // It's called in initializeSession or implicitly if we know the table.
+    // Restored dynamically per table
   }
 
   restoreCartForTable(tableId: string) {
-    const saved = sessionStorage.getItem(`qrdine_cart_${tableId}`);
+    const saved = localStorage.getItem(`qrdine_cart_${tableId}`);
     if (saved) {
       this.cartItems.set(JSON.parse(saved));
+    } else {
+      this.cartItems.set([]);
     }
   }
 
   // Checkout
-  async placeOrder(orderNotes: string): Promise<string> {
+  async placeOrder(orderNotes: string, customerName?: string): Promise<string> {
     const sess = this.session();
     const rest = this.restaurant();
     const tbl = this.table();
@@ -283,16 +408,23 @@ export class CustomerFacade {
       throw new Error('Invalid order state');
     }
 
+    // Allow Reorder configuration check (FEATURE 2)
+    const allowReorder = this.experience()?.allowReorder ?? true;
+    if (!allowReorder && this.orders().length > 0) {
+      throw new Error('Reordering is disabled for this table session.');
+    }
+
     this.loading.set(true);
 
     const orderId = 'ord_' + Math.random().toString(36).substring(2, 9) + Date.now();
+    const finalCustomerName = customerName || localStorage.getItem('qrdine_customer_name') || 'Guest';
     
     const newOrder: Order = {
       orderId,
       restaurantId: rest.restaurantId,
       tableId: tbl.id!,
       sessionId: sess.sessionId,
-      orderNumber: Math.floor(1000 + Math.random() * 9000), // Random 4 digit
+      orderNumber: Math.floor(1000 + Math.random() * 9000),
       items: [...this.cartItems()],
       subtotal: this.cartSubtotal(),
       tax: this.cartTax(),
@@ -300,12 +432,31 @@ export class CustomerFacade {
       grandTotal: this.cartGrandTotal(),
       notes: orderNotes,
       status: 'Pending',
+      customerName: finalCustomerName, // BUG 4
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
 
     try {
       await firstValueFrom(this.orderRepo.create(newOrder, orderId));
+      
+      // Auto Occupy Table on First Order (BUG 5 / FEATURE 2)
+      const autoOccupy = this.experience()?.autoOccupyTable ?? true;
+      if (autoOccupy && tbl.status !== 'OCCUPIED') {
+        await firstValueFrom(this.tableRepo.update(tbl.id!, {
+          status: 'OCCUPIED',
+          activeSessionId: sess.sessionId
+        }));
+      }
+
+      // Store active session details in localStorage (BUG 3)
+      localStorage.setItem(`qrdine_active_order_${tbl.id!}`, JSON.stringify({
+        restaurantId: rest.restaurantId,
+        tableId: tbl.id!,
+        orderId: orderId,
+        sessionId: sess.sessionId
+      }));
+
       this.clearCart();
       return orderId;
     } catch (e) {

@@ -8,6 +8,7 @@ import { Observable, from, of } from 'rxjs';
 import { switchMap, tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, authState } from '@angular/fire/auth';
+import { serverTimestamp } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
@@ -37,10 +38,13 @@ export class AuthFacade {
     return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
       switchMap(credential => {
         return this.userRepository.getById(credential.user.uid).pipe(
-          tap(user => {
+          switchMap(user => {
             if (!user) {
               throw new Error('USER_DOCUMENT_MISSING');
             }
+            return from(this.userRepository.update(user.uid, { lastLoginAt: serverTimestamp() })).pipe(
+              switchMap(() => of(user))
+            );
           })
         );
       }),
@@ -82,8 +86,12 @@ export class AuthFacade {
         const newUser: User = {
           uid,
           email,
+          name: fullName,
           displayName: fullName,
+          mobile: phone,
+          phone: phone,
           role: 'Owner',
+          status: 'ACTIVE',
           restaurantId
         };
 

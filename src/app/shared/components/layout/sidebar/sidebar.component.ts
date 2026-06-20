@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { AuthFacade } from '../../../../core/facades/auth.facade';
+import { PermissionService } from '../../../../core/services/permission.service';
 
 export interface NavItem {
   label: string;
   icon: string;
   route: string;
-  roles: string[];
+  permission: string;
 }
 
 @Component({
@@ -315,26 +316,35 @@ export interface NavItem {
 })
 export class SidebarComponent {
   private authFacade = inject(AuthFacade);
+  private permissionService = inject(PermissionService);
   user = this.authFacade.currentUser;
   @Input() isCollapsed = false;
 
   private navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'grid_view', route: '/admin/dashboard', roles: ['Super Admin'] },
-    { label: 'Restaurants', icon: 'store', route: '/admin/restaurants', roles: ['Super Admin'] },
-    { label: 'Dashboard', icon: 'grid_view', route: '/owner/dashboard', roles: ['Owner', 'Manager'] },
-    { label: 'Menu Management', icon: 'menu_book', route: '/owner/menu', roles: ['Owner', 'Manager'] },
-    { label: 'Table Management', icon: 'table_bar', route: '/owner/tables', roles: ['Owner', 'Manager'] },
-    { label: 'Staff Management', icon: 'group', route: '/owner/staff', roles: ['Owner', 'Manager'] },
-    { label: 'Settings', icon: 'tune', route: '/owner/settings', roles: ['Owner', 'Manager'] },
-    { label: 'Active Tables', icon: 'table_restaurant', route: '/staff/tables', roles: ['Waiter', 'Manager'] },
-    { label: 'Kitchen Orders', icon: 'receipt', route: '/staff/kitchen', roles: ['Kitchen', 'Manager'] },
-    { label: 'Checkout/Billing', icon: 'point_of_sale', route: '/staff/billing', roles: ['Cashier', 'Manager'] }
+    { label: 'System Dashboard', icon: 'grid_view', route: '/admin/dashboard', permission: '*' },
+    { label: 'Restaurants', icon: 'store', route: '/admin/restaurants', permission: '*' },
+    { label: 'Dashboard', icon: 'grid_view', route: '/owner/dashboard', permission: 'view_dashboard' },
+    { label: 'Menu Management', icon: 'menu_book', route: '/owner/menu', permission: 'manage_menu' },
+    { label: 'Table Management', icon: 'table_bar', route: '/owner/tables', permission: 'manage_tables' },
+    { label: 'Staff Management', icon: 'group', route: '/owner/staff', permission: 'manage_staff' },
+    { label: 'Settings', icon: 'tune', route: '/owner/settings', permission: 'manage_settings' },
+    { label: 'Waiter Dashboard', icon: 'table_restaurant', route: '/waiter/dashboard', permission: 'view_tables' },
+    { label: 'Kitchen Orders', icon: 'receipt', route: '/kitchen/orders', permission: 'update_order_status' },
+    { label: 'Cashier Dashboard', icon: 'point_of_sale', route: '/cashier/dashboard', permission: 'view_bills' }
   ];
 
   allowedNavItems = computed(() => {
     const currentUser = this.user();
     if (!currentUser) return [];
-    return this.navItems.filter(item => item.roles.includes(currentUser.role));
+    
+    return this.navItems.filter(item => {
+      // Super Admins only see admin routes
+      if (currentUser.role === 'Super Admin') {
+        return item.route.startsWith('/admin');
+      }
+      
+      return this.permissionService.hasPermission(item.permission);
+    });
   });
 
 

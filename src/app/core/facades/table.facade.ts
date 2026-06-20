@@ -1,8 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, effect } from '@angular/core';
 import { TableRepository } from '../repositories/table.repository';
 import { Table } from '../models';
 import { AuthFacade } from './auth.facade';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
@@ -11,25 +11,47 @@ export class TableFacade {
   loading = signal<boolean>(false);
   selectedTable = signal<Table | null>(null);
 
+  private tablesSub: Subscription | null = null;
+
   constructor(
     private tableRepo: TableRepository,
     private authFacade: AuthFacade
-  ) { }
+  ) {
+    effect(() => {
+      const user = this.authFacade.currentUser();
+      if (user?.restaurantId) {
+        this.subscribeToTables(user.restaurantId);
+      } else {
+        this.unsubscribe();
+        this.tables.set([]);
+      }
+    }, { allowSignalWrites: true });
+  }
+
+  private subscribeToTables(restaurantId: string) {
+    this.loading.set(true);
+    this.unsubscribe();
+    this.tablesSub = this.tableRepo.getByRestaurant(restaurantId).subscribe({
+      next: (tables) => {
+        this.tables.set(tables || []);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  private unsubscribe() {
+    if (this.tablesSub) {
+      this.tablesSub.unsubscribe();
+      this.tablesSub = null;
+    }
+  }
 
   async loadTables() {
-    this.loading.set(true);
-    try {
-      const user = this.authFacade.currentUser();
-      if (!user?.restaurantId) return;
-
-      const tables$ = this.tableRepo.getByRestaurant(user.restaurantId);
-      const tables = await firstValueFrom(tables$);
-      this.tables.set(tables);
-    } catch (error) {
-      console.error('Error loading tables:', error);
-    } finally {
-      this.loading.set(false);
-    }
+    // Realtime subscriptions are managed automatically via the constructor effect
   }
 
   async createTable(table: Partial<Table>): Promise<Table> {
@@ -40,12 +62,12 @@ export class TableFacade {
       ...table,
       restaurantId: user.restaurantId,
       createdBy: user.uid,
+      status: 'AVAILABLE', // Default to AVAILABLE
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
 
     const created = await firstValueFrom(this.tableRepo.create(newTable as Table));
-    await this.loadTables();
     return created;
   }
 
@@ -56,12 +78,10 @@ export class TableFacade {
     };
 
     await firstValueFrom(this.tableRepo.update(id, updateData));
-    await this.loadTables();
   }
 
   async deleteTable(id: string): Promise<void> {
     await firstValueFrom(this.tableRepo.delete(id));
-    await this.loadTables();
   }
 
   async generateTableQr(table: Table): Promise<void> {
@@ -69,7 +89,6 @@ export class TableFacade {
     const user = this.authFacade.currentUser();
     if (!user) return;
 
-    // The current environment url would ideally come from environment.ts, but we use hardcoded as requested
     const qrCodeUrl = `${window.location.origin}/menu/${table.restaurantId}/${table.id}`;
 
     const updateData: Partial<Table> = {
@@ -80,7 +99,6 @@ export class TableFacade {
     };
 
     await firstValueFrom(this.tableRepo.update(table.id, updateData));
-    await this.loadTables();
   }
 
   selectTable(table: Table | null) {

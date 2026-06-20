@@ -143,19 +143,39 @@
         <div class="orders-table" *ngIf="facade.recentOrders().length > 0; else noOrders">
           <div class="orders-head">
             <span>Order</span>
+            <span>Customer</span>
             <span>Table</span>
             <span>Amount</span>
             <span>Status</span>
             <span>Time</span>
+            <span>Actions</span>
           </div>
           <div class="order-row" *ngFor="let order of facade.recentOrders()">
             <span class="order-num">#{{ order.orderNumber || (order.orderId + '').slice(-5) }}</span>
+            <span class="order-customer" [title]="order.customerName || 'Guest'">{{ order.customerName || 'Guest' }}</span>
             <span class="order-table">{{ getTableLabel(order.tableId) }}</span>
             <span class="order-amount">₹{{ order.grandTotal | number:'1.0-0' }}</span>
             <span class="order-status" [class]="'status-' + (order.status || 'pending').toLowerCase()">
               {{ order.status }}
             </span>
             <span class="order-time">{{ formatTime(order.createdAt) }}</span>
+            <span class="order-actions">
+              <button class="action-btn btn-accept" *ngIf="order.status === 'Pending'" (click)="updateStatus(order.orderId, 'Accepted')">
+                <mat-icon>check</mat-icon> Accept
+              </button>
+              <button class="action-btn btn-prepare" *ngIf="order.status === 'Accepted'" (click)="updateStatus(order.orderId, 'Preparing')">
+                <mat-icon>restaurant</mat-icon> Prepare
+              </button>
+              <button class="action-btn btn-ready" *ngIf="order.status === 'Preparing'" (click)="updateStatus(order.orderId, 'Ready')">
+                <mat-icon>done_all</mat-icon> Ready
+              </button>
+              <button class="action-btn btn-complete" *ngIf="order.status === 'Ready'" (click)="updateStatus(order.orderId, 'Completed')">
+                <mat-icon>verified</mat-icon> Complete
+              </button>
+              <span class="no-actions" *ngIf="order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Refunded' || order.status === 'Delivered'">
+                —
+              </span>
+            </span>
           </div>
         </div>
         <ng-template #noOrders>

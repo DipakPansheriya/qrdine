@@ -1,21 +1,24 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { StaffRepository } from '../repositories/staff.repository';
+import { UserRepository } from '../repositories/user.repository';
 import { AuthFacade } from './auth.facade';
-import { Staff, Role } from '../models';
+import { User, Role } from '../models';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { initializeApp, getApp, getApps } from '@angular/fire/app';
+import { getAuth, createUserWithEmailAndPassword, signOut } from '@angular/fire/auth';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class StaffFacade {
-  staffList = signal<Staff[]>([]);
+  staffList = signal<User[]>([]);
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
 
   private staffSub: Subscription | null = null;
 
   constructor(
-    private staffRepo: StaffRepository,
+    private userRepo: UserRepository,
     private authFacade: AuthFacade,
     private snackBar: MatSnackBar
   ) {
@@ -32,9 +35,9 @@ export class StaffFacade {
   private loadStaff(restaurantId: string) {
     this.loading.set(true);
     if (this.staffSub) this.staffSub.unsubscribe();
-    this.staffSub = this.staffRepo.getByRestaurant(restaurantId).subscribe({
+    this.staffSub = this.userRepo.getByRestaurant(restaurantId).subscribe({
       next: (staff) => {
-        this.staffList.set(staff);
+        this.staffList.set(staff.filter(u => u.role !== 'Owner' && u.role !== 'Super Admin'));
         this.loading.set(false);
       },
       error: (err) => {
@@ -45,25 +48,45 @@ export class StaffFacade {
     });
   }
 
-  async addStaff(staffData: Partial<Staff>) {
+  async addStaff(staffData: Partial<User>) {
     try {
       this.loading.set(true);
       const user = this.authFacade.currentUser();
       if (!user || !user.restaurantId) throw new Error('Not authenticated');
 
-      const newStaff: Staff = {
-        staffId: '',
+      const tempPassword = 'Welcome@123';
+
+      let secondaryApp;
+      if (!getApps().find(app => app.name === 'SecondaryApp')) {
+        secondaryApp = initializeApp(environment.firebaseConfig, 'SecondaryApp');
+      } else {
+        secondaryApp = getApp('SecondaryApp');
+      }
+      
+      const secondaryAuth = getAuth(secondaryApp);
+      
+      const credential = await createUserWithEmailAndPassword(secondaryAuth, staffData.email!, tempPassword);
+      await signOut(secondaryAuth);
+      
+      const uid = credential.user.uid;
+
+      const newStaff: User = {
+        uid: uid,
         restaurantId: user.restaurantId,
         name: staffData.name || '',
+        displayName: staffData.name || '',
         email: staffData.email || '',
-        phone: staffData.phone || '',
+        mobile: staffData.mobile || '',
+        phone: staffData.mobile || '',
         role: staffData.role as Role || 'Waiter',
         status: staffData.status as any || 'ACTIVE',
+        mustChangePassword: true,
+        createdBy: user.uid,
         createdAt: serverTimestamp()
       };
 
-      await firstValueFrom(this.staffRepo.create(newStaff));
-      this.snackBar.open('Staff added successfully', 'Close', { duration: 3000 });
+      await firstValueFrom(this.userRepo.create(newStaff, uid));
+      this.snackBar.open(`Staff added. Password: ${tempPassword}`, 'Close', { duration: 6000 });
     } catch (e: any) {
       this.snackBar.open(e.message || 'Error adding staff', 'Close', { duration: 3000 });
       throw e;
@@ -72,10 +95,10 @@ export class StaffFacade {
     }
   }
 
-  async updateStaff(id: string, staffData: Partial<Staff>) {
+  async updateStaff(id: string, staffData: Partial<User>) {
     try {
       this.loading.set(true);
-      await firstValueFrom(this.staffRepo.update(id, { ...staffData, updatedAt: serverTimestamp() }));
+      await firstValueFrom(this.userRepo.update(id, { ...staffData, updatedAt: serverTimestamp() }));
       this.snackBar.open('Staff updated successfully', 'Close', { duration: 3000 });
     } catch (e: any) {
       this.snackBar.open(e.message || 'Error updating staff', 'Close', { duration: 3000 });

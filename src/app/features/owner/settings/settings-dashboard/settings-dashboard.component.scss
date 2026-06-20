@@ -914,3 +914,43 @@
   .cx-preview-wrap { position: static; }
   .settings-card.two-col { flex-direction: column; }
 }
+
+.toggle-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  
+  .toggle-info {
+    flex: 1;
+    strong {
+      display: block;
+      font-size: 0.9rem;
+      color: #1e293b;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+  }
+}
+
+.toggle-icon-mat {
+  color: #4361ee;
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.field-desc {
+  margin: 2px 0 8px;
+  font-size: 0.75rem;
+  color: #64748b;
+}

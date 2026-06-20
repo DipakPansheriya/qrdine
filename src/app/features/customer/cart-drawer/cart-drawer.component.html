@@ -35,6 +35,14 @@
       </div>
     </div>
 
+    <!-- Customer Name Input Field (BUG 4) -->
+    <div class="name-field-group" *ngIf="facade.experience()?.requireCustomerName !== false">
+      <mat-form-field appearance="outline" class="notes-field">
+        <mat-label>Your Name</mat-label>
+        <input matInput placeholder="Enter your name (e.g. John)" [ngModel]="customerName()" (ngModelChange)="customerName.set($event)" required />
+      </mat-form-field>
+    </div>
+
     <mat-form-field appearance="outline" class="notes-field">
       <mat-label>Order Notes (Optional)</mat-label>
       <textarea matInput rows="2" placeholder="e.g., Please bring extra napkins" [ngModel]="orderNotes()" (ngModelChange)="orderNotes.set($event)"></textarea>
@@ -57,7 +65,7 @@
   </div>
 
   <div class="drawer-footer">
-    <button class="checkout-btn" (click)="checkout()" [disabled]="facade.loading()">
+    <button class="checkout-btn" (click)="checkout()" [disabled]="facade.loading() || ((facade.experience()?.requireCustomerName ?? true) && !customerName().trim())">
       <mat-icon *ngIf="facade.loading()">hourglass_empty</mat-icon>
       <span>{{ facade.loading() ? 'Processing...' : (facade.experience()?.checkoutButtonLabel || 'Place Order') }}</span>
     </button>

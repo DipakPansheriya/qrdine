@@ -1,0 +1,125 @@
+<div class="kitchen-container">
+  <!-- Top Bar Metrics -->
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <div class="metric-value">{{ kitchenFacade.kpis().ordersToday }}</div>
+      <div class="metric-label">Orders Today</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ kitchenFacade.kpis().avgPrepTime }}m</div>
+      <div class="metric-label">Avg Prep Time</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ kitchenFacade.kpis().pendingOrders }}</div>
+      <div class="metric-label">Pending</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ kitchenFacade.kpis().readyOrders }}</div>
+      <div class="metric-label">Ready</div>
+    </div>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board">
+    
+    <!-- Pending Column -->
+    <div class="kanban-column">
+      <div class="column-header">
+        <h3>Pending ({{ kitchenFacade.pendingOrders().length }})</h3>
+      </div>
+      <div 
+        id="pendingList"
+        cdkDropList
+        [cdkDropListData]="kitchenFacade.pendingOrders()"
+        [cdkDropListConnectedTo]="['preparingList', 'readyList']"
+        class="kanban-list"
+        (cdkDropListDropped)="drop($event)">
+        
+        <div class="order-card" *ngFor="let order of kitchenFacade.pendingOrders()" cdkDrag>
+          <ng-container *ngTemplateOutlet="orderTemplate; context:{ $implicit: order }"></ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preparing Column -->
+    <div class="kanban-column">
+      <div class="column-header">
+        <h3>Preparing ({{ kitchenFacade.preparingOrders().length }})</h3>
+      </div>
+      <div 
+        id="preparingList"
+        cdkDropList
+        [cdkDropListData]="kitchenFacade.preparingOrders()"
+        [cdkDropListConnectedTo]="['pendingList', 'readyList']"
+        class="kanban-list"
+        (cdkDropListDropped)="drop($event)">
+        
+        <div class="order-card" *ngFor="let order of kitchenFacade.preparingOrders()" cdkDrag>
+          <ng-container *ngTemplateOutlet="orderTemplate; context:{ $implicit: order }"></ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ready Column -->
+    <div class="kanban-column">
+      <div class="column-header">
+        <h3>Ready ({{ kitchenFacade.readyOrders().length }})</h3>
+      </div>
+      <div 
+        id="readyList"
+        cdkDropList
+        [cdkDropListData]="kitchenFacade.readyOrders()"
+        [cdkDropListConnectedTo]="['pendingList', 'preparingList']"
+        class="kanban-list"
+        (cdkDropListDropped)="drop($event)">
+        
+        <div class="order-card" *ngFor="let order of kitchenFacade.readyOrders()" cdkDrag>
+          <ng-container *ngTemplateOutlet="orderTemplate; context:{ $implicit: order }"></ng-container>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #orderTemplate let-order>
+  <div class="card-header" [ngClass]="getTimerClass(order.createdAt)">
+    <span class="order-number">#{{ order.orderNumber }}</span>
+    <span class="timer">
+      <mat-icon>timer</mat-icon>
+      {{ getElapsedMinutes(order.createdAt) }}m
+    </span>
+  </div>
+  <div class="card-body">
+    <div class="customer-info">
+      <strong>{{ order.customerName || 'Guest' }}</strong> - Table {{ order.tableId | slice:0:5 }}
+    </div>
+    
+    <div class="items-list">
+      <div class="item-row" *ngFor="let item of order.items; let i = index">
+        <mat-checkbox 
+          [checked]="item.status === 'Ready'"
+          (change)="toggleItemStatus(order, i, $event)">
+          <span class="qty">{{ item.quantity }}x</span> {{ item.name }}
+        </mat-checkbox>
+        <div class="modifiers" *ngIf="item.modifiers?.length">
+          <small *ngFor="let mod of item.modifiers" class="item-meta">
+            - {{ mod.optionName }}
+          </small>
+        </div>
+        <div class="notes" *ngIf="item.notes">
+          <small class="item-meta note-meta">Note: {{ item.notes }}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-notes" *ngIf="order.notes">
+      <strong>Notes:</strong> {{ order.notes }}
+    </div>
+  </div>
+  <div class="card-actions" *ngIf="order.status === 'Ready'">
+    <button mat-flat-button color="primary" class="w-100" (click)="kitchenFacade.updateOrderStatus(order.orderId, 'Delivered')">
+      Mark Served
+    </button>
+  </div>
+</ng-template>

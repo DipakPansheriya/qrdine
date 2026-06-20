@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { StaffFacade } from '../../../../core/facades/staff.facade';
-import { Staff } from '../../../../core/models';
+import { User } from '../../../../core/models';
 
 @Component({
   selector: 'app-staff-form',
@@ -30,7 +30,7 @@ export class StaffFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<StaffFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { staff?: Staff }
+    @Inject(MAT_DIALOG_DATA) public data: { staff?: User }
   ) {
     this.isEditMode = !!data?.staff;
     this.staffForm = this.fb.group({
@@ -38,14 +38,8 @@ export class StaffFormComponent implements OnInit {
       email: [data?.staff?.email || '', [Validators.required, Validators.email]],
       phone: [data?.staff?.phone || ''],
       role: [data?.staff?.role || 'Waiter', Validators.required],
-      status: [data?.staff?.status || 'ACTIVE', Validators.required],
-      // Temporary password is only needed when creating new staff
-      password: ['']
+      status: [data?.staff?.status || 'ACTIVE', Validators.required]
     });
-
-    if (!this.isEditMode) {
-      this.staffForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
-    }
   }
 
   ngOnInit() {}
@@ -54,8 +48,8 @@ export class StaffFormComponent implements OnInit {
     if (this.staffForm.valid) {
       const formValue = this.staffForm.value;
       
-      if (this.isEditMode && this.data.staff?.staffId) {
-        await this.facade.updateStaff(this.data.staff.staffId, {
+      if (this.isEditMode && this.data.staff?.uid) {
+        await this.facade.updateStaff(this.data.staff.uid, {
           name: formValue.name,
           email: formValue.email,
           phone: formValue.phone,
