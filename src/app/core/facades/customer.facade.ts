@@ -12,10 +12,12 @@ import { CurrencyService } from '../services/currency.service';
 import { Restaurant, Table, CustomerSession, MenuCategory, MenuItem, CartItem, Order, Settings, CustomerExperience } from '../models';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { serverTimestamp, Firestore, collection, addDoc } from '@angular/fire/firestore';
+import { NotificationFacade } from './notification.facade';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerFacade {
   private firestore = inject(Firestore);
+  private notificationFacade = inject(NotificationFacade);
 
   // State Signals
   restaurant = signal<Restaurant | null>(null);
@@ -230,13 +232,41 @@ export class CustomerFacade {
       
       const collRef = collection(this.firestore, 'requests');
       await addDoc(collRef, request);
+
+      // Notification
+      let notifType = 'CALL_WAITER';
+      let title = 'Customer Assistance Needed';
+      if (type === 'Request Water') { notifType = 'WATER_REQUEST'; title = 'Water Request'; }
+      if (type === 'Request Cutlery') { notifType = 'CUTLERY_REQUEST'; title = 'Cutlery Request'; }
+
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Waiter',
+        type: notifType,
+        title: title,
+        message: `Table T-${tbl.tableNumber || tbl.id?.slice(-2)}`,
+        priority: 'MEDIUM',
+        entityId: requestId,
+        entityType: 'session'
+      });
     }
   }
 
   async requestBill() {
     const sess = this.session();
-    if (sess && !sess.billStatus) {
+    const tbl = this.table();
+    if (sess && tbl && !sess.billStatus) {
       await firstValueFrom(this.sessionRepo.update(sess.sessionId, { billStatus: 'Requested' }));
+      
+      // Notify Cashier
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Cashier', // Cashier needs to know
+        type: 'BILL_REQUEST',
+        title: 'Bill Requested',
+        message: `Table T-${tbl.tableNumber || tbl.id?.slice(-2)} - ₹${sess.currentBillAmount || 0}`,
+        priority: 'HIGH',
+        entityId: sess.sessionId,
+        entityType: 'session'
+      });
     }
   }
 
@@ -464,6 +494,18 @@ export class CustomerFacade {
         orderId: orderId,
         sessionId: sess.sessionId
       }));
+
+      // Notify Kitchen
+      const isUrgent = orderNotes?.toLowerCase().includes('urgent');
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Kitchen',
+        type: 'NEW_ORDER',
+        title: isUrgent ? '🔥 Urgent Order' : 'New Order',
+        message: `Table T-${tbl.tableNumber || tbl.id?.slice(-2)} - ${newOrder.items.length} Items${orderNotes ? '\\nNote: ' + orderNotes : ''}`,
+        priority: isUrgent ? 'CRITICAL' : 'HIGH',
+        entityId: orderId,
+        entityType: 'order'
+      });
 
       this.clearCart();
       return orderId;

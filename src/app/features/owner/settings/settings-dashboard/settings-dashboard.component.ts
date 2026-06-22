@@ -36,6 +36,7 @@ export class SettingsDashboardComponent implements OnInit {
   taxForm: FormGroup;
   brandingForm: FormGroup;
   cxForm: FormGroup;
+  notificationsForm: FormGroup;
 
   days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
@@ -154,6 +155,12 @@ export class SettingsDashboardComponent implements OnInit {
       typographyStyle: ['Modern Sans']
     });
 
+    this.notificationsForm = this.fb.group({
+      enableSound: [true],
+      enableToastNotifications: [true],
+      enableRealtimeNotifications: [true]
+    });
+
     this.cxForm = this.fb.group({
       showRestaurantRating: [true],
       showPopularItems: [true],
@@ -249,6 +256,9 @@ export class SettingsDashboardComponent implements OnInit {
         this.hoursForm.patchValue(s.businessHours || {});
         this.taxForm.patchValue(s);
         this.brandingForm.patchValue(s);
+        if (s.notificationSettings) {
+          this.notificationsForm.patchValue(s.notificationSettings);
+        }
         this.previewSettings.set(this.brandingForm.value);
       }
     });
@@ -294,7 +304,8 @@ export class SettingsDashboardComponent implements OnInit {
       ...this.generalForm.value,
       businessHours: this.hoursForm.value,
       ...this.taxForm.value,
-      ...this.brandingForm.value
+      ...this.brandingForm.value,
+      notificationSettings: this.notificationsForm.value
     };
 
     await this.facade.saveSettings(settingsData);

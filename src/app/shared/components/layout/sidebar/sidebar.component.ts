@@ -325,6 +325,7 @@ export class SidebarComponent {
     { label: 'Menu Management', icon: 'menu_book', route: '/owner/menu', permission: 'manage_menu' },
     { label: 'Table Management', icon: 'table_bar', route: '/owner/tables', permission: 'manage_tables' },
     { label: 'Staff Management', icon: 'group', route: '/owner/staff', permission: 'manage_staff' },
+    { label: 'Notifications', icon: 'notifications', route: '/owner/notifications', permission: 'view_dashboard' },
     { label: 'Settings', icon: 'tune', route: '/owner/settings', permission: 'manage_settings' },
     { label: 'Waiter Dashboard', icon: 'table_restaurant', route: '/waiter/dashboard', permission: 'view_tables' },
     { label: 'Kitchen Orders', icon: 'receipt', route: '/kitchen/orders', permission: 'update_order_status' },

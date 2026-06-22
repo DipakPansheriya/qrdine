@@ -6,11 +6,13 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthFacade } from '../../../../core/facades/auth.facade';
+import { NotificationFacade } from '../../../../core/facades/notification.facade';
+import { NotificationDrawerComponent } from '../../notification-drawer/notification-drawer.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatMenuModule, MatDividerModule, MatBadgeModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatMenuModule, MatDividerModule, MatBadgeModule, NotificationDrawerComponent],
   template: `
     <header class="app-header">
       <!-- Left: Menu Toggle -->
@@ -30,9 +32,16 @@ import { AuthFacade } from '../../../../core/facades/auth.facade';
       <!-- Right: Actions -->
       <div class="header-right">
         <!-- Notification -->
-        <button class="icon-btn notif-btn" matBadge="3" matBadgeColor="warn" matBadgeSize="small">
+        <button class="icon-btn notif-btn" 
+                (click)="toggleDrawer()"
+                [matBadge]="notifFacade.unreadCount() > 0 ? notifFacade.unreadCount() : null" 
+                matBadgeColor="warn" 
+                matBadgeSize="small">
           <mat-icon>notifications_outlined</mat-icon>
         </button>
+
+        <!-- Notification Drawer -->
+        <app-notification-drawer [isOpen]="isDrawerOpen" (close)="toggleDrawer()"></app-notification-drawer>
 
         <!-- Divider -->
         <div class="v-divider"></div>
@@ -297,12 +306,19 @@ import { AuthFacade } from '../../../../core/facades/auth.facade';
 })
 export class HeaderComponent {
   private authFacade = inject(AuthFacade);
+  notifFacade = inject(NotificationFacade);
+  
   user = this.authFacade.currentUser;
+  isDrawerOpen = false;
 
   @Output() toggleSidebar = new EventEmitter<void>();
 
   onToggleSidebar() {
     this.toggleSidebar.emit();
+  }
+
+  toggleDrawer() {
+    this.isDrawerOpen = !this.isDrawerOpen;
   }
 
   logout() {

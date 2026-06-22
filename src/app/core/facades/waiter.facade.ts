@@ -8,6 +8,7 @@ import { Table, CustomerRequest, Order, CustomerSession } from '../models';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
 import { calculateOrderStatus } from '../utils/order.utils';
+import { NotificationFacade } from './notification.facade';
 
 @Injectable({ providedIn: 'root' })
 export class WaiterFacade {
@@ -16,6 +17,7 @@ export class WaiterFacade {
   private requestRepo = inject(CustomerRequestRepository);
   private orderRepo = inject(OrderRepository);
   private sessionRepo = inject(CustomerSessionRepository);
+  private notificationFacade = inject(NotificationFacade);
 
   loading = signal(true);
   
@@ -290,6 +292,15 @@ export class WaiterFacade {
         status: newOrderStatus,
         updatedAt: serverTimestamp() 
       }));
+
+      // Notifications
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Customer', targetUserId: order.sessionId,
+        type: 'ORDER_DELIVERED', title: 'Items Delivered',
+        message: 'Your items have been delivered to your table. Enjoy!',
+        priority: 'LOW', entityId: orderId, entityType: 'order'
+      });
+
     } catch (err) {
       console.error('Failed to deliver items:', err);
     }
@@ -311,6 +322,13 @@ export class WaiterFacade {
         status: 'Delivered', 
         updatedAt: serverTimestamp() 
       }));
+
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Customer', targetUserId: order.sessionId,
+        type: 'ORDER_DELIVERED', title: 'Order Delivered',
+        message: 'Your order has been fully delivered to your table. Enjoy!',
+        priority: 'LOW', entityId: orderId, entityType: 'order'
+      });
     } catch (err) {
       console.error('Failed to update order status:', err);
     }

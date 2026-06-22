@@ -9,6 +9,7 @@ import { BillingCalculationService } from '../services/billing.service';
 import { Table, CustomerSession, Order, Payment } from '../models';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
+import { NotificationFacade } from './notification.facade';
 
 @Injectable({ providedIn: 'root' })
 export class CashierFacade {
@@ -19,6 +20,7 @@ export class CashierFacade {
   private paymentRepo = inject(PaymentRepository);
   public settingsFacade = inject(OwnerSettingsFacade);
   private billingService = inject(BillingCalculationService);
+  private notificationFacade = inject(NotificationFacade);
 
   loading = signal(true);
 
@@ -143,6 +145,14 @@ export class CashierFacade {
 
       await firstValueFrom(this.sessionRepo.update(sessionId, { status: 'Completed', billStatus: 'Closed', endTime: serverTimestamp() }));
       await firstValueFrom(this.tableRepo.update(tableId, { status: 'AVAILABLE', activeSessionId: '' }));
+
+      // Notify Customer
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Customer', targetUserId: sessionId,
+        type: 'PAYMENT_SUCCESS', title: 'Payment Successful',
+        message: `Your payment of ₹${amount} was successfully processed. Thank you!`,
+        priority: 'MEDIUM', entityId: sessionId, entityType: 'session'
+      });
 
     } catch (err) {
       console.error('Failed to process payment:', err);

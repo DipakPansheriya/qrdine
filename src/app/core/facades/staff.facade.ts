@@ -8,6 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { initializeApp, getApp, getApps } from '@angular/fire/app';
 import { getAuth, createUserWithEmailAndPassword, signOut } from '@angular/fire/auth';
 import { environment } from '../../../environments/environment';
+import { NotificationFacade } from './notification.facade';
 
 @Injectable({ providedIn: 'root' })
 export class StaffFacade {
@@ -20,7 +21,8 @@ export class StaffFacade {
   constructor(
     private userRepo: UserRepository,
     private authFacade: AuthFacade,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private notificationFacade: NotificationFacade
   ) {
     effect(() => {
       const user = this.authFacade.currentUser();
@@ -86,6 +88,15 @@ export class StaffFacade {
       };
 
       await firstValueFrom(this.userRepo.create(newStaff, uid));
+
+      // Notify Owner
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Owner',
+        type: 'STAFF_CREATED', title: 'New Staff Added',
+        message: `${newStaff.name} was added as a ${newStaff.role}.`,
+        priority: 'LOW', entityId: uid, entityType: 'staff'
+      });
+
       this.snackBar.open(`Staff added. Password: ${tempPassword}`, 'Close', { duration: 6000 });
     } catch (e: any) {
       this.snackBar.open(e.message || 'Error adding staff', 'Close', { duration: 3000 });
