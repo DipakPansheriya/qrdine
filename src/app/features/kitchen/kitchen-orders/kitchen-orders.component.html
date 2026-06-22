@@ -107,6 +107,15 @@
       <span class="info-item"><mat-icon>person</mat-icon> {{ order.customerName || 'Guest' }}</span>
       <span class="info-item"><mat-icon>restaurant</mat-icon> {{ order.items?.length || 0 }} Items</span>
     </div>
+    <div class="order-progress" *ngIf="order.status === 'Preparing' || order.status === 'Partially Ready' || order.status === 'Partially Delivered'">
+      <div class="progress-text">
+        <span>Items Completed</span>
+        <span>{{ getCompletedCount(order) }} / {{ order.items?.length || 0 }} ({{ getProgressPercentage(order) | number:'1.0-0' }}%)</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" [style.width.%]="getProgressPercentage(order)"></div>
+      </div>
+    </div>
     
     <div class="items-list">
       <div class="item-row" *ngFor="let item of order.items; let i = index">

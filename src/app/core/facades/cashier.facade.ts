@@ -5,6 +5,7 @@ import { CustomerSessionRepository } from '../repositories/customer-session.repo
 import { OrderRepository } from '../repositories/order.repository';
 import { PaymentRepository } from '../repositories/payment.repository';
 import { OwnerSettingsFacade } from './owner-settings.facade';
+import { BillingCalculationService } from '../services/billing.service';
 import { Table, CustomerSession, Order, Payment } from '../models';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
@@ -17,6 +18,7 @@ export class CashierFacade {
   private orderRepo = inject(OrderRepository);
   private paymentRepo = inject(PaymentRepository);
   public settingsFacade = inject(OwnerSettingsFacade);
+  private billingService = inject(BillingCalculationService);
 
   loading = signal(true);
 
@@ -95,34 +97,8 @@ export class CashierFacade {
 
   generateBill(sessionId: string) {
     const orders = this.allOrders().filter(o => o.sessionId === sessionId);
-    
-    let subtotal = 0;
-    let items: any[] = [];
-
-    orders.forEach(o => {
-      subtotal += o.subtotal || 0;
-      items = [...items, ...(o.items || [])];
-    });
-
     const settings = this.settingsFacade.settings();
-    const serviceChargePercentage = settings?.serviceChargePercentage || 0;
-    const gstPercentage = settings?.gstPercentage || 0;
-
-    const discount = 0;
-    const postDiscount = subtotal - discount;
-    const serviceCharge = (postDiscount * serviceChargePercentage) / 100;
-    const tax = ((postDiscount + serviceCharge) * gstPercentage) / 100;
-    const grandTotal = postDiscount + serviceCharge + tax;
-
-    return {
-      orders,
-      items,
-      subtotal,
-      tax,
-      discount,
-      serviceCharge,
-      grandTotal
-    };
+    return this.billingService.calculateSessionSummary(orders, settings);
   }
 
   async updateBillStatus(sessionId: string, status: 'Requested' | 'Generating' | 'Ready' | 'Paid' | 'Closed') {
@@ -147,7 +123,21 @@ export class CashierFacade {
       const orders = this.allOrders().filter(o => o.sessionId === sessionId);
       for (const o of orders) {
         if (o.status !== 'Completed') {
-          await firstValueFrom(this.orderRepo.update(o.orderId, { status: 'Completed', updatedAt: serverTimestamp() }));
+          await firstValueFrom(this.orderRepo.update(o.orderId, { 
+            status: 'Completed', 
+            paymentStatus: 'PAID',
+            paidAt: serverTimestamp(),
+            updatedAt: serverTimestamp() 
+          }));
+        } else {
+          // If already completed but not paid (shouldn't happen often, but just in case)
+          if (o.paymentStatus !== 'PAID') {
+            await firstValueFrom(this.orderRepo.update(o.orderId, { 
+              paymentStatus: 'PAID',
+              paidAt: serverTimestamp(),
+              updatedAt: serverTimestamp() 
+            }));
+          }
         }
       }
 

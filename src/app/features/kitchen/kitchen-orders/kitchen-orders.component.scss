@@ -164,6 +164,32 @@
   .card-body {
     padding: 16px;
     
+    .order-progress {
+      margin-bottom: 16px;
+      
+      .progress-text {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+      }
+      
+      .progress-bar-bg {
+        height: 6px;
+        background: var(--surface-hover);
+        border-radius: 4px;
+        overflow: hidden;
+        
+        .progress-bar-fill {
+          height: 100%;
+          background: var(--primary);
+          transition: width 0.3s ease;
+        }
+      }
+    }
+
     .info-row {
       display: flex;
       justify-content: space-between;

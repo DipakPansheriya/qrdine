@@ -21,7 +21,9 @@ export class KitchenFacade {
 
   // Computed lists for Kanban (Combine Pending and Accepted into 'Pending' column)
   pendingOrders = computed(() => this.kitchenOrders().filter(o => o.status === 'Pending' || o.status === 'Accepted'));
-  preparingOrders = computed(() => this.kitchenOrders().filter(o => o.status === 'Preparing'));
+  preparingOrders = computed(() => this.kitchenOrders().filter(o => 
+    o.status === 'Preparing' || o.status === 'Partially Ready' || o.status === 'Partially Delivered'
+  ));
   readyOrders = computed(() => this.kitchenOrders().filter(o => o.status === 'Ready'));
 
   // KPIs

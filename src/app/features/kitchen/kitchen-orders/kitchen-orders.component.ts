@@ -96,4 +96,13 @@ export class KitchenOrdersComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.kitchenFacade.updateItemStatus(order, index, status);
   }
+
+  getCompletedCount(order: Order): number {
+    return order.items.filter(i => i.kitchenStatus === 'Ready' || i.deliveryStatus === 'Delivered').length;
+  }
+
+  getProgressPercentage(order: Order): number {
+    if (!order.items || order.items.length === 0) return 0;
+    return (this.getCompletedCount(order) / order.items.length) * 100;
+  }
 }

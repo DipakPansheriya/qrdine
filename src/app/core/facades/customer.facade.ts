@@ -439,6 +439,7 @@ export class CustomerFacade {
       grandTotal: this.cartGrandTotal(),
       notes: orderNotes,
       status: 'Pending',
+      paymentStatus: 'PENDING',
       customerName: finalCustomerName, // BUG 4
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()

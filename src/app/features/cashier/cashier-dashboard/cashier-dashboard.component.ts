@@ -70,7 +70,7 @@ export class CashierDashboardComponent {
 
     this.processingPayment.set(true);
     try {
-      await this.cashierFacade.processPayment(table.id!, table.activeSessionId!, bill.grandTotal, method);
+      await this.cashierFacade.processPayment(table.id!, table.activeSessionId!, bill.pendingAmount, method);
       this.paymentSuccess.set(true); // Show success overlay
       // Wait for user to dismiss or auto dismiss
     } catch (e) {
