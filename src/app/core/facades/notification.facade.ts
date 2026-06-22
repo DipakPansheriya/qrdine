@@ -23,6 +23,7 @@ export class NotificationFacade {
   readonly hasUnread = computed(() => this.unreadCountSignal() > 0);
 
   private knownNotificationIds = new Set<string>();
+  private customerSub: any = null;
 
   constructor() {
     effect(() => {
@@ -74,6 +75,24 @@ export class NotificationFacade {
           }
         }
       }
+    }
+  }
+
+  listenForCustomer(restaurantId: string, sessionId: string) {
+    if (this.customerSub) {
+      this.customerSub.unsubscribe();
+    }
+    
+    const settings = this.settingsFacade.settings();
+    const enableRealtime = settings?.notificationSettings?.enableRealtimeNotifications ?? true;
+    
+    if (enableRealtime) {
+      this.customerSub = this.notificationService.getNotifications(restaurantId, 'Customer', sessionId)
+        .subscribe(notifs => {
+          const relevantNotifs = notifs.filter(n => n.targetRole?.toLowerCase() === 'customer' && n.targetUserId === sessionId);
+          this.handleNewNotifications(relevantNotifs);
+          this.notificationsSignal.set(relevantNotifs);
+        });
     }
   }
 

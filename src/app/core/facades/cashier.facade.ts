@@ -143,7 +143,7 @@ export class CashierFacade {
         }
       }
 
-      await firstValueFrom(this.sessionRepo.update(sessionId, { status: 'Completed', billStatus: 'Closed', endTime: serverTimestamp() }));
+      await firstValueFrom(this.sessionRepo.update(sessionId, { status: 'Completed', billStatus: 'Paid', endTime: serverTimestamp() }));
       await firstValueFrom(this.tableRepo.update(tableId, { status: 'AVAILABLE', activeSessionId: '' }));
 
       // Notify Customer

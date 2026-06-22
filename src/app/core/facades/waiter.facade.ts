@@ -9,6 +9,8 @@ import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
 import { calculateOrderStatus } from '../utils/order.utils';
 import { NotificationFacade } from './notification.facade';
+import { BillingCalculationService } from '../services/billing.service';
+import { OwnerSettingsFacade } from './owner-settings.facade';
 
 @Injectable({ providedIn: 'root' })
 export class WaiterFacade {
@@ -18,6 +20,8 @@ export class WaiterFacade {
   private orderRepo = inject(OrderRepository);
   private sessionRepo = inject(CustomerSessionRepository);
   private notificationFacade = inject(NotificationFacade);
+  private settingsFacade = inject(OwnerSettingsFacade);
+  private billingService = inject(BillingCalculationService);
 
   loading = signal(true);
   
@@ -55,7 +59,20 @@ export class WaiterFacade {
   });
 
   activeBillRequests = computed(() => {
-    return this.activeSessions().filter(s => s.billStatus === 'Requested' || s.billStatus === 'Ready');
+    const sessions = this.activeSessions().filter(s => s.billStatus === 'Requested' || s.billStatus === 'Ready');
+    return sessions.map(sess => {
+      const orders = this.allOrders().filter(o => o.sessionId === sess.sessionId);
+      const settings = this.settingsFacade.settings();
+      const summary = this.billingService.calculateSessionSummary(orders, settings);
+      
+      return {
+        ...sess,
+        tableNumber: this.tables().find(t => t.id === sess.tableId)?.tableNumber || '?',
+        customerName: orders.length > 0 ? orders[0].customerName : 'Guest',
+        ordersCount: summary.ordersCount,
+        exactTotal: summary.grandTotal
+      };
+    });
   });
 
   kpis = computed(() => {

@@ -7,8 +7,19 @@
       <div class="metric"><span class="val">{{ kitchenFacade.preparingOrders().length }}</span> Prep</div>
       <div class="metric"><span class="val">{{ kitchenFacade.readyOrders().length }}</span> Ready</div>
       <div class="metric"><span class="val">{{ kitchenFacade.kpis().avgPrepTime }}m</span> Avg Time</div>
+      
+      <!-- Notification Bell -->
+      <button mat-icon-button class="notif-btn" (click)="isDrawerOpen = true">
+        <mat-icon [class.has-unread]="notifFacade.hasUnread()">
+          {{ notifFacade.hasUnread() ? 'notifications_active' : 'notifications' }}
+        </mat-icon>
+        <span class="badge" *ngIf="notifFacade.hasUnread()">{{ notifFacade.unreadCount() }}</span>
+      </button>
     </div>
   </header>
+
+  <!-- Notification Drawer -->
+  <app-notification-drawer [isOpen]="isDrawerOpen" (close)="isDrawerOpen = false"></app-notification-drawer>
 
   <!-- Mobile Tabs -->
   <div class="mobile-tabs">
