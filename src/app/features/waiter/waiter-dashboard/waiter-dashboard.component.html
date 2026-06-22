@@ -129,11 +129,12 @@
           <div class="request-card bill-card touch-target" *ngFor="let sess of waiterFacade.activeBillRequests()">
             <div class="req-header">
               <h4>Bill Requested</h4>
-              <div class="table-badge outline">{{ getTableName(sess.tableId) }}</div>
+              <div class="table-badge outline">{{ sess.tableNumber }}</div>
             </div>
             <div class="req-body">
-              Customer: <strong>Guest</strong><br>
-              Session Total: <strong>₹{{ sess.currentBillAmount || 0 }}</strong>
+              Customer: <strong>{{ sess.customerName }}</strong><br>
+              Orders: <strong>{{ sess.ordersCount }}</strong><br>
+              Session Total: <strong>₹{{ sess.exactTotal }}</strong>
             </div>
             <div class="req-footer mt-2">
               <button mat-stroked-button class="touch-target w-100" 

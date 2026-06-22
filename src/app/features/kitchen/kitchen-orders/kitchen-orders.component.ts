@@ -8,6 +8,8 @@ import { MatRippleModule } from '@angular/material/core';
 import { KitchenFacade } from '../../../core/facades/kitchen.facade';
 import { Order } from '../../../core/models';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { NotificationDrawerComponent } from '../../../shared/components/notification-drawer/notification-drawer.component';
+import { NotificationFacade } from '../../../core/facades/notification.facade';
 
 @Component({
   selector: 'app-kitchen-orders',
@@ -18,7 +20,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    MatRippleModule
+    MatRippleModule,
+    NotificationDrawerComponent
   ],
   templateUrl: './kitchen-orders.component.html',
   styleUrls: ['./kitchen-orders.component.scss'],
@@ -42,9 +45,10 @@ import { trigger, transition, style, animate } from '@angular/animations';
   ]
 })
 export class KitchenOrdersComponent implements OnInit, OnDestroy {
-  kitchenFacade = inject(KitchenFacade);
+  public kitchenFacade = inject(KitchenFacade);
+  public notifFacade = inject(NotificationFacade);
   
-  // Layout state
+  isDrawerOpen = false;
   activeTab = signal<'Pending' | 'Preparing' | 'Ready'>('Pending');
   activeItemKey = signal<string | null>(null); // orderId_itemIndex format
   

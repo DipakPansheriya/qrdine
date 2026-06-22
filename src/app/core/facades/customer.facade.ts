@@ -275,6 +275,10 @@ export class CustomerFacade {
     this.sessionSub = this.sessionRepo.getById(sessionId).subscribe(session => {
       if (session) {
         this.session.set(session);
+        const rest = this.restaurant();
+        if (rest) {
+          this.notificationFacade.listenForCustomer(rest.restaurantId, sessionId);
+        }
       }
     });
   }
@@ -433,12 +437,20 @@ export class CustomerFacade {
 
   // Checkout
   async placeOrder(orderNotes: string, customerName?: string): Promise<string> {
-    const sess = this.session();
+    let sess = this.session();
     const rest = this.restaurant();
     const tbl = this.table();
     
     if (!sess || !rest || !tbl || this.cartItems().length === 0) {
       throw new Error('Invalid order state');
+    }
+
+    if (sess.status === 'Completed' || sess.billStatus === 'Paid') {
+      // Create a fresh session so the customer can order again without refreshing
+      const newSessionId = await this.createNewSession(rest.restaurantId, tbl.id!);
+      this.listenToSession(newSessionId);
+      this.listenToOrders(newSessionId);
+      sess = this.session()!; 
     }
 
     // Allow Reorder configuration check (FEATURE 2)

@@ -79,7 +79,7 @@
         <div class="card-footer order-totals">
           <div class="status-row">
             <span class="label">Bill Status:</span>
-            <span class="value">{{ order.billStatus || 'Not Requested' }}</span>
+            <span class="value">{{ facade.session()?.billStatus || 'Not Requested' }}</span>
           </div>
           <div class="status-row">
             <span class="label">Payment Status:</span>
