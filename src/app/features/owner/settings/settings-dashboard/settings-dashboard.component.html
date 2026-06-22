@@ -243,12 +243,11 @@
                 <span>Default Currency</span>
               </div>
               <div class="currency-options">
-                <label class="currency-option" *ngFor="let c of currencies" [class.selected]="taxForm.get('currency')?.value === c.code">
-                  <input type="radio" formControlName="currency" [value]="c.code">
-                  <span class="currency-symbol">{{ c.symbol }}</span>
-                  <span class="currency-name">{{ c.name }}</span>
-                  <span class="currency-code">{{ c.code }}</span>
-                </label>
+                <select class="field-input" formControlName="currencyCode">
+                  <option *ngFor="let c of currencies" [value]="c.code">
+                    {{ c.name }} ({{ c.symbol }})
+                  </option>
+                </select>
               </div>
             </div>
           </div>

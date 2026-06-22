@@ -78,6 +78,7 @@
          [class.cart-experience-floating]="facade.experience()?.cartStyle === 'floating' || !facade.experience()?.cartStyle"
          [class.cart-experience-sticky]="facade.experience()?.cartStyle === 'sticky'"
          [class.cart-experience-mini]="facade.experience()?.cartStyle === 'mini'"
+         [class.has-bottom-nav]="facade.orders().length > 0"
          *ngIf="facade.cartItemCount() > 0" @slideUp>
       <div class="cart-bar" (click)="openCart()">
         <div class="cart-left">
@@ -87,7 +88,7 @@
           </div>
           <div class="cart-totals">
             <span class="items-text">{{ facade.cartItemCount() }} Item{{ facade.cartItemCount() > 1 ? 's' : '' }}</span>
-            <span class="total-price">{{ facade.cartSubtotal() | currency:facade.restaurant()?.currency || 'USD' }}</span>
+            <span class="total-price">{{ facade.cartSubtotal() | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
           </div>
         </div>
         <div class="cart-right">
@@ -96,5 +97,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Mobile Bottom Navigation (Only after first order) -->
+    <nav class="mobile-bottom-nav" *ngIf="facade.orders().length > 0" @slideUp>
+      <div class="nav-item" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <mat-icon>restaurant_menu</mat-icon>
+        <span>Menu</span>
+      </div>
+      <div class="nav-item" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'orders']" routerLinkActive="active">
+        <mat-icon>receipt_long</mat-icon>
+        <span>My Orders</span>
+      </div>
+      <div class="nav-item" (click)="openCart()" [class.active]="false">
+        <div class="cart-badge-wrapper">
+          <mat-icon>shopping_bag</mat-icon>
+          <span class="cart-badge" *ngIf="facade.cartItemCount() > 0">{{ facade.cartItemCount() }}</span>
+        </div>
+        <span>Cart</span>
+      </div>
+      <div class="nav-item" (click)="openServiceMenu()" [class.active]="false">
+        <mat-icon>room_service</mat-icon>
+        <span>Service</span>
+      </div>
+    </nav>
   </ng-container>
 </div>

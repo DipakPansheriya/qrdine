@@ -168,26 +168,51 @@ export class WaiterFacade {
     });
   }
 
-  deliverableItems = computed(() => {
-    const items: { orderId: string; tableId: string; tableNumber: string; orderNumber: number; itemIndex: number; item: any }[] = [];
+  readyDeliveries = computed(() => {
+    const deliveries: any[] = [];
     
     this.allOrders().forEach(order => {
       const table = this.tables().find(t => t.id === order.tableId);
+      const readyIndexes: number[] = [];
+      let oldestReadyTime: any = null;
+      
       order.items.forEach((item, index) => {
         if (item.kitchenStatus === 'Ready' && item.deliveryStatus !== 'Delivered') {
-          items.push({
-            orderId: order.orderId,
-            tableId: order.tableId,
-            tableNumber: table?.tableNumber || '?',
-            orderNumber: order.orderNumber,
-            itemIndex: index,
-            item
-          });
+          readyIndexes.push(index);
+          // Try to find the oldest preparedAt time
+          if (item.preparedAt) {
+            const time = item.preparedAt.toDate ? item.preparedAt.toDate() : new Date(item.preparedAt);
+            if (!oldestReadyTime || time < oldestReadyTime) {
+              oldestReadyTime = time;
+            }
+          }
         }
       });
+      
+      if (readyIndexes.length > 0) {
+        // If we don't have a preparedAt (legacy), fallback to order created at or now
+        const readySince = oldestReadyTime || (order.createdAt?.toDate ? order.createdAt.toDate() : new Date());
+        
+        // Calculate delay (e.g. > 5 mins is delayed)
+        const diffMins = (new Date().getTime() - readySince.getTime()) / 60000;
+        const isDelayed = diffMins > 5;
+
+        deliveries.push({
+          orderId: order.orderId,
+          orderNumber: order.orderNumber,
+          tableId: order.tableId,
+          tableNumber: table?.tableNumber || '?',
+          customerName: order.customerName || 'Guest',
+          readyItemsCount: readyIndexes.length,
+          readySince,
+          isDelayed,
+          itemIndexes: readyIndexes
+        });
+      }
     });
     
-    return items;
+    // Sort oldest first
+    return deliveries.sort((a, b) => a.readySince.getTime() - b.readySince.getTime());
   });
 
   async resolveRequest(requestId: string) {

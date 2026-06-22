@@ -33,7 +33,8 @@ export class RestaurantFormComponent implements OnInit {
     slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
     email: ['', [Validators.email]],
     phone: [''],
-    currency: ['USD', Validators.required],
+    currencyCode: ['USD', Validators.required],
+    currencySymbol: ['$', Validators.required],
     timezone: ['UTC', Validators.required],
     status: ['active', Validators.required]
   });
@@ -48,6 +49,19 @@ export class RestaurantFormComponent implements OnInit {
         }
       });
     }
+
+    this.form.get('currencyCode')?.valueChanges.subscribe(code => {
+      const symbols: Record<string, string> = {
+        'INR': '₹',
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'AED': 'د.إ'
+      };
+      if (symbols[code]) {
+        this.form.patchValue({ currencySymbol: symbols[code] }, { emitEvent: false });
+      }
+    });
   }
 
   onSubmit() {

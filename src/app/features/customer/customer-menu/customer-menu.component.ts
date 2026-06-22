@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
 import { ModifierDialogComponent } from '../modifier-dialog/modifier-dialog.component';
+import { CurrencyService } from '../../../core/services/currency.service';
 import { MenuItem } from '../../../core/models';
 
 @Component({
@@ -29,6 +30,7 @@ import { MenuItem } from '../../../core/models';
 })
 export class CustomerMenuComponent implements OnInit {
   public facade = inject(CustomerFacade);
+  public currency = inject(CurrencyService);
   private dialog = inject(MatDialog);
 
   searchQuery = signal<string>('');
@@ -116,35 +118,5 @@ export class CustomerMenuComponent implements OnInit {
     });
   }
 
-  getMyOrdersWidgetBottom(): string {
-    const hasCartItems = this.facade.cartItemCount() > 0;
-    if (!hasCartItems) {
-      return '24px';
-    }
-    const cartStyle = this.facade.experience()?.cartStyle || 'floating';
-    if (cartStyle === 'mini') {
-      return '120px';
-    } else if (cartStyle === 'sticky') {
-      return '100px';
-    } else {
-      return '124px';
-    }
-  }
 
-  async onRequestBill() {
-    const status = this.facade.session()?.billStatus;
-    if (!status) {
-      await this.facade.requestBill();
-    }
-  }
-
-  getBillWidgetBottom(): string {
-    const baseStr = this.getMyOrdersWidgetBottom();
-    const basePx = parseInt(baseStr, 10);
-    const hasOrders = this.facade.activeOrders().length > 0;
-    if (hasOrders) {
-      return `${basePx + 64}px`;
-    }
-    return baseStr;
-  }
 }

@@ -51,6 +51,7 @@ export class SettingsDashboardComponent implements OnInit {
     { code: 'USD', symbol: '$', name: 'US Dollar' },
     { code: 'EUR', symbol: '€', name: 'Euro' },
     { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' }
   ];
 
   themePresets = ['Classic Restaurant', 'Modern Cafe', 'Luxury Dining', 'Fast Food', 'Minimal', 'Custom'];
@@ -137,8 +138,9 @@ export class SettingsDashboardComponent implements OnInit {
 
     this.taxForm = this.fb.group({
       gstPercentage: [0],
-      serviceChargePercentage: [0],
-      currency: ['INR']
+      serviceChargePercentage: [0, [Validators.min(0), Validators.max(100)]],
+      currencyCode: ['INR'],
+      currencySymbol: ['₹']
     });
 
     this.brandingForm = this.fb.group({
@@ -213,6 +215,14 @@ export class SettingsDashboardComponent implements OnInit {
           this.brandingForm.get('themePreset')?.setValue('Custom', { emitEvent: false });
         }
       });
+    });
+
+    // Auto-update currencySymbol when currencyCode changes
+    this.taxForm.get('currencyCode')?.valueChanges.subscribe(code => {
+      const found = this.currencies.find(c => c.code === code);
+      if (found) {
+        this.taxForm.patchValue({ currencySymbol: found.symbol }, { emitEvent: false });
+      }
     });
 
     // Mutual exclusivity for compactMode and largeMode

@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
+import { CurrencyService } from '../../../core/services/currency.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -25,6 +26,7 @@ import { Router } from '@angular/router';
 })
 export class CartDrawerComponent implements OnInit {
   public facade = inject(CustomerFacade);
+  public currency = inject(CurrencyService);
   private dialogRef = inject(MatDialogRef<CartDrawerComponent>);
   private router = inject(Router);
   private renderer = inject(Renderer2);
@@ -59,7 +61,21 @@ export class CartDrawerComponent implements OnInit {
     }
   }
 
+  get isCheckoutDisabled(): boolean {
+    if (this.facade.loading()) return true;
+    if (this.facade.experience()?.requireCustomerName !== false && !this.customerName().trim()) return true;
+    
+    // Block if bill is requested and not allowed
+    const status = this.facade.session()?.billStatus;
+    if (['Requested', 'Generating', 'Ready'].includes(status || '') && !this.facade.experience()?.allowOrdersAfterBillRequest) {
+      return true;
+    }
+    
+    return false;
+  }
+
   async checkout() {
+    if (this.isCheckoutDisabled) return;
     try {
       const name = this.customerName().trim();
       const requireName = this.facade.experience()?.requireCustomerName ?? true;

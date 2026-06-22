@@ -1,0 +1,134 @@
+.receipt-wrapper {
+  font-family: 'Courier New', Courier, monospace;
+  color: #000;
+  background: #fff;
+  width: 100%;
+  max-width: 80mm; /* Typical thermal receipt width, can scale up for A4 */
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+
+  /* When printing as A4 or PDF, we scale this out, but standardly it keeps a clean narrow layout */
+}
+
+@media print {
+  .receipt-wrapper {
+    max-width: 100%; /* Take full width of paper */
+    padding: 0; /* Let printer margins handle padding */
+  }
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 16px;
+
+  .receipt-logo {
+    max-width: 80px;
+    margin-bottom: 8px;
+  }
+
+  .restaurant-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 2px 0;
+    font-size: 0.9rem;
+  }
+}
+
+.divider {
+  border-top: 1px dashed #000;
+  margin: 12px 0;
+  
+  &.thick {
+    border-top: 2px solid #000;
+  }
+}
+
+.receipt-meta {
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+}
+
+.receipt-items {
+  width: 100%;
+  font-size: 0.9rem;
+
+  .item-header {
+    display: flex;
+    font-weight: bold;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+  }
+
+  .item-row {
+    display: flex;
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+  }
+
+  .col-name { flex: 4; padding-right: 8px; }
+  .col-qty { flex: 1; text-align: center; }
+  .col-price { flex: 2; text-align: right; }
+  .col-total { flex: 2; text-align: right; }
+
+  .modifiers {
+    font-size: 0.8rem;
+    padding-left: 8px;
+    small {
+      display: block;
+      color: #333;
+    }
+  }
+}
+
+.receipt-summary {
+  font-size: 0.9rem;
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    
+    &.grand-total {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+  }
+}
+
+.receipt-footer-meta {
+  font-size: 0.9rem;
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+}
+
+.receipt-footer {
+  text-align: center;
+  margin-top: 24px;
+  
+  .thank-you {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+  
+  .tagline {
+    font-size: 0.9rem;
+  }
+}

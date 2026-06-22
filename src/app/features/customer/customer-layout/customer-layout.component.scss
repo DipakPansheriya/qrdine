@@ -1,5 +1,8 @@
 .customer-layout {
+  height: 100vh;
   min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--surface-ground);
   display: flex;
   flex-direction: column;
@@ -181,7 +184,7 @@
 }
 
 .main-content {
-  flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding-bottom: 120px;
+  flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding-bottom: 160px;
 }
 
 /* --- Sleek Bottom Cart Bar --- */
@@ -322,6 +325,79 @@ button {
   }
 }
 
+.cart-bar-wrapper.has-bottom-nav {
+  bottom: 60px;
+}
+
+/* --- Mobile Bottom Navigation --- */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--surface-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 20%;
+    height: 100%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+    
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+    
+    span {
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    
+    &.active {
+      color: var(--primary-color);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+
+    .cart-badge-wrapper {
+      position: relative;
+      .cart-badge {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: var(--theme-danger, #ef4444);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 800;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}
+
 @media print { 
-  .cart-bar-wrapper { display: none !important; } 
+  .cart-bar-wrapper, .mobile-bottom-nav { display: none !important; } 
 }

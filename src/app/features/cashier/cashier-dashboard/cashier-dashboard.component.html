@@ -2,7 +2,7 @@
   <!-- Top Metrics -->
   <div class="metrics-bar">
     <div class="kpi-card">
-      <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
+      <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:currency.code():currency.symbol():'1.0-0' }}</div>
       <div class="metric-label">Today's Revenue</div>
     </div>
     <div class="kpi-card">
@@ -14,7 +14,7 @@
       <div class="metric-label">Active Bills</div>
     </div>
     <div class="kpi-card">
-      <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
+      <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:currency.code():currency.symbol():'1.0-0' }}</div>
       <div class="metric-label">Average Bill</div>
     </div>
   </div>
@@ -69,62 +69,13 @@
         
         <!-- The Printable Invoice Area -->
         <div id="printable-invoice" class="invoice-paper">
-          <div class="invoice-header">
-            <h2>{{ cashierFacade.settingsFacade.settings()?.restaurantName || 'Restaurant' }}</h2>
-            <p>{{ cashierFacade.settingsFacade.settings()?.address }}</p>
-            <p *ngIf="cashierFacade.settingsFacade.settings()?.gstNumber">GST No: {{ cashierFacade.settingsFacade.settings()?.gstNumber }}</p>
-            <div class="divider"></div>
-            <div class="invoice-meta">
-              <span><strong>Table:</strong> T{{ selectedTable()?.tableNumber }}</span>
-              <span><strong>Date:</strong> {{ today | date:'short' }}</span>
-            </div>
-          </div>
-          
-          <div class="invoice-items">
-            <div class="item-row header-row">
-              <span class="item-name">Item</span>
-              <span class="item-qty">Qty</span>
-              <span class="item-price">Price</span>
-            </div>
-            
-            <div class="item-row" *ngFor="let item of selectedBill()?.items">
-              <span class="item-name">{{ item.name }}
-                <div class="modifiers" *ngIf="item.modifiers?.length">
-                  <small *ngFor="let mod of item.modifiers">- {{ mod.optionName }}</small>
-                </div>
-              </span>
-              <span class="item-qty">{{ item.quantity }}</span>
-              <span class="item-price">{{ item.totalPrice | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
-            </div>
-          </div>
-          
-          <div class="divider"></div>
-          
-          <div class="invoice-summary">
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <span>{{ selectedBill()?.subtotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
-            </div>
-            <div class="summary-row" *ngIf="selectedBill()?.discount > 0">
-              <span>Discount</span>
-              <span class="text-success">-{{ selectedBill()?.discount | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
-            </div>
-            <div class="summary-row" *ngIf="selectedBill()?.serviceCharge > 0">
-              <span>Service Charge</span>
-              <span>{{ selectedBill()?.serviceCharge | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
-            </div>
-            <div class="summary-row" *ngIf="selectedBill()?.tax > 0">
-              <span>Tax (GST)</span>
-              <span>{{ selectedBill()?.tax | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
-            </div>
-            
-            <div class="divider thick-divider"></div>
-            
-            <div class="summary-row grand-total">
-              <span>AMOUNT DUE</span>
-              <span class="total-amount">{{ selectedBill()?.grandTotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
-            </div>
-          </div>
+          <app-receipt 
+            [bill]="selectedBill()" 
+            [table]="selectedTable()" 
+            [settings]="cashierFacade.settingsFacade.settings()" 
+            [session]="getSession(selectedTable()!.activeSessionId || '')"
+            cashierName="Admin User">
+          </app-receipt>
         </div>
 
         <!-- Action Buttons -->
@@ -145,9 +96,12 @@
                 <span>Card</span>
               </button>
             </div>
-            <div class="print-action">
-              <button mat-stroked-button class="touch-target print-btn" (click)="printInvoice()">
-                <mat-icon>receipt</mat-icon> Print / PDF Receipt
+            <div class="print-actions" style="display: flex; gap: 12px; margin-top: 16px;">
+              <button mat-stroked-button class="touch-target print-btn" style="flex: 1;" (click)="printReceipt()">
+                <mat-icon>print</mat-icon> Print Receipt
+              </button>
+              <button mat-stroked-button class="touch-target print-btn" style="flex: 1;" (click)="generatePdf()">
+                <mat-icon>picture_as_pdf</mat-icon> Generate PDF
               </button>
             </div>
           </div>
@@ -173,7 +127,7 @@
       <p>Order closed and table released.</p>
       
       <div class="success-actions">
-        <button mat-flat-button color="primary" class="touch-target" (click)="printInvoice()">
+        <button mat-flat-button color="primary" class="touch-target" (click)="printReceipt()">
           <mat-icon>print</mat-icon> Print Receipt
         </button>
         <button mat-stroked-button class="touch-target" (click)="dismissSuccess()">

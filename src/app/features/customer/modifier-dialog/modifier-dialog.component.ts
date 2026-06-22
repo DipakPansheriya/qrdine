@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { MenuItem, CartItem } from '../../../core/models';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-modifier-dialog',
@@ -26,6 +27,7 @@ import { CustomerFacade } from '../../../core/facades/customer.facade';
 })
 export class ModifierDialogComponent implements OnInit {
   public facade = inject(CustomerFacade);
+  public currency = inject(CurrencyService);
   private renderer = inject(Renderer2);
   private elementRef = inject(ElementRef);
   quantity = signal<number>(1);
