@@ -210,7 +210,7 @@ export class CustomerFacade {
     }
   }
 
-  async requestAssistance() {
+  async requestAssistance(type: string = 'Need Assistance') {
     const tbl = this.table();
     const rest = this.restaurant();
     const sess = this.session();
@@ -221,7 +221,7 @@ export class CustomerFacade {
         restaurantId: rest.restaurantId,
         tableId: tbl.id!,
         sessionId: sess?.sessionId || tbl.activeSessionId || '',
-        type: 'Need Assistance',
+        type,
         status: 'Pending',
         createdAt: serverTimestamp()
       };

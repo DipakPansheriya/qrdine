@@ -142,6 +142,9 @@ export interface Order {
   grandTotal: number;
   notes?: string;
   status: 'Pending' | 'Accepted' | 'Preparing' | 'Partially Ready' | 'Partially Delivered' | 'Ready' | 'Delivered' | 'Completed' | 'Cancelled' | 'Refunded';
+  billStatus?: 'NOT_REQUESTED' | 'REQUESTED' | 'GENERATED' | 'PAID';
+  paymentStatus?: 'PENDING' | 'PAID' | 'REFUNDED';
+  paidAt?: any;
   createdAt: any;
   updatedAt: any;
   customerName?: string;

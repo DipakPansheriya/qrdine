@@ -182,20 +182,140 @@
 
   .card-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
     border-top: 1px dashed var(--surface-border);
     padding-top: 12px;
     
-    .total-label {
-      font-weight: 600;
-      color: var(--text-secondary);
+    &.order-totals {
+      .status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        
+        .label {
+          color: var(--text-secondary);
+        }
+        .value {
+          font-weight: 600;
+          color: var(--text-primary);
+          
+          &.text-success {
+            color: var(--theme-success);
+          }
+        }
+      }
+      
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--surface-border);
+        
+        .total-label {
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+        
+        .total-amount {
+          font-weight: 800;
+          font-size: 1.2rem;
+          color: var(--text-primary);
+        }
+      }
     }
+  }
+}
+
+/* Session Summary Card */
+.session-summary-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  border: 1px solid var(--surface-border);
+  margin-bottom: 24px;
+  
+  .summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
     
-    .total-amount {
-      font-weight: 800;
+    h3 {
+      margin: 0;
       font-size: 1.2rem;
+      font-weight: 800;
       color: var(--text-primary);
     }
+    
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(100, 116, 139, 0.1);
+      color: var(--text-secondary);
+      
+      &.active {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--theme-success);
+      }
+    }
+  }
+  
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px;
+      background: var(--surface-ground);
+      border-radius: 12px;
+      
+      .label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+      
+      .value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-primary);
+      }
+      
+      &.success {
+        background: rgba(16, 185, 129, 0.05);
+        .value { color: var(--theme-success); }
+      }
+      
+      &.pending {
+        background: rgba(245, 158, 11, 0.05);
+        .value { color: var(--theme-warning); }
+      }
+    }
+  }
+}
+
+.item-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  
+  &.delivered {
+    color: var(--theme-success);
+  }
+  
+  &.preparing {
+    color: var(--theme-warning);
   }
 }

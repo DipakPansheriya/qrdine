@@ -19,6 +19,34 @@
       </button>
     </div>
 
+    <!-- Session Summary -->
+    <div class="session-summary-card" *ngIf="facade.orders().length > 0">
+      <div class="summary-header">
+        <h3>Session Summary</h3>
+        <span class="status-badge" [class.active]="facade.session()?.status === 'Active'">
+          {{ facade.session()?.status || 'Active' }}
+        </span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="label">Orders</span>
+          <span class="value">{{ sessionSummary().ordersCount }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Total Amount</span>
+          <span class="value">{{ sessionSummary().totalAmount | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+        </div>
+        <div class="summary-item success">
+          <span class="label">Paid</span>
+          <span class="value">{{ sessionSummary().paidAmount | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+        </div>
+        <div class="summary-item pending">
+          <span class="label">Pending</span>
+          <span class="value">{{ sessionSummary().pendingAmount | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Orders List -->
     <div class="orders-list" *ngIf="facade.orders().length > 0">
       <div class="order-card" *ngFor="let order of facade.orders()">
@@ -37,6 +65,8 @@
         <div class="card-body">
           <div class="item-row" *ngFor="let item of order.items">
             <div class="item-main">
+              <mat-icon class="item-icon delivered" *ngIf="item.deliveryStatus === 'Delivered'">check_circle</mat-icon>
+              <mat-icon class="item-icon preparing" *ngIf="item.deliveryStatus !== 'Delivered'">hourglass_bottom</mat-icon>
               <span class="qty">{{ item.quantity }}x</span>
               <span class="name">{{ item.name }}</span>
             </div>
@@ -46,9 +76,23 @@
           </div>
         </div>
 
-        <div class="card-footer">
-          <span class="total-label">Total</span>
-          <span class="total-amount">{{ order.grandTotal | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+        <div class="card-footer order-totals">
+          <div class="status-row">
+            <span class="label">Bill Status:</span>
+            <span class="value">{{ order.billStatus || 'Not Requested' }}</span>
+          </div>
+          <div class="status-row">
+            <span class="label">Payment Status:</span>
+            <span class="value" [class.text-success]="order.paymentStatus === 'PAID'">{{ order.paymentStatus || 'Pending' }}</span>
+          </div>
+          <div class="status-row" *ngIf="order.paymentStatus === 'PAID' && order.paidAt">
+            <span class="label">Paid At:</span>
+            <span class="value">{{ order.paidAt?.toMillis() | date:'shortTime' }}</span>
+          </div>
+          <div class="total-row mt-2">
+            <span class="total-label">Total</span>
+            <span class="total-amount">{{ order.grandTotal | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+          </div>
         </div>
       </div>
     </div>

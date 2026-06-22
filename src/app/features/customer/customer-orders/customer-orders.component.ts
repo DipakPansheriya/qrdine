@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,6 +15,20 @@ import { Order } from '../../../core/models';
 })
 export class CustomerOrdersComponent {
   public facade = inject(CustomerFacade);
+
+  sessionSummary = computed(() => {
+    const orders = this.facade.orders();
+    const totalAmount = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+    const paidAmount = orders.filter(o => o.paymentStatus === 'PAID').reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+    const pendingAmount = totalAmount - paidAmount;
+    
+    return {
+      ordersCount: orders.length,
+      totalAmount,
+      paidAmount,
+      pendingAmount
+    };
+  });
 
   getStatusColor(status: string): string {
     switch (status) {
