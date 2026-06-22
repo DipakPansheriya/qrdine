@@ -1,0 +1,27 @@
+<div class="bottom-sheet-container">
+  <div class="sheet-header">
+    <h2>Select Delivered Items</h2>
+    <p>Mark which items are being delivered now.</p>
+  </div>
+  
+  <div class="sheet-content">
+    <div class="item-list">
+      <div class="item-row touch-target" *ngFor="let item of data.readyItems">
+        <mat-checkbox 
+          color="primary"
+          [checked]="selectedIndexes.has(item.originalIndex)" 
+          (change)="toggleSelection(item.originalIndex, $event.checked)">
+          <span class="qty">{{ item.quantity }}x</span>
+          <span class="name">{{ item.name }}</span>
+        </mat-checkbox>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-actions">
+    <button mat-stroked-button class="touch-target" (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" class="touch-target" [disabled]="selectedIndexes.size === 0" (click)="confirm()">
+      Confirm Delivery
+    </button>
+  </div>
+</div>
