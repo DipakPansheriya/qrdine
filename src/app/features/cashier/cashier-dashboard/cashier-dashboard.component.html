@@ -2,7 +2,7 @@
   <!-- Top Metrics -->
   <div class="metrics-bar">
     <div class="kpi-card">
-      <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</div>
+      <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:currency.code():currency.symbol():'1.0-0' }}</div>
       <div class="metric-label">Today's Revenue</div>
     </div>
     <div class="kpi-card">
@@ -14,7 +14,7 @@
       <div class="metric-label">Active Bills</div>
     </div>
     <div class="kpi-card">
-      <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</div>
+      <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:currency.code():currency.symbol():'1.0-0' }}</div>
       <div class="metric-label">Average Bill</div>
     </div>
   </div>

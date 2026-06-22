@@ -10,6 +10,7 @@ import { MenuFacade } from '../../../../core/facades/menu.facade';
 import { AuthFacade } from '../../../../core/facades/auth.facade';
 import { MenuItemRepository } from '../../../../core/repositories/menu-item.repository';
 import { MenuItem } from '../../../../core/models';
+import { CurrencyService } from '../../../../core/services/currency.service';
 
 @Component({
   selector: 'app-item-form',
@@ -25,6 +26,7 @@ export class ItemFormComponent implements OnInit {
   private repo = inject(MenuItemRepository);
   private dialogRef = inject(MatDialogRef<ItemFormComponent>);
   private data = inject(MAT_DIALOG_DATA);
+  public currency = inject(CurrencyService);
 
   isEditMode = false;
   itemId: string | null = null;

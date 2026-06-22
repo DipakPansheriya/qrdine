@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
 import { Order } from '../../../core/models';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-customer-orders',
@@ -15,6 +16,7 @@ import { Order } from '../../../core/models';
 })
 export class CustomerOrdersComponent {
   public facade = inject(CustomerFacade);
+  public currency = inject(CurrencyService);
 
   sessionSummary = computed(() => {
     const orders = this.facade.orders();

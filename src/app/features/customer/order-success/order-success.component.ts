@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OrderRepository } from '../../../core/repositories/order.repository';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
 import { Order } from '../../../core/models';
+import { CurrencyService } from '../../../core/services/currency.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -26,6 +27,7 @@ export class OrderSuccessComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private orderRepo = inject(OrderRepository);
   public facade = inject(CustomerFacade);
+  public currency = inject(CurrencyService);
 
   order = signal<Order | null>(null);
   loading = signal<boolean>(true);

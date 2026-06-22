@@ -8,6 +8,7 @@ import { MenuItemRepository } from '../repositories/menu-item.repository';
 import { SettingsRepository } from '../repositories/settings.repository';
 import { CustomerExperienceRepository } from '../repositories/customer-experience.repository';
 import { CustomerExperienceService } from '../services/customer-experience.service';
+import { CurrencyService } from '../services/currency.service';
 import { Restaurant, Table, CustomerSession, MenuCategory, MenuItem, CartItem, Order, Settings, CustomerExperience } from '../models';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { serverTimestamp, Firestore, collection, addDoc } from '@angular/fire/firestore';
@@ -67,7 +68,8 @@ export class CustomerFacade {
     private orderRepo: OrderRepository,
     private settingsRepo: SettingsRepository,
     private cxRepo: CustomerExperienceRepository,
-    private cxService: CustomerExperienceService
+    private cxService: CustomerExperienceService,
+    private currencyService: CurrencyService
   ) {
     this.restoreCart();
   }
@@ -313,6 +315,7 @@ export class CustomerFacade {
       this.settingsSub = this.settingsRepo.getByRestaurant(restaurantId).subscribe({
         next: (s) => {
           this.settings.set(s);
+          this.currencyService.updateCurrency(s);
           loadedSettings = true;
           resolveIfAllDone();
         },

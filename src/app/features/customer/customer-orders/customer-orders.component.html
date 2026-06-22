@@ -34,15 +34,15 @@
         </div>
         <div class="summary-item">
           <span class="label">Total Amount</span>
-          <span class="value">{{ sessionSummary().totalAmount | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+          <span class="value">{{ sessionSummary().totalAmount | currency:currency.code():currency.symbol():'1.0-0' }}</span>
         </div>
         <div class="summary-item success">
           <span class="label">Paid</span>
-          <span class="value">{{ sessionSummary().paidAmount | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+          <span class="value">{{ sessionSummary().paidAmount | currency:currency.code():currency.symbol():'1.0-0' }}</span>
         </div>
         <div class="summary-item pending">
           <span class="label">Pending</span>
-          <span class="value">{{ sessionSummary().pendingAmount | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+          <span class="value">{{ sessionSummary().pendingAmount | currency:currency.code():currency.symbol():'1.0-0' }}</span>
         </div>
       </div>
     </div>
@@ -91,7 +91,7 @@
           </div>
           <div class="total-row mt-2">
             <span class="total-label">Total</span>
-            <span class="total-amount">{{ order.grandTotal | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+            <span class="total-amount">{{ order.grandTotal | currency:currency.code():currency.symbol():'1.0-0' }}</span>
           </div>
         </div>
       </div>

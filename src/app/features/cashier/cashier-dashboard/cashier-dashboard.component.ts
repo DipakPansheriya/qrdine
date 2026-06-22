@@ -9,6 +9,7 @@ import { Table, Payment } from '../../../core/models';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ReceiptComponent } from '../../../shared/components/receipt/receipt.component';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-cashier-dashboard',
@@ -25,7 +26,8 @@ import { ReceiptComponent } from '../../../shared/components/receipt/receipt.com
   styleUrls: ['./cashier-dashboard.component.scss']
 })
 export class CashierDashboardComponent {
-  cashierFacade = inject(CashierFacade);
+  public cashierFacade = inject(CashierFacade);
+  public currency = inject(CurrencyService);
   
   selectedTable = signal<Table | null>(null);
   selectedBill = signal<any>(null);

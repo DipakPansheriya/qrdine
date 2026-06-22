@@ -55,7 +55,7 @@
           </div>
           <div class="p-content">
             <h4>{{ item.name }}</h4>
-            <span class="p-price">{{ item.price | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+            <span class="p-price">{{ item.price | currency:currency.code():currency.symbol():'1.0-0' }}</span>
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@
         <div class="card-body">
           <div class="card-header-row">
             <h4>{{ item.name }}</h4>
-            <span class="price">{{ item.price | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+            <span class="price">{{ item.price | currency:currency.code():currency.symbol():'1.0-0' }}</span>
           </div>
           
           <p class="desc" *ngIf="item.description">{{ item.description }}</p>

@@ -49,6 +49,19 @@ export class RestaurantFormComponent implements OnInit {
         }
       });
     }
+
+    this.form.get('currencyCode')?.valueChanges.subscribe(code => {
+      const symbols: Record<string, string> = {
+        'INR': '₹',
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'AED': 'د.إ'
+      };
+      if (symbols[code]) {
+        this.form.patchValue({ currencySymbol: symbols[code] }, { emitEvent: false });
+      }
+    });
   }
 
   onSubmit() {

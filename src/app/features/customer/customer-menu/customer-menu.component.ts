@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
 import { ModifierDialogComponent } from '../modifier-dialog/modifier-dialog.component';
+import { CurrencyService } from '../../../core/services/currency.service';
 import { MenuItem } from '../../../core/models';
 
 @Component({
@@ -29,6 +30,7 @@ import { MenuItem } from '../../../core/models';
 })
 export class CustomerMenuComponent implements OnInit {
   public facade = inject(CustomerFacade);
+  public currency = inject(CurrencyService);
   private dialog = inject(MatDialog);
 
   searchQuery = signal<string>('');

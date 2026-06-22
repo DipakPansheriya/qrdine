@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-receipt',
@@ -9,6 +10,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./receipt.component.scss']
 })
 export class ReceiptComponent implements OnInit {
+  public currency = inject(CurrencyService);
   @Input() bill: any;
   @Input() settings: any;
   @Input() table: any;

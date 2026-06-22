@@ -48,8 +48,8 @@
         </div>
       </div>
       <div class="col-qty">{{ item.quantity }}</div>
-      <div class="col-price">{{ (item.totalPrice / item.quantity) | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</div>
-      <div class="col-total">{{ item.totalPrice | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</div>
+      <div class="col-price">{{ (item.totalPrice / item.quantity) | currency:currency.code():currency.symbol():'1.0-0' }}</div>
+      <div class="col-total">{{ item.totalPrice | currency:currency.code():currency.symbol():'1.0-0' }}</div>
     </div>
   </div>
 
@@ -59,26 +59,26 @@
   <div class="receipt-summary">
     <div class="summary-row">
       <span>Subtotal</span>
-      <span>{{ bill?.subtotal | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+      <span>{{ bill?.subtotal | currency:currency.code():currency.symbol():'1.0-0' }}</span>
     </div>
     <div class="summary-row" *ngIf="bill?.discount > 0">
       <span>Discount</span>
-      <span>-{{ bill?.discount | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+      <span>-{{ bill?.discount | currency:currency.code():currency.symbol():'1.0-0' }}</span>
     </div>
     <div class="summary-row" *ngIf="bill?.serviceCharge > 0">
       <span>Service Charge</span>
-      <span>{{ bill?.serviceCharge | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+      <span>{{ bill?.serviceCharge | currency:currency.code():currency.symbol():'1.0-0' }}</span>
     </div>
     <div class="summary-row" *ngIf="bill?.tax > 0">
       <span>Tax (GST)</span>
-      <span>{{ bill?.tax | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+      <span>{{ bill?.tax | currency:currency.code():currency.symbol():'1.0-0' }}</span>
     </div>
     
     <div class="divider thick"></div>
     
     <div class="summary-row grand-total">
       <span>Amount Due</span>
-      <span>{{ bill?.grandTotal | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+      <span>{{ bill?.grandTotal | currency:currency.code():currency.symbol():'1.0-0' }}</span>
     </div>
   </div>
 

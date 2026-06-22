@@ -4,7 +4,7 @@
   <mat-dialog-content>
     <div class="item-details">
       <p class="desc" *ngIf="data.item.description">{{ data.item.description }}</p>
-      <span class="price">{{ data.item.price | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+      <span class="price">{{ data.item.price | currency:currency.code():currency.symbol():'1.0-0' }}</span>
     </div>
 
     <mat-form-field appearance="outline" class="notes-field">
@@ -21,7 +21,7 @@
     </div>
 
     <button mat-flat-button class="add-btn" (click)="addToCart()">
-      Add - {{ (data.item.price * quantity()) | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}
+      Add - {{ (data.item.price * quantity()) | currency:currency.code():currency.symbol():'1.0-0' }}
     </button>
   </mat-dialog-actions>
 </div>

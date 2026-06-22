@@ -2,6 +2,7 @@ import { Injectable, signal, effect } from '@angular/core';
 import { SettingsRepository } from '../repositories/settings.repository';
 import { CustomerExperienceRepository } from '../repositories/customer-experience.repository';
 import { AuthFacade } from './auth.facade';
+import { CurrencyService } from '../services/currency.service';
 import { Settings, CustomerExperience } from '../models';
 import { firstValueFrom, Subscription, combineLatest } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
@@ -19,7 +20,8 @@ export class OwnerSettingsFacade {
     private settingsRepo: SettingsRepository,
     private cxRepo: CustomerExperienceRepository,
     private authFacade: AuthFacade,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private currencyService: CurrencyService
   ) {
     effect(() => {
       const user = this.authFacade.currentUser();
@@ -38,6 +40,7 @@ export class OwnerSettingsFacade {
     ]).subscribe(([settings, cx]) => {
       this.settings.set(settings);
       this.experience.set(cx);
+      this.currencyService.updateCurrency(settings);
       this.loading.set(false);
     });
   }

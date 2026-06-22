@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
+import { CurrencyService } from '../../../core/services/currency.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -25,6 +26,7 @@ import { Router } from '@angular/router';
 })
 export class CartDrawerComponent implements OnInit {
   public facade = inject(CustomerFacade);
+  public currency = inject(CurrencyService);
   private dialogRef = inject(MatDialogRef<CartDrawerComponent>);
   private router = inject(Router);
   private renderer = inject(Renderer2);

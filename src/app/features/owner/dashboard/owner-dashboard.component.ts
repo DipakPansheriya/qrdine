@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardFacade } from '../../../core/facades/dashboard.facade';
 import { AuthFacade } from '../../../core/facades/auth.facade';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-owner-dashboard',
@@ -15,6 +16,7 @@ import { AuthFacade } from '../../../core/facades/auth.facade';
 export class OwnerDashboardComponent implements OnInit {
   facade = inject(DashboardFacade);
   private authFacade = inject(AuthFacade);
+  public currency = inject(CurrencyService);
 
   // Greeting
   get greeting() {
@@ -42,11 +44,11 @@ export class OwnerDashboardComponent implements OnInit {
     const k = this.facade.kpi();
     return [
       { label: "Today's Orders", value: k.todayOrders, icon: 'receipt_long', bg: 'rgba(67,97,238,0.1)', color: '#4361ee', trend: 12, trendLabel: '+12% vs yesterday' },
-      { label: "Today's Revenue", value: '₹' + k.todayRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 }), icon: 'currency_rupee', bg: 'rgba(16,185,129,0.1)', color: '#10b981', trend: 8, trendLabel: '+8% vs yesterday' },
+      { label: "Today's Revenue", value: this.currency.symbol() + k.todayRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 }), icon: 'payments', bg: 'rgba(16,185,129,0.1)', color: '#10b981', trend: 8, trendLabel: '+8% vs yesterday' },
       { label: 'Active Tables', value: k.activeTables + ' / ' + this.facade.tables().length, icon: 'table_restaurant', bg: 'rgba(245,158,11,0.1)', color: '#f59e0b', trend: 0, trendLabel: 'Live count' },
       { label: 'Menu Items', value: k.totalMenuItems, icon: 'menu_book', bg: 'rgba(139,92,246,0.1)', color: '#8b5cf6', trend: 0, trendLabel: 'All categories' },
       { label: 'Staff Members', value: k.totalStaff, icon: 'group', bg: 'rgba(236,72,153,0.1)', color: '#ec4899', trend: 0, trendLabel: 'Active staff' },
-      { label: 'Avg Order Value', value: '₹' + k.avgOrderValue.toLocaleString('en-IN', { maximumFractionDigits: 0 }), icon: 'analytics', bg: 'rgba(14,165,233,0.1)', color: '#0ea5e9', trend: 5, trendLabel: '+5% vs yesterday' },
+      { label: 'Avg Order Value', value: this.currency.symbol() + k.avgOrderValue.toLocaleString('en-IN', { maximumFractionDigits: 0 }), icon: 'analytics', bg: 'rgba(14,165,233,0.1)', color: '#0ea5e9', trend: 5, trendLabel: '+5% vs yesterday' },
     ];
   }
 

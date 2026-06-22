@@ -43,11 +43,12 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Currency</mat-label>
-          <mat-select formControlName="currency" required>
+          <mat-select formControlName="currencyCode" required>
+            <mat-option value="INR">INR (₹)</mat-option>
             <mat-option value="USD">USD ($)</mat-option>
             <mat-option value="EUR">EUR (€)</mat-option>
             <mat-option value="GBP">GBP (£)</mat-option>
-            <mat-option value="INR">INR (₹)</mat-option>
+            <mat-option value="AED">AED (د.إ)</mat-option>
           </mat-select>
         </mat-form-field>
 
