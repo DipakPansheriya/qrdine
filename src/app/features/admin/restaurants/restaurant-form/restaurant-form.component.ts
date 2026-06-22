@@ -33,7 +33,8 @@ export class RestaurantFormComponent implements OnInit {
     slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
     email: ['', [Validators.email]],
     phone: [''],
-    currency: ['USD', Validators.required],
+    currencyCode: ['USD', Validators.required],
+    currencySymbol: ['$', Validators.required],
     timezone: ['UTC', Validators.required],
     status: ['active', Validators.required]
   });

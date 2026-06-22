@@ -19,12 +19,13 @@
   flex: 1;
   min-height: 0;
   overflow-x: auto;
-  padding-bottom: 8px;
+  overflow-y: hidden;
+  padding-bottom: 12px;
 }
 
 .kanban-column {
-  flex: 1;
-  min-width: 320px;
+  flex: 0 0 auto;
+  width: 360px;
   display: flex;
   flex-direction: column;
   background: var(--theme-card-bg);
@@ -75,12 +76,13 @@
 
 .kanban-list {
   flex: 1;
+  min-height: 0;
   padding: 16px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 100px;
 }
 
 .order-card {

@@ -71,8 +71,8 @@ export class OwnerSettingsFacade {
             saturday: { open: '09:00', close: '22:00', enabled: true },
             sunday: { open: '09:00', close: '22:00', enabled: true }
           },
-          gstPercentage: data.gstPercentage || 0, serviceChargePercentage: data.serviceChargePercentage || 0, currency: data.currency || 'INR',
-          primaryColor: data.primaryColor || '#E53935', secondaryColor: data.secondaryColor || '#424242', accentColor: data.accentColor || '#FFC107',
+          gstPercentage: data.gstPercentage || 0, serviceChargePercentage: data.serviceChargePercentage || 0, currencyCode: data.currencyCode || 'INR', currencySymbol: data.currencySymbol || '₹',
+          primaryColor: data.primaryColor || '#2563EB', secondaryColor: data.secondaryColor || '#10B981', accentColor: data.accentColor || '#F59E0B',
           buttonStyle: data.buttonStyle || 'rounded', cardRadius: data.cardRadius || 'medium', themeMode: data.themeMode || 'Default',
           themePreset: data.themePreset || 'Classic Restaurant', typographyStyle: data.typographyStyle || 'Modern Sans',
           createdAt: serverTimestamp(), updatedAt: serverTimestamp()

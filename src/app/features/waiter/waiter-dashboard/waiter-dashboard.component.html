@@ -96,32 +96,39 @@
         <h2 class="section-title">
           <mat-icon>restaurant_menu</mat-icon> 
           Ready Items Queue 
-          <span class="badge" *ngIf="waiterFacade.deliverableItems().length">{{ waiterFacade.deliverableItems().length }}</span>
+          <span class="badge" *ngIf="waiterFacade.readyDeliveries().length">{{ waiterFacade.readyDeliveries().length }}</span>
         </h2>
         
-        <div class="empty-state" *ngIf="waiterFacade.deliverableItems().length === 0">
+        <div class="empty-state" *ngIf="waiterFacade.readyDeliveries().length === 0">
           <mat-icon>local_dining</mat-icon>
           <p>No items ready</p>
         </div>
 
-        <div class="action-list">
-          <div class="action-card order-card touch-target" *ngFor="let d of waiterFacade.deliverableItems()" (click)="toggleDeliveryItem(d.orderId, d.itemIndex)">
-            <div class="card-left">
-              <mat-icon class="select-icon" [color]="isDeliveryItemSelected(d.orderId, d.itemIndex) ? 'primary' : ''">
-                {{ isDeliveryItemSelected(d.orderId, d.itemIndex) ? 'check_box' : 'check_box_outline_blank' }}
-              </mat-icon>
+        <div class="action-list ready-queue-list">
+          <div class="action-card order-card touch-target" 
+               *ngFor="let d of waiterFacade.readyDeliveries()" 
+               [class.delayed]="d.isDelayed">
+            <div class="card-header-row">
+              <div class="table-badge" [class.bg-danger]="d.isDelayed">T{{ d.tableNumber }}</div>
+              <div class="priority-badge" *ngIf="d.isDelayed">
+                <mat-icon>whatshot</mat-icon> Delayed
+              </div>
             </div>
+            
             <div class="card-content">
-              <h4>{{ d.item.quantity }}x {{ d.item.name }}</h4>
-              <span class="time">Table T{{ d.tableNumber }} (Order #{{ d.orderNumber }})</span>
+              <h4>{{ d.customerName }}</h4>
+              <div class="stats-row">
+                <span class="stat"><mat-icon>receipt</mat-icon> {{ d.readyItemsCount }} Ready Item{{ d.readyItemsCount > 1 ? 's' : '' }}</span>
+                <span class="stat time" [class.text-danger]="d.isDelayed"><mat-icon>schedule</mat-icon> {{ d.readySince | date:'shortTime' }}</span>
+              </div>
+            </div>
+            
+            <div class="card-actions-full">
+              <button mat-flat-button class="deliver-btn touch-target w-100" (click)="deliverOrder(d.orderId, d.itemIndexes)">
+                <mat-icon>done_all</mat-icon> Deliver Order
+              </button>
             </div>
           </div>
-        </div>
-
-        <div class="action-footer" *ngIf="waiterFacade.deliverableItems().length > 0">
-          <button mat-flat-button class="success-btn touch-target w-100" [disabled]="selectedDeliveryItems.size === 0" (click)="deliverSelected()">
-            Deliver Selected Items ({{ selectedDeliveryItems.size }})
-          </button>
         </div>
       </div>
 

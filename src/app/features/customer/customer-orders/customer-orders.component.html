@@ -1,8 +1,14 @@
 <div class="orders-container" [ngStyle]="facade.styleVariables()">
-  
-
   <div class="orders-content">
     
+    <div class="header-section">
+      <div class="header-title">
+        <mat-icon class="back-icon" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]">arrow_back</mat-icon>
+        <h2>Session History</h2>
+      </div>
+      <p class="subtitle">Table {{ facade.table()?.tableNumber }} • {{ facade.orders().length }} Orders</p>
+    </div>
+
     <!-- Empty State -->
     <div class="empty-state" *ngIf="facade.orders().length === 0">
       <mat-icon>receipt_long</mat-icon>
@@ -13,17 +19,13 @@
       </button>
     </div>
 
-    <!-- Active Orders Section -->
-    <div class="orders-section" *ngIf="facade.activeOrders().length > 0">
-      <h3 class="section-title">Active Orders</h3>
-      
-      <div class="order-card active-card" 
-           *ngFor="let order of facade.activeOrders()"
-           [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'success', order.orderId]">
+    <!-- Orders List -->
+    <div class="orders-list" *ngIf="facade.orders().length > 0">
+      <div class="order-card" *ngFor="let order of facade.orders()">
         
-        <div class="card-header">
-          <div class="order-id">
-            <strong>#{{ order.orderNumber }}</strong>
+        <div class="card-header" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'success', order.orderId]">
+          <div class="order-id-group">
+            <span class="order-number">Order #{{ order.orderNumber }}</span>
             <span class="time">{{ order.createdAt?.toMillis() | date:'shortTime' }}</span>
           </div>
           <div class="status-badge" [ngStyle]="{'background-color': getStatusColor(order.status) + '20', 'color': getStatusColor(order.status)}">
@@ -33,48 +35,22 @@
         </div>
 
         <div class="card-body">
-          <div class="items-preview">
-            <span *ngFor="let item of order.items; let last = last">
-              {{ item.quantity }}x {{ item.name }}{{ !last ? ', ' : '' }}
-            </span>
+          <div class="item-row" *ngFor="let item of order.items">
+            <div class="item-main">
+              <span class="qty">{{ item.quantity }}x</span>
+              <span class="name">{{ item.name }}</span>
+            </div>
+            <div class="item-cust-status" [ngClass]="'status-' + (item.deliveryStatus === 'Delivered' ? 'delivered' : item.kitchenStatus?.toLowerCase() || 'pending')">
+               {{ item.deliveryStatus === 'Delivered' ? 'Delivered' : item.kitchenStatus || 'Pending' }}
+            </div>
           </div>
         </div>
 
         <div class="card-footer">
-          <span class="total">{{ order.grandTotal | currency:facade.restaurant()?.currency || 'USD' }}</span>
-          <span class="track-text">Track Order <mat-icon>arrow_forward</mat-icon></span>
+          <span class="total-label">Total</span>
+          <span class="total-amount">{{ order.grandTotal | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
         </div>
       </div>
-    </div>
-
-    <!-- Past Orders Section -->
-    <div class="orders-section" *ngIf="facade.pastOrders().length > 0">
-      <h3 class="section-title">Past Orders</h3>
-      
-      <div class="order-card past-card" 
-           *ngFor="let order of facade.pastOrders()"
-           [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id, 'success', order.orderId]">
-        
-        <div class="card-header">
-          <div class="order-id">
-            <strong>#{{ order.orderNumber }}</strong>
-            <span class="time">{{ order.createdAt?.toMillis() | date:'shortTime' }}</span>
-          </div>
-          <span class="status-text" [ngStyle]="{'color': getStatusColor(order.status)}">{{ order.status }}</span>
-        </div>
-
-        <div class="card-footer">
-          <span class="items-count">{{ order.items.length }} Item{{ order.items.length > 1 ? 's' : '' }}</span>
-          <span class="total">{{ order.grandTotal | currency:facade.restaurant()?.currency || 'USD' }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Browse Menu / Add Items Action Button -->
-    <div class="orders-actions" *ngIf="facade.orders().length > 0">
-      <button class="premium-btn" [routerLink]="['/menu', facade.restaurant()?.restaurantId, facade.table()?.id]">
-        Browse Menu / Add Items
-      </button>
     </div>
 
   </div>

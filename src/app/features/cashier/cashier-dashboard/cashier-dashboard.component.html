@@ -2,7 +2,7 @@
   <!-- Top Metrics -->
   <div class="metrics-bar">
     <div class="kpi-card">
-      <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
+      <div class="metric-value">{{ cashierFacade.kpis().todayRevenue | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</div>
       <div class="metric-label">Today's Revenue</div>
     </div>
     <div class="kpi-card">
@@ -14,7 +14,7 @@
       <div class="metric-label">Active Bills</div>
     </div>
     <div class="kpi-card">
-      <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</div>
+      <div class="metric-value">{{ cashierFacade.kpis().averageBill | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</div>
       <div class="metric-label">Average Bill</div>
     </div>
   </div>
@@ -94,7 +94,7 @@
                 </div>
               </span>
               <span class="item-qty">{{ item.quantity }}</span>
-              <span class="item-price">{{ item.totalPrice | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span class="item-price">{{ item.totalPrice | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
             </div>
           </div>
           
@@ -103,26 +103,26 @@
           <div class="invoice-summary">
             <div class="summary-row">
               <span>Subtotal</span>
-              <span>{{ selectedBill()?.subtotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span>{{ selectedBill()?.subtotal | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
             </div>
             <div class="summary-row" *ngIf="selectedBill()?.discount > 0">
               <span>Discount</span>
-              <span class="text-success">-{{ selectedBill()?.discount | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span class="text-success">-{{ selectedBill()?.discount | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
             </div>
             <div class="summary-row" *ngIf="selectedBill()?.serviceCharge > 0">
               <span>Service Charge</span>
-              <span>{{ selectedBill()?.serviceCharge | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span>{{ selectedBill()?.serviceCharge | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
             </div>
             <div class="summary-row" *ngIf="selectedBill()?.tax > 0">
               <span>Tax (GST)</span>
-              <span>{{ selectedBill()?.tax | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span>{{ selectedBill()?.tax | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
             </div>
             
             <div class="divider thick-divider"></div>
             
             <div class="summary-row grand-total">
               <span>AMOUNT DUE</span>
-              <span class="total-amount">{{ selectedBill()?.grandTotal | currency:(cashierFacade.settingsFacade.settings()?.currency || 'USD') }}</span>
+              <span class="total-amount">{{ selectedBill()?.grandTotal | currency:(cashierFacade.settingsFacade.settings()?.currencyCode || 'USD'):(cashierFacade.settingsFacade.settings()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
             </div>
           </div>
         </div>

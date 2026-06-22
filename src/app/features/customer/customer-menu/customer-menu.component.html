@@ -55,7 +55,7 @@
           </div>
           <div class="p-content">
             <h4>{{ item.name }}</h4>
-            <span class="p-price">{{ item.price | currency:facade.restaurant()?.currency || 'USD' }}</span>
+            <span class="p-price">{{ item.price | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@
         <div class="card-body">
           <div class="card-header-row">
             <h4>{{ item.name }}</h4>
-            <span class="price">{{ item.price | currency:facade.restaurant()?.currency || 'USD' }}</span>
+            <span class="price">{{ item.price | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
           </div>
           
           <p class="desc" *ngIf="item.description">{{ item.description }}</p>
@@ -95,7 +95,7 @@
             
             <button class="add-btn" 
                     [class.added]="addedStates()[item.itemId]" 
-                    [disabled]="facade.experience()?.allowReorder === false && facade.orders().length > 0"
+                    [disabled]="(facade.experience()?.allowReorder === false && facade.orders().length > 0) || (['Requested', 'Generating', 'Ready'].includes(facade.session()?.billStatus || '') && !facade.experience()?.allowOrdersAfterBillRequest)"
                     (click)="addToCart(item)">
               <span class="btn-text" *ngIf="!addedStates()[item.itemId]">{{ facade.experience()?.primaryButtonLabel || 'Add' }}</span>
               <span class="btn-text success" *ngIf="addedStates()[item.itemId]">✓ Added</span>
@@ -110,7 +110,7 @@
   <!-- Bill Request Widget -->
   <div class="my-orders-widget bill-widget" 
        [style.bottom]="getBillWidgetBottom()"
-       *ngIf="facade.session() && (!facade.session()?.billStatus || facade.session()?.billStatus === 'Requested' || facade.session()?.billStatus === 'Generating' || facade.session()?.billStatus === 'Ready')"
+       *ngIf="facade.orders().length > 0 && facade.session()?.status === 'Active' && (!facade.session()?.billStatus || facade.session()?.billStatus === 'Requested' || facade.session()?.billStatus === 'Generating' || facade.session()?.billStatus === 'Ready')"
        (click)="onRequestBill()">
     <div class="orders-icon" [ngClass]="facade.session()?.billStatus ? 'active-status' : ''">
       <mat-icon *ngIf="!facade.session()?.billStatus">receipt</mat-icon>

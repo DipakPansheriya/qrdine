@@ -12,10 +12,10 @@
         <div class="item-info">
           <span class="item-name">{{ item.name }}</span>
           <div class="item-modifiers" *ngIf="item.modifiers?.length">
-            <span *ngFor="let mod of item.modifiers">+ {{ mod.optionName }} (+{{ mod.price | currency:facade.restaurant()?.currency || 'USD' }})</span>
+            <span *ngFor="let mod of item.modifiers">+ {{ mod.optionName }} (+{{ mod.price | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }})</span>
           </div>
           <span class="item-notes" *ngIf="item.notes">Note: "{{ item.notes }}"</span>
-          <span class="item-price">{{ item.totalPrice | currency:facade.restaurant()?.currency || 'USD' }}</span>
+          <span class="item-price">{{ item.totalPrice | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
         </div>
         
         <div class="quantity-controls">
@@ -51,21 +51,26 @@
     <div class="bill-summary">
       <div class="summary-row">
         <span>Subtotal</span>
-        <span>{{ facade.cartSubtotal() | currency:facade.restaurant()?.currency || 'USD' }}</span>
+        <span>{{ facade.cartSubtotal() | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
       </div>
       <div class="summary-row">
         <span>Taxes</span>
-        <span>{{ facade.cartTax() | currency:facade.restaurant()?.currency || 'USD' }}</span>
+        <span>{{ facade.cartTax() | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
       </div>
       <div class="summary-row grand-total">
         <span>Grand Total</span>
-        <span>{{ facade.cartGrandTotal() | currency:facade.restaurant()?.currency || 'USD' }}</span>
+        <span>{{ facade.cartGrandTotal() | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</span>
       </div>
     </div>
   </div>
 
   <div class="drawer-footer">
-    <button class="checkout-btn" (click)="checkout()" [disabled]="facade.loading() || ((facade.experience()?.requireCustomerName ?? true) && !customerName().trim())">
+    <div class="bill-requested-banner" *ngIf="['Requested', 'Generating', 'Ready'].includes(facade.session()?.billStatus || '') && !facade.experience()?.allowOrdersAfterBillRequest">
+      <mat-icon>warning</mat-icon>
+      <span>Bill has been requested. Please complete payment before placing new orders.</span>
+    </div>
+
+    <button class="checkout-btn" (click)="checkout()" [disabled]="isCheckoutDisabled">
       <mat-icon *ngIf="facade.loading()">hourglass_empty</mat-icon>
       <span>{{ facade.loading() ? 'Processing...' : (facade.experience()?.checkoutButtonLabel || 'Place Order') }}</span>
     </button>

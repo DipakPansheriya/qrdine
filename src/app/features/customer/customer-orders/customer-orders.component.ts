@@ -41,4 +41,22 @@ export class CustomerOrdersComponent {
       default: return 'info';
     }
   }
+  async requestWaiter() {
+    await this.facade.requestAssistance();
+    alert('Assistance requested. A waiter will be with you shortly.');
+  }
+
+  async requestWater() {
+    // Usually there's a specific requestWater in facade or just a custom request type.
+    // If not, we can simulate or just call requestAssistance. We'll use requestAssistance for now
+    await this.facade.requestAssistance();
+    alert('Water requested. A waiter will bring it shortly.');
+  }
+
+  async requestBill() {
+    const status = this.facade.session()?.billStatus;
+    if (!status || status === 'Paid') {
+      await this.facade.requestBill();
+    }
+  }
 }

@@ -247,13 +247,6 @@
           min-width: 48px;
           height: 48px;
 
-          .select-icon {
-            font-size: 28px;
-            width: 28px;
-            height: 28px;
-            color: var(--text-muted);
-          }
-
           .table-badge {
             width: 48px;
             height: 48px;
@@ -265,11 +258,6 @@
             justify-content: center;
             font-weight: 800;
             font-size: 1.1rem;
-
-            &.bg-success {
-              background: rgba(16, 185, 129, 0.1);
-              color: var(--theme-success);
-            }
           }
         }
 
@@ -298,26 +286,129 @@
             border-radius: 8px;
             font-weight: 600;
             letter-spacing: 0.5px;
-
-            &.success-btn {
-              background-color: var(--theme-success);
-              color: white;
-            }
           }
         }
       }
-    }
 
-    .action-footer {
-      margin-top: 16px;
-      
-      .success-btn {
-        background-color: var(--theme-success);
-        color: white;
-        height: 48px;
-        font-size: 1.1rem;
-        border-radius: 12px;
-        font-weight: 700;
+      /* Specific styling for new Ready Queue cards */
+      .action-card.order-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        min-height: 120px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        padding: 16px;
+        
+        &.delayed {
+          border-left: 4px solid var(--theme-danger);
+          background: rgba(239, 68, 68, 0.02);
+        }
+
+        .card-header-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .table-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--theme-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+
+            &.bg-danger {
+              background: rgba(239, 68, 68, 0.1);
+              color: var(--theme-danger);
+            }
+          }
+
+          .priority-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--theme-danger);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            
+            mat-icon {
+              font-size: 14px;
+              width: 14px;
+              height: 14px;
+            }
+          }
+        }
+
+        .card-content {
+          h4 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+          }
+          
+          .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            
+            .stat {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              font-size: 0.85rem;
+              color: var(--text-secondary);
+              font-weight: 600;
+              
+              mat-icon {
+                font-size: 16px;
+                width: 16px;
+                height: 16px;
+              }
+              
+              &.text-danger {
+                color: var(--theme-danger);
+              }
+            }
+          }
+        }
+
+        .card-actions-full {
+          margin-top: 4px;
+          
+          .deliver-btn {
+            background-color: var(--theme-success);
+            color: white;
+            height: 48px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            transition: transform 0.2s;
+            
+            &:active {
+              transform: scale(0.98);
+            }
+            
+            mat-icon {
+              font-size: 20px;
+              width: 20px;
+              height: 20px;
+            }
+          }
+        }
       }
     }
 }

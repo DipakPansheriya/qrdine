@@ -137,8 +137,9 @@ export class SettingsDashboardComponent implements OnInit {
 
     this.taxForm = this.fb.group({
       gstPercentage: [0],
-      serviceChargePercentage: [0],
-      currency: ['INR']
+      serviceChargePercentage: [0, [Validators.min(0), Validators.max(100)]],
+      currencyCode: ['INR'],
+      currencySymbol: ['₹']
     });
 
     this.brandingForm = this.fb.group({

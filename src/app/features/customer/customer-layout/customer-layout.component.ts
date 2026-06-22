@@ -77,4 +77,13 @@ export class CustomerLayoutComponent implements OnInit, OnDestroy {
       panelClass: 'cart-dialog-panel'
     });
   }
+
+  async requestHelp() {
+    await this.facade.requestAssistance();
+    alert('Assistance requested. A waiter will be with you shortly.');
+  }
+
+  openProfile() {
+    alert('Profile section coming soon!');
+  }
 }

@@ -59,7 +59,21 @@ export class CartDrawerComponent implements OnInit {
     }
   }
 
+  get isCheckoutDisabled(): boolean {
+    if (this.facade.loading()) return true;
+    if (this.facade.experience()?.requireCustomerName !== false && !this.customerName().trim()) return true;
+    
+    // Block if bill is requested and not allowed
+    const status = this.facade.session()?.billStatus;
+    if (['Requested', 'Generating', 'Ready'].includes(status || '') && !this.facade.experience()?.allowOrdersAfterBillRequest) {
+      return true;
+    }
+    
+    return false;
+  }
+
   async checkout() {
+    if (this.isCheckoutDisabled) return;
     try {
       const name = this.customerName().trim();
       const requireName = this.facade.experience()?.requireCustomerName ?? true;

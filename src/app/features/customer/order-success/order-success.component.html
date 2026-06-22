@@ -103,14 +103,15 @@
         <strong>15 mins</strong>
       </div>
       <div class="info-row highlight-total">
-        <span>Total Amount</span>
-        <strong>{{ order()?.grandTotal | currency:facade.restaurant()?.currency || 'USD' }}</strong>
+        <span>Total</span>
+        <strong>{{ order()?.grandTotal | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</strong>
       </div>
     </div>
 
-    <!-- Order Items List -->
+    <!-- Order Items Summary -->
     <div class="order-items-card">
-      <h3 class="card-title">Order Summary</h3>
+      <h3 class="card-title">Order Items</h3>
+      
       <div class="item-row" *ngFor="let item of order()?.items">
         <div class="qty">{{ item.quantity }}x</div>
         <div class="name-desc">
@@ -120,7 +121,7 @@
              {{ item.deliveryStatus === 'Delivered' ? 'Delivered' : item.kitchenStatus || 'Pending' }}
           </div>
         </div>
-        <div class="price">{{ item.totalPrice | currency:facade.restaurant()?.currency || 'USD' }}</div>
+        <div class="price">{{ item.totalPrice | currency:(facade.restaurant()?.currencyCode || 'USD'):(facade.restaurant()?.currencySymbol || 'symbol'):'1.0-0' }}</div>
       </div>
       
       <div class="notes-section" *ngIf="order()?.notes">

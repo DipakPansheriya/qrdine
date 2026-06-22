@@ -8,7 +8,8 @@ export interface Restaurant {
   phone?: string;
   email?: string;
   gstNumber?: string;
-  currency: string;
+  currencyCode: string;
+  currencySymbol: string;
   timezone: string;
   address?: string;
   openingHours?: any;
@@ -212,7 +213,8 @@ export interface Settings {
   // Tax Settings
   gstPercentage: number;
   serviceChargePercentage: number;
-  currency: string;
+  currencyCode: string;
+  currencySymbol: string;
   // Branding
   primaryColor: string;
   secondaryColor: string;
@@ -264,6 +266,7 @@ export interface CustomerExperience {
   primaryButtonLabel?: string;
   checkoutButtonLabel?: string;
   allowReorder?: boolean;
+  allowOrdersAfterBillRequest?: boolean;
   requireCustomerName?: boolean;
   autoOccupyTable?: boolean;
   autoFreeTable?: boolean;
