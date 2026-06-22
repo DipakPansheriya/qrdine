@@ -156,16 +156,21 @@ export class KitchenFacade {
     }
   }
 
-  async updateItemStatus(order: Order, itemIndex: number, kitchenStatus: 'Pending' | 'Preparing' | 'Ready') {
+  async updateItemStatus(order: Order, itemIndex: number, kitchenStatus: 'Pending' | 'Preparing' | 'Ready' | 'Delivered') {
     try {
       const updatedItems = [...order.items];
       const updatedItem = { 
-        ...updatedItems[itemIndex], 
-        kitchenStatus
+        ...updatedItems[itemIndex]
       };
       
-      if (kitchenStatus === 'Ready') {
-        updatedItem.preparedAt = new Date() as any;
+      if (kitchenStatus === 'Delivered') {
+        updatedItem.deliveryStatus = 'Delivered';
+        updatedItem.deliveredAt = new Date() as any;
+      } else {
+        updatedItem.kitchenStatus = kitchenStatus;
+        if (kitchenStatus === 'Ready') {
+          updatedItem.preparedAt = new Date() as any;
+        }
       }
       
       // Remove undefined values
