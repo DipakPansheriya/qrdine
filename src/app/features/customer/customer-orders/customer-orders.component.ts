@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CustomerFacade } from '../../../core/facades/customer.facade';
 import { Order } from '../../../core/models';
 import { CurrencyService } from '../../../core/services/currency.service';
+import { BillingCalculationService } from '../../../core/services/billing.service';
 
 @Component({
   selector: 'app-customer-orders',
@@ -17,18 +18,18 @@ import { CurrencyService } from '../../../core/services/currency.service';
 export class CustomerOrdersComponent {
   public facade = inject(CustomerFacade);
   public currency = inject(CurrencyService);
+  private billingService = inject(BillingCalculationService);
 
   sessionSummary = computed(() => {
     const orders = this.facade.orders();
-    const totalAmount = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
-    const paidAmount = orders.filter(o => o.paymentStatus === 'PAID').reduce((sum, o) => sum + (o.grandTotal || 0), 0);
-    const pendingAmount = totalAmount - paidAmount;
-    
+    const settings = this.facade.settings();
+    const summary = this.billingService.calculateSessionSummary(orders, settings);
+
     return {
-      ordersCount: orders.length,
-      totalAmount,
-      paidAmount,
-      pendingAmount
+      ordersCount: summary.ordersCount,
+      totalAmount: summary.grandTotal,
+      paidAmount: summary.paidAmount,
+      pendingAmount: summary.pendingAmount
     };
   });
 

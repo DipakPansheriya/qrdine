@@ -5,11 +5,13 @@ import { Order, CartItem } from '../models';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
 import { calculateOrderStatus } from '../utils/order.utils';
+import { NotificationFacade } from './notification.facade';
 
 @Injectable({ providedIn: 'root' })
 export class KitchenFacade {
   private authFacade = inject(AuthFacade);
   private orderRepo = inject(OrderRepository);
+  private notificationFacade = inject(NotificationFacade);
 
   loading = signal(true);
   kitchenOrders = signal<Order[]>([]);
@@ -21,7 +23,9 @@ export class KitchenFacade {
 
   // Computed lists for Kanban (Combine Pending and Accepted into 'Pending' column)
   pendingOrders = computed(() => this.kitchenOrders().filter(o => o.status === 'Pending' || o.status === 'Accepted'));
-  preparingOrders = computed(() => this.kitchenOrders().filter(o => o.status === 'Preparing'));
+  preparingOrders = computed(() => this.kitchenOrders().filter(o => 
+    o.status === 'Preparing' || o.status === 'Partially Ready' || o.status === 'Partially Delivered'
+  ));
   readyOrders = computed(() => this.kitchenOrders().filter(o => o.status === 'Ready'));
 
   // KPIs
@@ -149,21 +153,58 @@ export class KitchenFacade {
         ...(order ? { items: updatedItems } : {}),
         updatedAt: serverTimestamp() 
       }));
+
+      // Notifications
+      if (order) {
+        if (status === 'Accepted') {
+          await this.notificationFacade.sendNotification({
+            targetRole: 'Customer', targetUserId: order.sessionId,
+            type: 'ORDER_ACCEPTED', title: 'Order Accepted',
+            message: 'Kitchen has accepted your order.',
+            priority: 'LOW', entityId: order.orderId, entityType: 'order'
+          });
+        } else if (status === 'Preparing') {
+          await this.notificationFacade.sendNotification({
+            targetRole: 'Customer', targetUserId: order.sessionId,
+            type: 'ORDER_PREPARING', title: 'Order Preparing',
+            message: 'Your food is now being prepared.',
+            priority: 'LOW', entityId: order.orderId, entityType: 'order'
+          });
+        } else if (status === 'Ready') {
+          await this.notificationFacade.sendNotification({
+            targetRole: 'Waiter',
+            type: 'ORDER_READY', title: 'Order Ready',
+            message: `Table T-${order.tableId.slice(-2)}'s order is ready for delivery.`,
+            priority: 'HIGH', entityId: order.orderId, entityType: 'order'
+          });
+          await this.notificationFacade.sendNotification({
+            targetRole: 'Customer', targetUserId: order.sessionId,
+            type: 'ORDER_READY', title: 'Order Ready',
+            message: 'Your order is ready and will be delivered shortly!',
+            priority: 'MEDIUM', entityId: order.orderId, entityType: 'order'
+          });
+        }
+      }
     } catch (err) {
       console.error('Failed to update order status:', err);
     }
   }
 
-  async updateItemStatus(order: Order, itemIndex: number, kitchenStatus: 'Pending' | 'Preparing' | 'Ready') {
+  async updateItemStatus(order: Order, itemIndex: number, kitchenStatus: 'Pending' | 'Preparing' | 'Ready' | 'Delivered') {
     try {
       const updatedItems = [...order.items];
       const updatedItem = { 
-        ...updatedItems[itemIndex], 
-        kitchenStatus
+        ...updatedItems[itemIndex]
       };
       
-      if (kitchenStatus === 'Ready') {
-        updatedItem.preparedAt = new Date() as any;
+      if (kitchenStatus === 'Delivered') {
+        updatedItem.deliveryStatus = 'Delivered';
+        updatedItem.deliveredAt = new Date() as any;
+      } else {
+        updatedItem.kitchenStatus = kitchenStatus;
+        if (kitchenStatus === 'Ready') {
+          updatedItem.preparedAt = new Date() as any;
+        }
       }
       
       // Remove undefined values
@@ -182,6 +223,29 @@ export class KitchenFacade {
         status: newOrderStatus,
         updatedAt: serverTimestamp() 
       }));
+
+      // If it's the first time an item is marked ready, Waiter should know.
+      // However, to avoid spam, we might just notify Waiter when the whole order is ready.
+      // But prompt explicitly says "Waiter receives ready item alerts: Ready For Delivery Chocolate Shake".
+      if (kitchenStatus === 'Ready') {
+        await this.notificationFacade.sendNotification({
+          targetRole: 'Waiter',
+          type: 'ITEM_READY', title: 'Item Ready',
+          message: `Table T-${order.tableId.slice(-2)} - ${updatedItem.name}`,
+          priority: 'MEDIUM', entityId: order.orderId, entityType: 'order'
+        });
+        
+        // Also notify Customer if order is not fully ready (partially ready)
+        if (newOrderStatus !== 'Ready') {
+           await this.notificationFacade.sendNotification({
+            targetRole: 'Customer', targetUserId: order.sessionId,
+            type: 'ORDER_PREPARING', title: 'Item Ready',
+            message: `${updatedItem.name} is ready!`,
+            priority: 'LOW', entityId: order.orderId, entityType: 'order'
+          });
+        }
+      }
+
     } catch (err) {
       console.error('Failed to update item status:', err);
     }

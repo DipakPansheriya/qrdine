@@ -77,8 +77,16 @@
     <div class="divider thick"></div>
     
     <div class="summary-row grand-total">
-      <span>Amount Due</span>
+      <span>Session Total</span>
       <span>{{ bill?.grandTotal | currency:currency.code():currency.symbol():'1.0-0' }}</span>
+    </div>
+    <div class="summary-row text-success" *ngIf="bill?.paidAmount > 0">
+      <span>Already Paid</span>
+      <span>{{ bill?.paidAmount | currency:currency.code():currency.symbol():'1.0-0' }}</span>
+    </div>
+    <div class="summary-row grand-total pending-total" *ngIf="bill?.paidAmount > 0">
+      <span>Amount Due</span>
+      <span>{{ bill?.pendingAmount | currency:currency.code():currency.symbol():'1.0-0' }}</span>
     </div>
   </div>
 

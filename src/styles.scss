@@ -459,3 +459,28 @@ body {
     padding: 0;
   }
 }
+
+/* Notification Toasts */
+.notification-toast {
+  .mdc-snackbar__surface {
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    border-left: 6px solid #94a3b8;
+    white-space: pre-wrap;
+    font-weight: 500;
+  }
+  .mdc-snackbar__label {
+    color: #1e293b !important;
+  }
+  .mdc-button__label {
+    color: #64748b !important;
+  }
+}
+
+.toast-critical .mdc-snackbar__surface { border-left-color: #ef4444 !important; }
+.toast-high .mdc-snackbar__surface { border-left-color: #f97316 !important; }
+.toast-medium .mdc-snackbar__surface { border-left-color: #3b82f6 !important; }
+.toast-low .mdc-snackbar__surface { border-left-color: #94a3b8 !important; }

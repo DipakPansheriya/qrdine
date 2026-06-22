@@ -1,86 +1,77 @@
-<div class="kitchen-container">
+<div class="kds-container">
   <!-- Top Bar Metrics -->
-  <div class="metrics-bar">
-    <div class="kpi-card">
-      <div class="metric-value">{{ kitchenFacade.kpis().ordersToday }}</div>
-      <div class="metric-label">Today's Orders</div>
+  <header class="kds-header">
+    <h1>Kitchen Display</h1>
+    <div class="metrics-bar">
+      <div class="metric"><span class="val">{{ kitchenFacade.pendingOrders().length }}</span> Waiting</div>
+      <div class="metric"><span class="val">{{ kitchenFacade.preparingOrders().length }}</span> Prep</div>
+      <div class="metric"><span class="val">{{ kitchenFacade.readyOrders().length }}</span> Ready</div>
+      <div class="metric"><span class="val">{{ kitchenFacade.kpis().avgPrepTime }}m</span> Avg Time</div>
     </div>
-    <div class="kpi-card">
-      <div class="metric-value">{{ kitchenFacade.kpis().pendingOrders }}</div>
-      <div class="metric-label">Pending Count</div>
-    </div>
-    <div class="kpi-card">
-      <div class="metric-value">{{ kitchenFacade.preparingOrders().length }}</div>
-      <div class="metric-label">Preparing Count</div>
-    </div>
-    <div class="kpi-card">
-      <div class="metric-value">{{ kitchenFacade.kpis().readyOrders }}</div>
-      <div class="metric-label">Ready Count</div>
-    </div>
-    <div class="kpi-card">
-      <div class="metric-value">{{ kitchenFacade.kpis().avgPrepTime }}m</div>
-      <div class="metric-label">Average Prep Time</div>
-    </div>
+  </header>
+
+  <!-- Mobile Tabs -->
+  <div class="mobile-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'Pending'" (click)="setTab('Pending')">Pending ({{ kitchenFacade.pendingOrders().length }})</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'Preparing'" (click)="setTab('Preparing')">Preparing ({{ kitchenFacade.preparingOrders().length }})</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'Ready'" (click)="setTab('Ready')">Ready ({{ kitchenFacade.readyOrders().length }})</button>
   </div>
 
   <!-- Kanban Board -->
   <div class="kanban-board">
     
-    <!-- Pending Column -->
-    <div class="kanban-column">
-      <div class="column-header">
-        <div class="header-indicator pending-indicator"></div>
-        <h3>Pending <span class="count-badge">{{ kitchenFacade.pendingOrders().length }}</span></h3>
+    <!-- PENDING -->
+    <div class="kanban-column" [class.mobile-active]="activeTab() === 'Pending'">
+      <div class="column-header pending-header">
+        <h2>PENDING</h2>
+        <span class="count">{{ kitchenFacade.pendingOrders().length }}</span>
       </div>
-      <div 
-        id="pendingList"
-        cdkDropList
-        [cdkDropListData]="kitchenFacade.pendingOrders()"
-        [cdkDropListConnectedTo]="['preparingList', 'readyList']"
-        class="kanban-list"
-        (cdkDropListDropped)="drop($event)">
-        
-        <div class="order-card touch-target" *ngFor="let order of kitchenFacade.pendingOrders()" @listAnimation cdkDrag>
+      
+      <div class="empty-state" *ngIf="kitchenFacade.pendingOrders().length === 0">
+        <div class="emoji">📥</div>
+        <h3>No Pending Orders</h3>
+      </div>
+
+      <div class="kanban-list" cdkDropList id="pendingList" [cdkDropListData]="kitchenFacade.pendingOrders()" [cdkDropListConnectedTo]="['preparingList', 'readyList']" (cdkDropListDropped)="drop($event)">
+        <div class="order-card" *ngFor="let order of kitchenFacade.pendingOrders()" @listAnimation cdkDrag>
           <ng-container *ngTemplateOutlet="orderTemplate; context:{ $implicit: order, col: 'Pending' }"></ng-container>
         </div>
       </div>
     </div>
 
-    <!-- Preparing Column -->
-    <div class="kanban-column">
-      <div class="column-header">
-        <div class="header-indicator preparing-indicator"></div>
-        <h3>Preparing <span class="count-badge">{{ kitchenFacade.preparingOrders().length }}</span></h3>
+    <!-- PREPARING -->
+    <div class="kanban-column" [class.mobile-active]="activeTab() === 'Preparing'">
+      <div class="column-header preparing-header">
+        <h2>PREPARING</h2>
+        <span class="count">{{ kitchenFacade.preparingOrders().length }}</span>
       </div>
-      <div 
-        id="preparingList"
-        cdkDropList
-        [cdkDropListData]="kitchenFacade.preparingOrders()"
-        [cdkDropListConnectedTo]="['pendingList', 'readyList']"
-        class="kanban-list"
-        (cdkDropListDropped)="drop($event)">
-        
-        <div class="order-card touch-target" *ngFor="let order of kitchenFacade.preparingOrders()" cdkDrag>
+      
+      <div class="empty-state" *ngIf="kitchenFacade.preparingOrders().length === 0">
+        <div class="emoji">👨‍🍳</div>
+        <h3>No Orders Preparing</h3>
+      </div>
+
+      <div class="kanban-list" cdkDropList id="preparingList" [cdkDropListData]="kitchenFacade.preparingOrders()" [cdkDropListConnectedTo]="['pendingList', 'readyList']" (cdkDropListDropped)="drop($event)">
+        <div class="order-card" *ngFor="let order of kitchenFacade.preparingOrders()" @listAnimation cdkDrag>
           <ng-container *ngTemplateOutlet="orderTemplate; context:{ $implicit: order, col: 'Preparing' }"></ng-container>
         </div>
       </div>
     </div>
 
-    <!-- Ready Column -->
-    <div class="kanban-column">
-      <div class="column-header">
-        <div class="header-indicator ready-indicator"></div>
-        <h3>Ready <span class="count-badge">{{ kitchenFacade.readyOrders().length }}</span></h3>
+    <!-- READY -->
+    <div class="kanban-column" [class.mobile-active]="activeTab() === 'Ready'">
+      <div class="column-header ready-header">
+        <h2>READY</h2>
+        <span class="count">{{ kitchenFacade.readyOrders().length }}</span>
       </div>
-      <div 
-        id="readyList"
-        cdkDropList
-        [cdkDropListData]="kitchenFacade.readyOrders()"
-        [cdkDropListConnectedTo]="['pendingList', 'preparingList']"
-        class="kanban-list"
-        (cdkDropListDropped)="drop($event)">
-        
-        <div class="order-card touch-target" *ngFor="let order of kitchenFacade.readyOrders()" cdkDrag>
+      
+      <div class="empty-state" *ngIf="kitchenFacade.readyOrders().length === 0">
+        <div class="emoji">🍽️</div>
+        <h3>No Ready Orders</h3>
+      </div>
+
+      <div class="kanban-list" cdkDropList id="readyList" [cdkDropListData]="kitchenFacade.readyOrders()" [cdkDropListConnectedTo]="['pendingList', 'preparingList']" (cdkDropListDropped)="drop($event)">
+        <div class="order-card" *ngFor="let order of kitchenFacade.readyOrders()" @listAnimation cdkDrag>
           <ng-container *ngTemplateOutlet="orderTemplate; context:{ $implicit: order, col: 'Ready' }"></ng-container>
         </div>
       </div>
@@ -90,69 +81,81 @@
 </div>
 
 <ng-template #orderTemplate let-order let-col="col">
-  <div class="card-header">
-    <div class="header-left">
-      <span class="order-number">#{{ order.orderNumber }}</span>
-      <span class="priority-badge" *ngIf="getElapsedMinutes(order.createdAt) >= 15">🔥 High Priority</span>
+  <div class="card-header" [ngClass]="getTimerClass(order.createdAt)">
+    <div class="header-main">
+      <span class="table-id">{{ order.tableNumber ? 'T-' + order.tableNumber : 'T-' + order.tableId.slice(-2) }}</span>
+      <span class="order-num">#{{ order.orderNumber }}</span>
     </div>
-    <div class="timer-badge" [ngClass]="getTimerClass(order.createdAt)">
-      <mat-icon>timer</mat-icon>
-      {{ getElapsedMinutes(order.createdAt) }}m ago
+    <div class="elapsed-time">
+      <mat-icon *ngIf="getElapsedMinutes(order.createdAt) >= 10">whatshot</mat-icon>
+      <mat-icon *ngIf="getElapsedMinutes(order.createdAt) < 10">schedule</mat-icon>
+      {{ getElapsedMinutes(order.createdAt) }}m
     </div>
   </div>
 
-  <div class="card-body">
-    <div class="info-row">
-      <span class="info-item"><mat-icon>chair</mat-icon> Table T-{{ order.tableId | slice:0:2 }}</span>
-      <span class="info-item"><mat-icon>person</mat-icon> {{ order.customerName || 'Guest' }}</span>
-      <span class="info-item"><mat-icon>restaurant</mat-icon> {{ order.items?.length || 0 }} Items</span>
+  <div class="card-customer">
+    Customer: <strong>{{ order.customerName || 'Guest' }}</strong>
+  </div>
+
+  <div class="order-progress" *ngIf="order.status === 'Preparing' || order.status === 'Partially Ready' || order.status === 'Partially Delivered'">
+    <div class="progress-text">
+      <span>Progress</span>
+      <span>{{ getCompletedCount(order) }} / {{ order.items?.length || 0 }} Ready</span>
     </div>
-    
-    <div class="items-list">
-      <div class="item-row" *ngFor="let item of order.items; let i = index">
-        <div class="item-content">
-          <div class="item-details">
-            <span class="qty">{{ item.quantity }}x</span> <span class="name">{{ item.name }}</span>
-            <span class="item-status-badge" [ngClass]="'status-' + (item.kitchenStatus?.toLowerCase() || 'pending')">
-              {{ item.kitchenStatus || 'Pending' }}
-            </span>
-          </div>
-          <div class="item-actions">
-            <button mat-stroked-button class="prep-btn" *ngIf="item.kitchenStatus === 'Pending' || !item.kitchenStatus" (click)="setItemStatus(order, i, 'Preparing', $event)">
-              Prep
-            </button>
-            <button mat-flat-button color="primary" class="ready-btn" *ngIf="item.kitchenStatus === 'Preparing'" (click)="setItemStatus(order, i, 'Ready', $event)">
-              Ready
-            </button>
-            <mat-icon class="done-icon" *ngIf="item.kitchenStatus === 'Ready'">check_circle</mat-icon>
-          </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" [style.width.%]="getProgressPercentage(order)"></div>
+    </div>
+  </div>
+
+  <div class="items-list">
+    <div class="item-block touch-target" *ngFor="let item of order.items; let i = index" (click)="toggleItemAction(order.orderId, i, $event)">
+      <div class="item-row">
+        <div class="checkbox-area">
+          <mat-icon class="status-icon pending-icon" *ngIf="!item.kitchenStatus || item.kitchenStatus === 'Pending'">check_box_outline_blank</mat-icon>
+          <mat-icon class="status-icon prep-icon" *ngIf="item.kitchenStatus === 'Preparing'">hourglass_bottom</mat-icon>
+          <mat-icon class="status-icon ready-icon" *ngIf="item.kitchenStatus === 'Ready' || item.deliveryStatus === 'Delivered'">check_box</mat-icon>
         </div>
-        <div class="modifiers" *ngIf="item.modifiers?.length">
-          <small *ngFor="let mod of item.modifiers" class="item-meta">
-            - {{ mod.optionName }}
-          </small>
+        <div class="item-name-area">
+          <span class="qty">{{ item.quantity }}x</span>
+          <span class="name" [class.strike]="item.kitchenStatus === 'Ready' || item.deliveryStatus === 'Delivered'">{{ item.name }}</span>
         </div>
-        <div class="notes" *ngIf="item.notes">
-          <small class="item-meta note-meta">Note: {{ item.notes }}</small>
+        <div class="status-badge" [ngClass]="'badge-' + (item.kitchenStatus?.toLowerCase() || 'pending')">
+          {{ item.kitchenStatus || 'Pending' }}
         </div>
       </div>
-    </div>
+      
+      <div class="modifiers" *ngIf="item.modifiers?.length">
+        <div class="mod-pill" *ngFor="let mod of item.modifiers">{{ mod.optionName }}</div>
+      </div>
+      <div class="notes" *ngIf="item.notes">
+        <span class="note-label">Note:</span> {{ item.notes }}
+      </div>
 
-    <div class="order-notes" *ngIf="order.notes">
-      <mat-icon>notes</mat-icon> {{ order.notes }}
+      <!-- INLINE ACTION BAR -->
+      <div class="inline-action-bar" *ngIf="isItemActionActive(order.orderId, i)" @slideDown>
+        <button class="action-btn prep-btn" matRipple (click)="setItemStatus(order, i, 'Preparing', $event)">
+          PREP
+        </button>
+        <button class="action-btn ready-btn" matRipple (click)="setItemStatus(order, i, 'Ready', $event)">
+          READY
+        </button>
+        <button class="action-btn del-btn" matRipple (click)="setItemStatus(order, i, 'Delivered', $event)">
+          DELIVERED
+        </button>
+      </div>
     </div>
+  </div>
+
+  <div class="order-notes" *ngIf="order.notes">
+    <mat-icon>notes</mat-icon> {{ order.notes }}
   </div>
 
   <div class="card-actions">
-    <!-- Action buttons based on current column -->
-    <button *ngIf="col === 'Pending'" mat-flat-button color="accent" class="action-btn touch-target w-100" (click)="kitchenFacade.updateOrderStatus(order.orderId, 'Preparing')">
-      Accept & Prepare
+    <button *ngIf="col === 'Pending'" class="main-action-btn accept-btn touch-target" matRipple (click)="kitchenFacade.updateOrderStatus(order.orderId, 'Preparing')">
+      [ Accept Order ]
     </button>
-    <button *ngIf="col === 'Preparing'" mat-flat-button color="primary" class="action-btn touch-target w-100" (click)="kitchenFacade.updateOrderStatus(order.orderId, 'Ready')">
-      Mark Ready
-    </button>
-    <button *ngIf="col === 'Ready'" mat-flat-button class="action-btn success-btn touch-target w-100" (click)="kitchenFacade.updateOrderStatus(order.orderId, 'Delivered')">
-      Delivered
+    <button *ngIf="col === 'Preparing'" class="main-action-btn ready-btn touch-target" matRipple (click)="kitchenFacade.updateOrderStatus(order.orderId, 'Ready')">
+      [ Mark All Ready ]
     </button>
   </div>
 </ng-template>

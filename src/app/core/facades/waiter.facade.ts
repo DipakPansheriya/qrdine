@@ -8,6 +8,7 @@ import { Table, CustomerRequest, Order, CustomerSession } from '../models';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { serverTimestamp } from '@angular/fire/firestore';
 import { calculateOrderStatus } from '../utils/order.utils';
+import { NotificationFacade } from './notification.facade';
 
 @Injectable({ providedIn: 'root' })
 export class WaiterFacade {
@@ -16,6 +17,7 @@ export class WaiterFacade {
   private requestRepo = inject(CustomerRequestRepository);
   private orderRepo = inject(OrderRepository);
   private sessionRepo = inject(CustomerSessionRepository);
+  private notificationFacade = inject(NotificationFacade);
 
   loading = signal(true);
   
@@ -193,9 +195,14 @@ export class WaiterFacade {
         // If we don't have a preparedAt (legacy), fallback to order created at or now
         const readySince = oldestReadyTime || (order.createdAt?.toDate ? order.createdAt.toDate() : new Date());
         
-        // Calculate delay (e.g. > 5 mins is delayed)
+        // Calculate priority
         const diffMins = (new Date().getTime() - readySince.getTime()) / 60000;
-        const isDelayed = diffMins > 5;
+        let priority: 'Normal' | 'Warning' | 'Urgent' = 'Normal';
+        if (diffMins >= 10) {
+          priority = 'Urgent';
+        } else if (diffMins >= 5) {
+          priority = 'Warning';
+        }
 
         deliveries.push({
           orderId: order.orderId,
@@ -205,7 +212,7 @@ export class WaiterFacade {
           customerName: order.customerName || 'Guest',
           readyItemsCount: readyIndexes.length,
           readySince,
-          isDelayed,
+          priority, // Normal, Warning, Urgent
           itemIndexes: readyIndexes
         });
       }
@@ -213,6 +220,38 @@ export class WaiterFacade {
     
     // Sort oldest first
     return deliveries.sort((a, b) => a.readySince.getTime() - b.readySince.getTime());
+  });
+
+  async forwardBillRequest(sessionId: string) {
+    try {
+      await firstValueFrom(this.sessionRepo.update(sessionId, { 
+        billStatus: 'Ready'
+      }));
+    } catch (err) {
+      console.error('Failed to forward bill request:', err);
+    }
+  }
+
+  recentDeliveries = computed(() => {
+    const deliveries: any[] = [];
+    
+    this.allOrders().forEach(order => {
+      const table = this.tables().find(t => t.id === order.tableId);
+      order.items.forEach((item) => {
+        if (item.deliveryStatus === 'Delivered' && item.deliveredAt) {
+          const time = item.deliveredAt.toDate ? item.deliveredAt.toDate() : new Date(item.deliveredAt);
+          deliveries.push({
+            orderId: order.orderId,
+            tableNumber: table?.tableNumber || '?',
+            itemName: item.name,
+            deliveredAt: time
+          });
+        }
+      });
+    });
+    
+    // Sort newest first
+    return deliveries.sort((a, b) => b.deliveredAt.getTime() - a.deliveredAt.getTime()).slice(0, 20);
   });
 
   async resolveRequest(requestId: string) {
@@ -253,6 +292,15 @@ export class WaiterFacade {
         status: newOrderStatus,
         updatedAt: serverTimestamp() 
       }));
+
+      // Notifications
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Customer', targetUserId: order.sessionId,
+        type: 'ORDER_DELIVERED', title: 'Items Delivered',
+        message: 'Your items have been delivered to your table. Enjoy!',
+        priority: 'LOW', entityId: orderId, entityType: 'order'
+      });
+
     } catch (err) {
       console.error('Failed to deliver items:', err);
     }
@@ -274,6 +322,13 @@ export class WaiterFacade {
         status: 'Delivered', 
         updatedAt: serverTimestamp() 
       }));
+
+      await this.notificationFacade.sendNotification({
+        targetRole: 'Customer', targetUserId: order.sessionId,
+        type: 'ORDER_DELIVERED', title: 'Order Delivered',
+        message: 'Your order has been fully delivered to your table. Enjoy!',
+        priority: 'LOW', entityId: orderId, entityType: 'order'
+      });
     } catch (err) {
       console.error('Failed to update order status:', err);
     }

@@ -227,6 +227,11 @@ export interface Settings {
   themeMode: 'Default' | 'Orange' | 'Green' | 'Red' | 'Custom';
   typographyStyle?: 'Modern Sans' | 'Classic Serif' | 'Playful Rounded' | 'Elegant Editorial';
   themePreset?: 'Classic Restaurant' | 'Modern Cafe' | 'Luxury Dining' | 'Fast Food' | 'Minimal' | 'Custom';
+  notificationSettings?: {
+    enableSound: boolean;
+    enableToastNotifications: boolean;
+    enableRealtimeNotifications: boolean;
+  };
   createdAt: any;
   updatedAt: any;
 }
@@ -275,6 +280,21 @@ export interface CustomerExperience {
   autoFreeTable?: boolean;
   sessionTimeout?: '15' | '30' | '60' | 'Never' | string;
   updatedAt: any;
+}
+
+export interface Notification {
+  id: string;
+  restaurantId: string;
+  targetRole?: Role | 'All'; // Role that should receive this (e.g. 'Waiter')
+  targetUserId?: string; // Specific user (e.g. Customer session ID or specific staff)
+  type: string; // e.g. 'ORDER_READY', 'BILL_REQUEST'
+  title: string;
+  message: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  entityId?: string; // e.g. orderId or sessionId
+  entityType?: 'order' | 'session' | 'staff' | 'system';
+  isRead: boolean;
+  createdAt: any;
 }
 
 export interface AuditLog {
