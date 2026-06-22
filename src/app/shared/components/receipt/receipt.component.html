@@ -1,0 +1,103 @@
+<div class="receipt-wrapper" id="receipt-content">
+  <!-- Header -->
+  <div class="receipt-header">
+    <img *ngIf="settings?.logo" [src]="settings.logo" alt="Logo" class="receipt-logo">
+    <h1 class="restaurant-name">{{ settings?.restaurantName || 'Restaurant' }}</h1>
+    <p class="address">{{ settings?.address }}</p>
+    <p class="contact" *ngIf="settings?.phone || settings?.email">
+      <span *ngIf="settings?.phone">Tel: {{ settings?.phone }}</span>
+      <span *ngIf="settings?.phone && settings?.email"> | </span>
+      <span *ngIf="settings?.email">{{ settings?.email }}</span>
+    </p>
+    <p class="gst" *ngIf="settings?.gstNumber">GST No: {{ settings?.gstNumber }}</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Meta Data -->
+  <div class="receipt-meta">
+    <div class="meta-row">
+      <span><strong>Receipt No:</strong> #{{ bill?.orderNumber || (today.getTime() % 1000000) }}</span>
+      <span><strong>Date:</strong> {{ today | date:'dd/MM/yyyy' }}</span>
+    </div>
+    <div class="meta-row">
+      <span><strong>Table:</strong> T{{ table?.tableNumber }}</span>
+      <span><strong>Time:</strong> {{ today | date:'shortTime' }}</span>
+    </div>
+    <div class="meta-row" *ngIf="bill?.customerName && bill?.customerName !== 'Guest'">
+      <span><strong>Customer:</strong> {{ bill?.customerName }}</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Items Table -->
+  <div class="receipt-items">
+    <div class="item-header">
+      <span class="col-name">Item</span>
+      <span class="col-qty">Qty</span>
+      <span class="col-price">Price</span>
+      <span class="col-total">Total</span>
+    </div>
+    
+    <div class="item-row" *ngFor="let item of bill?.items">
+      <div class="col-name">
+        {{ item.name }}
+        <div class="modifiers" *ngIf="item.modifiers?.length">
+          <small *ngFor="let mod of item.modifiers">- {{ mod.optionName }}</small>
+        </div>
+      </div>
+      <div class="col-qty">{{ item.quantity }}</div>
+      <div class="col-price">{{ (item.totalPrice / item.quantity) | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</div>
+      <div class="col-total">{{ item.totalPrice | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Summary -->
+  <div class="receipt-summary">
+    <div class="summary-row">
+      <span>Subtotal</span>
+      <span>{{ bill?.subtotal | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+    </div>
+    <div class="summary-row" *ngIf="bill?.discount > 0">
+      <span>Discount</span>
+      <span>-{{ bill?.discount | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+    </div>
+    <div class="summary-row" *ngIf="bill?.serviceCharge > 0">
+      <span>Service Charge</span>
+      <span>{{ bill?.serviceCharge | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+    </div>
+    <div class="summary-row" *ngIf="bill?.tax > 0">
+      <span>Tax (GST)</span>
+      <span>{{ bill?.tax | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+    </div>
+    
+    <div class="divider thick"></div>
+    
+    <div class="summary-row grand-total">
+      <span>Amount Due</span>
+      <span>{{ bill?.grandTotal | currency:(settings?.currencyCode || 'USD'):(settings?.currencySymbol || 'symbol'):'1.0-0' }}</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Footer Meta -->
+  <div class="receipt-footer-meta">
+    <div class="meta-row" *ngIf="session?.paymentStatus">
+      <span><strong>Payment Method:</strong> {{ session?.paymentMethod || 'Cash' }}</span>
+      <span><strong>Status:</strong> {{ session?.paymentStatus }}</span>
+    </div>
+    <div class="meta-row">
+      <span><strong>Cashier:</strong> {{ cashierName }}</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="receipt-footer">
+    <p class="thank-you">Thank You for Dining With Us!</p>
+    <p class="tagline">Please visit again</p>
+  </div>
+</div>

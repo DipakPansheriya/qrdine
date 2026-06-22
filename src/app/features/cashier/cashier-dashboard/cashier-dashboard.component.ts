@@ -8,6 +8,7 @@ import { CashierFacade } from '../../../core/facades/cashier.facade';
 import { Table, Payment } from '../../../core/models';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { ReceiptComponent } from '../../../shared/components/receipt/receipt.component';
 
 @Component({
   selector: 'app-cashier-dashboard',
@@ -17,7 +18,8 @@ import html2canvas from 'html2canvas';
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    MatDividerModule
+    MatDividerModule,
+    ReceiptComponent
   ],
   templateUrl: './cashier-dashboard.component.html',
   styleUrls: ['./cashier-dashboard.component.scss']
@@ -82,21 +84,39 @@ export class CashierDashboardComponent {
     this.selectedBill.set(null);
   }
 
-  async printInvoice() {
+  async printReceipt() {
     await this.updateBillStatus('Ready');
-    const invoiceEl = document.getElementById('printable-invoice');
-    if (!invoiceEl) return;
+    window.print();
+  }
 
-    // Brief timeout to ensure rendering is complete before capture
-    setTimeout(async () => {
-      const canvas = await html2canvas(invoiceEl, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Invoice_${this.selectedTable()?.tableNumber}_${Date.now()}.pdf`);
-    }, 100);
+  async generatePdf() {
+    await this.updateBillStatus('Ready');
+    const receiptEl = document.getElementById('receipt-content');
+    if (!receiptEl) return;
+
+    const pdf = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
+
+    // We temporarily adjust width for PDF rendering to ensure it fits A4 nicely
+    const originalWidth = receiptEl.style.width;
+    const originalMaxWidth = receiptEl.style.maxWidth;
+    receiptEl.style.width = '210mm'; // A4 width
+    receiptEl.style.maxWidth = '210mm';
+
+    await pdf.html(receiptEl, {
+      callback: (doc) => {
+        receiptEl.style.width = originalWidth;
+        receiptEl.style.maxWidth = originalMaxWidth;
+        doc.save(`Receipt_${this.selectedTable()?.tableNumber}_${Date.now()}.pdf`);
+      },
+      x: 0,
+      y: 0,
+      width: 210,
+      windowWidth: 794 // Approximately 210mm in pixels at 96dpi
+    });
   }
 }
